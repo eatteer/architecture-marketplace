@@ -1,0 +1,47 @@
+# The database service of the local compose file: the official image, pinned, as a single-node replica
+# set with authentication. Every variable is derived from the application's connection string by the
+# script that starts the stack; `:?` stops a bare `docker compose up` that skipped it.
+services:
+  mongodb:
+    image: mongo:8.0.32
+    # Named after the project, so `docker ps` says whose database this is.
+    container_name: my-project-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_ROOT_USER:?derived from MONGO_URI by the script that starts the stack}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD:?derived from MONGO_URI by the script that starts the stack}
+      - MONGO_REPLICA_SET=${MONGO_REPLICA_SET:?derived from MONGO_URI by the script that starts the stack}
+    # A replica set with authentication needs a key file its members share. With one member there is
+    # nobody to share it with, so a fresh one is written at every start, readable by the server only.
+    entrypoint:
+      - bash
+      - -c
+      - >
+        head -c 756 /dev/urandom | base64 > /tmp/replica-set.key &&
+        chown mongodb:mongodb /tmp/replica-set.key && chmod 400 /tmp/replica-set.key &&
+        exec docker-entrypoint.sh mongod --replSet "$${MONGO_REPLICA_SET}" --bind_ip_all --keyFile /tmp/replica-set.key
+    ports:
+      - "${MONGO_PORT:?derived from MONGO_URI by the script that starts the stack}:27017"
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    # The healthcheck is also what starts the replica set: the first probe that finds none initiates
+    # it, and the check passes only once this member is primary. The member is named localhost; the
+    # application reaches it through the published port with directConnection.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >
+          mongosh --quiet -u "$${MONGO_INITDB_ROOT_USERNAME}" -p "$${MONGO_INITDB_ROOT_PASSWORD}"
+          --authenticationDatabase admin --eval "
+          try { quit(rs.status().myState === 1 ? 0 : 1) }
+          catch (error) { rs.initiate({ _id: '$${MONGO_REPLICA_SET}', members: [{ _id: 0, host: 'localhost:27017' }] }); quit(1) }"
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+volumes:
+  mongo_data:
+    driver: local
+  mongo_config:
+    driver: local

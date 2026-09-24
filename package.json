@@ -1,0 +1,16 @@
+{
+  "name": "architecture-marketplace-tools",
+  "private": true,
+  "license": "MIT",
+  "description": "Maintenance tooling for this repository. Nothing here ships with a plugin.",
+  "type": "module",
+  "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
+    "check:snippets": "node tools/check-snippets.mjs"
+  },
+  "devDependencies": {
+    "eslint": "^10.11.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.1"
+  }
+}

@@ -1,0 +1,20 @@
+#!/bin/sh
+# Two checks before every commit (see CLAUDE.md): the manifests against Claude Code's own validator,
+# and every TypeScript snippet a plugin ships against the conventions it teaches.
+
+if command -v claude >/dev/null 2>&1; then
+  claude plugin validate . --strict || exit 1
+
+  for plugin in plugins/*/; do
+    claude plugin validate "$plugin" --strict || exit 1
+  done
+else
+  echo "pre-commit: 'claude' is not on PATH, so the manifests were not validated." >&2
+fi
+
+if [ ! -d node_modules ]; then
+  echo "pre-commit: run 'npm install' first — the snippet check needs its dependencies." >&2
+  exit 1
+fi
+
+node tools/check-snippets.mjs

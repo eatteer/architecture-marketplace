@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Tooling
+node_modules/
+
+# Eval runs
+plugins/*/evals/results/

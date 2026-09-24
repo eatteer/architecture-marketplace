@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "backend-architecture",
+  "displayName": "Backend Architecture",
+  "description": "Architecture, patterns and code conventions for the NestJS/TypeScript backend stack (MongoDB with Mongoose, class-validator, OpenAPI, i18n). Auto-invoking skills that guide universal code conventions, project bootstrap and module wiring, the steps to add a feature, the four layers of a feature slice, API documentation, monetary amounts, transactions and consistency under concurrency, event-driven side effects, pagination, error handling, observability, the deployable image and deploy steps, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations, testing, git workflow and architecture decision records; a read-only agent that reviews code against them rule by rule; and a skill that turns a clone of the reference template into a project. This is the core backend plugin — it depends on no other plugin and ships no runtime library.",
+  "version": "1.0.0",
+  "author": {
+    "name": "eatteer",
+    "email": "eatteer@gmail.com"
+  },
+  "homepage": "https://github.com/eatteer/architecture-marketplace/tree/main/plugins/backend-architecture",
+  "repository": "https://github.com/eatteer/architecture-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "backend",
+    "nestjs",
+    "typescript",
+    "mongodb",
+    "architecture",
+    "conventions",
+    "ddd",
+    "clean-architecture"
+  ]
+}
