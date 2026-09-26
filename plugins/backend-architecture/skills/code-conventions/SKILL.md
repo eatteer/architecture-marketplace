@@ -304,8 +304,7 @@ await this._transactionManager.run(async (transaction: Transaction): Promise<voi
 
 The goal is code a person can scan — neither crammed together nor pulled apart. A blank line marks a
 **change of concept** or gives a tall block room to breathe; it is not a separator dropped between
-every statement. Over-spacing is as much a defect as under-spacing, because when everything is
-separated nothing is grouped.
+every statement. Over-spacing is a defect too: when everything is separated, nothing is grouped.
 
 One thing decides it: **how tall the declaration is.**
 
@@ -324,9 +323,10 @@ One thing decides it: **how tall the declaration is.**
   closely related to — a decorated property, a multi-line object or array, a braced guard, a method,
   a call whose arguments wrap. Height is what makes a block hard to find the edges of, and the blank
   line is what gives them back. Relatedness never overrides it: a one-line statement butted against
-  a multi-line one reads as a single lump, and the reader has to parse it to find where the first
-  ends.
+  a multi-line one reads as a single lump. Between statements the linter enforces it (see the
+  `project-bootstrap` lint table); between class members it is kept by hand.
 
+  <!-- snippet-check: skip -->
   ```typescript
   // ❌ the wrapped call starts wherever the eye happens to land
   app.use(cookieParser());
@@ -334,7 +334,9 @@ One thing decides it: **how tall the declaration is.**
     new EmptyBodyPipe(),
     new I18nValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
   );
+  ```
 
+  ```typescript
   // ✅ two statements, and it is obvious which is which
   app.use(cookieParser());
 
@@ -354,17 +356,15 @@ One thing decides it: **how tall the declaration is.**
   }
   ```
 
-  A decorator belongs to the member below it, so the two are one declaration two lines tall — which
-  is why a decorated member list is spaced and a bare one is not. The same type written without
-  decorators stays packed.
+  A decorator belongs to the member below it: the two are one declaration two lines tall, which is
+  why a decorated member list is spaced and the same type written without decorators stays packed.
 
 - **Separate distinct concepts** with one blank line even when both are single-line: the dependency
   reads from the work that uses them, one derivation from an unrelated one, and before an
   `if`/`return` that follows unrelated work.
 
   The test is whether the statements do the same kind of work, not whether they mention the same
-  subject. Three declarations illustrating three different rules are three concepts, however alike
-  they look.
+  subject: three declarations illustrating three different rules are three concepts.
 
 - **No blank line at the very start or end** of a class, method, function or callback body.
 

@@ -228,7 +228,7 @@ more effectively than the prose prevents it.
 an agent — `SKILL.md` and `references/` — and every `examples/**/*.ts`, with the rules of the
 reference project's linter that need no type information: no `any`, explicit return types and member
 accessibility, braces on every guard, no `console`, type-only imports as their own statement, no
-`enum`. Snippets are fragments, so they are wrapped as little as they need to parse and never
+`enum`, a blank line on each side of a multi-line statement. Snippets are fragments, so they are wrapped as little as they need to parse and never
 compiled; an undeclared identifier is not an error. `npm install` wires it as the pre-commit hook. A
 report names the file, the block number, and the line inside the block.
 

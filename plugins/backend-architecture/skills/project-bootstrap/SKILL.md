@@ -134,6 +134,7 @@ At minimum:
 | `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) | A type reference becomes a runtime `require`, and closes a cycle the container finds at boot |
 | The import plugin's type-specifier-style rule (`prefer-top-level`) | `import { type X }` mixes a type into a value import, which the first rule does not reject |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards, and a body that grows a second line without them |
+| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type` | A wrapped call butts against the next statement and the two read as one lump |
 
 `consistent-type-imports` skips every file with decorators on its own, so in those files the
 convention is kept by hand — `code-conventions` owns the rule and its exception.

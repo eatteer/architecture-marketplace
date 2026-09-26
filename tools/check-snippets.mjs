@@ -17,6 +17,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import stylistic from "@stylistic/eslint-plugin";
 import { Linter } from "eslint";
 import tseslint from "typescript-eslint";
 
@@ -60,7 +61,7 @@ const CONFIG = [
         experimentalDecorators: true,
       },
     },
-    plugins: { "@typescript-eslint": tseslint.plugin },
+    plugins: { "@typescript-eslint": tseslint.plugin, "@stylistic": stylistic },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/explicit-function-return-type": [
@@ -74,6 +75,11 @@ const CONFIG = [
       ],
       "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
       curly: ["error", "all"],
+      "@stylistic/padding-line-between-statements": [
+        "error",
+        { blankLine: "always", prev: ["multiline-const", "multiline-let", "multiline-expression", "multiline-block-like", "multiline-return", "multiline-export", "multiline-type"], next: "*" },
+        { blankLine: "always", prev: "*", next: ["multiline-const", "multiline-let", "multiline-expression", "multiline-block-like", "multiline-return", "multiline-export", "multiline-type"] },
+      ],
       "no-console": "error",
       "@typescript-eslint/consistent-type-imports": [
         "error",
