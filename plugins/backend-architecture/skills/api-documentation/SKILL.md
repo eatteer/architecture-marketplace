@@ -1,7 +1,7 @@
 ---
 name: api-documentation
 description: "The generated OpenAPI document — `@Api*` decorators on DTOs and controllers, documenting the success envelope and the Problem Details body with `ApiDataResponse`, `ApiPaginatedResponse` and `ApiProblemResponse`, declaring both security schemes by named constant, an operator API-key header, tag groups, operation ids and their factory, documenting a restriction a guard enforces, and controlling who can reach the docs endpoint."
-when_to_use: "Trigger on — adding `@ApiProperty`, `@ApiPropertyOptional`, `@ApiOperation`, `@ApiResponse`, `@ApiTags`, `@ApiBearerAuth`, `@ApiCookieAuth` or `@ApiHeader`, setting `operationIdFactory`, documenting what an endpoint returns or how it fails, editing the docs setup, a field missing from the generated schema, a documented response that is not what the endpoint sends, a generated client reading fields one level too shallow, an endpoint appearing without a tag or in no group, a generated client with colliding method names, or exposing the documentation endpoint in an environment."
+when_to_use: "Trigger on — adding `@ApiProperty`, `@ApiPropertyOptional`, `@ApiOperation`, `@ApiResponse`, `@ApiTags`, `@ApiBearerAuth`, `@ApiCookieAuth` or `@ApiHeader`, setting `operationIdFactory`, documenting what an endpoint returns or how it fails, editing the docs setup, a field missing from the generated schema, a documented response that is not what the endpoint sends, a generated client reading fields one level too shallow, a nullable field a generated client types as an empty object, an endpoint appearing without a tag or in no group, a generated client with colliding method names, or exposing the documentation endpoint in an environment."
 ---
 
 # API documentation
@@ -30,6 +30,10 @@ export class CreateUserDTO {
 
 - `@ApiPropertyOptional` for anything optional; `@ApiProperty` marks it required, and a mismatch
   with the validator produces a document that contradicts the code.
+- A nullable property names its `type:` beside `nullable: true` (`type: String`, `type: Number`).
+  The decorator reads the type from the compiler's metadata, which records a `string | null` union
+  as `Object`, so without it the document declares an empty object and a generated client types the
+  field as `Record<string, never> | null`.
 - `enum:` takes the domain's `const` array — the same array the validator uses, so the documented
   values cannot drift from the accepted ones.
 - An `example` on anything whose format is not obvious from its name. It is what the reader copies
@@ -195,6 +199,7 @@ A request that is not allowed gets **404, not 403** — the same rule as any hid
 ## Checklist
 
 - [ ] Every DTO property carries `@ApiProperty` or `@ApiPropertyOptional`, matching its validator.
+- [ ] Every nullable property declares its `type:`.
 - [ ] Every documented enum references the domain's `const` array.
 - [ ] Every controller has exactly one tag; if tags are grouped, every tag is in exactly one group.
 - [ ] Every authenticated route declares both security schemes, by their named constants.
