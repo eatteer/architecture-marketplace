@@ -3,20 +3,20 @@
 **Architecture, patterns and code conventions for the NestJS + TypeScript + MongoDB backend stack**,
 following Clean Architecture and Domain-Driven Design.
 
-This is the **core** backend plugin. It depends on no other plugin, and everything it documents must
-produce correct code with nothing else installed.
+This is the **core** backend plugin. It depends only on `engineering-workflow` (see "Requires"), and
+everything it documents must produce correct code with nothing else installed.
 
 ## What it ships
 
 | Component | How it runs | What it is |
 | --- | --- | --- |
-| 27 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
+| 25 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
 | `adopt-template` | You run it once: `/backend-architecture:adopt-template [project-name] "[description]"` | Turns a fresh clone of [`backend-template`](https://github.com/eatteer/backend-template) into your project: summarizes what the clone contains, asks for the name and description, rewrites every generic name — package, database, bucket, containers, documentation title — and verifies the result. It never runs on its own |
 | `convention-reviewer` agent | Ask for a review against the conventions, or `@agent-backend-architecture:convention-reviewer` | A read-only reviewer that loads every skill governing a diff and checks it rule by rule, reporting each violation with file, line, rule and owning skill |
 
 ## How it works
 
-The 27 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
+The 25 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
 wire up. Each one owns a set of rules, and any rule that comes up elsewhere is a pointer rather than
 a second copy, so there is never a question of which statement is current.
 
@@ -47,8 +47,16 @@ a second copy, so there is never a question of which statement is current.
 | `security` | Input hardening, uploads, rate limiting, CSRF, CORS, secrets, personal data |
 | `configuration` | Validated environment variables with no defaults, and operator-editable settings |
 | `testing` | Test boundaries, doubling ports, builders, determinism seams, the in-memory replica set, the e2e database, the coverage floor |
-| `git-workflow` | Branch flow, branch naming, Conventional Commits |
-| `decision-records` | Which decisions earn a record, MADR, numbering, superseding instead of editing |
+
+## Requires
+
+The **`engineering-workflow`** plugin. It owns the rules every stack shares, and these skills point
+at them rather than keeping a copy: `code-conventions` and the `convention-reviewer` agent at
+`git-workflow` (the commit format, the integration branch a review diffs against), and
+`adding-feature` and `persistence-layer` at `decision-records` (when a choice earns a record).
+
+It is declared in this plugin's `dependencies`, so installing this plugin pulls it in, and it cannot
+be disabled while this one is enabled.
 
 ## Assumed stack
 
@@ -107,7 +115,7 @@ Beside its `SKILL.md`, a skill may carry files it points at, and each says what 
 | Examples | Complete `.ts` files for the canonical shapes — an entity and the shared base classes, a use case, a schema, a repository, a migration, a controller — read when writing one | `domain-modeling`, `application-layer`, `persistence-layer`, `presentation-layer` |
 | References | Lookup tables and recipes read on demand — the naming and suffix tables, the concurrency guard | `code-conventions`, `transactions-and-consistency` |
 | Scripts | Two programs run against a project, on its own `typescript`, that report and only write with `--write`: convert type-only imports in decorated files, and remove local annotations the compiler would infer | `code-conventions` |
-| Assets | Files copied into a project — the ADR skeleton, the `Dockerfile` and `.dockerignore`, the database service of the local compose file | `decision-records`, `deployment`, `project-bootstrap` |
+| Assets | Files copied into a project — the `Dockerfile` and `.dockerignore`, the database service of the local compose file | `deployment`, `project-bootstrap` |
 
 ## What this plugin leaves open
 

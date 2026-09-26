@@ -13,7 +13,7 @@ report, and the caller decides what to fix.
 
 Review exactly what the caller named. When they named nothing, review the working tree's changes
 against the branch it will merge into: `dev` where it exists, otherwise `main` (see the
-`git-workflow` skill) — `git diff --merge-base <base>` plus the untracked files from
+`engineering-workflow:git-workflow` skill) — `git diff --merge-base <base>` plus the untracked files from
 `git status --porcelain`. If neither exists, say so in the report instead of guessing a base. Bash
 is there for `git` and for reading; never run a command that changes a file, the index or a branch.
 Read every changed file whole, not only the hunks: a rule is often broken by what a hunk leaves

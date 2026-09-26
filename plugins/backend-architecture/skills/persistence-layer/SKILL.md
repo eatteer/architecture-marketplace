@@ -95,7 +95,7 @@ UserSchemaFactory.index({ email: 1 }, { unique: true, partialFilterExpression: {
   normalized lowercase copy and match a prefix on that. All three change what the search finds, so
   it is a product decision — but leaving it undecided means a scan on every keystroke. Keeping the
   unanchored case-insensitive scan is a legitimate answer when the project records it as a decision
-  (see the `decision-records` skill), with the collection size at which it stops being acceptable.
+  (see the `engineering-workflow:decision-records` skill), with the collection size at which it stops being acceptable.
 - **Do not index a low-cardinality field on its own.** An index over a three-value status points at
   a third of the collection and the planner will ignore it; it earns its place only as the leading
   field of a compound index.

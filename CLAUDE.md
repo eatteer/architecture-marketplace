@@ -80,9 +80,37 @@ old copy, silently and indefinitely.
 Plugin names carry a stack prefix (`backend-*`, `frontend-*`). One marketplace hosts every stack,
 and the bump rule is per plugin, so a backend release is already invisible to frontend projects.
 
+A plugin that serves every stack carries **no** prefix (`engineering-workflow`). A prefix would claim
+a stack it does not belong to, and the stack plugins that depend on it would read as depending on
+each other.
+
 Skill `name`s carry **no** prefix. Claude Code addresses them as `plugin:skill`
 (`backend-architecture:code-conventions`), so they are already namespaced. A skill's `name` matches
 its directory name.
+
+## Dependencies between plugins
+
+A rule every stack shares lives in a plugin without a stack, and each stack plugin declares it for
+real, in its `plugin.json`:
+
+```json
+"dependencies": ["engineering-workflow"]
+```
+
+Installing the stack plugin then pulls the shared one in automatically, and disabling the shared one
+is refused while a plugin that depends on it is enabled — which is what makes a pointer into it
+safe. The entry is a **bare name on purpose**: a version range resolves against git tags
+(`engineering-workflow--v1.0.0`), so adding one without tagging every release fails the dependent
+plugin with `no-matching-tag`.
+
+- **References point along the dependency, never against it.** A stack plugin names the shared
+  plugin's skills as much as it needs; the shared plugin never names a skill, file or concept that
+  exists only in one stack. Two stack plugins never reference each other.
+- **A pointer into another plugin carries its namespace**: `engineering-workflow:git-workflow`, not
+  `git-workflow`. The bare name is a skill of the plugin the reader is in.
+- **The prose agrees with the manifest**: the plugin's entry `description` in `marketplace.json`,
+  the `description` in its `plugin.json`, and a `## Requires` section in its README — which names
+  what the plugin points at, or says "Nothing" for a plugin with no dependencies.
 
 ## One concept, one owner
 
@@ -125,9 +153,14 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Input hardening, regex escaping, uploads, CSRF, CORS, rate limiting, the proxy hop count, secrets, PII | `security` |
 | Environment variables, startup validation, typed settings values for the application layer, operator-editable settings | `configuration` |
 | Test boundaries, test doubles, builders, determinism seams | `testing` |
+| Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
+
+### Ownership map — `engineering-workflow`
+
+| Concept | Owner |
+| --- | --- |
 | Branch naming, branch flow, commit messages | `git-workflow` |
 | Architecture decision records: which decisions earn one, format, numbering, superseding | `decision-records` |
-| Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
 
 ## A skill's `description` and `when_to_use` are its trigger
 
@@ -177,9 +210,12 @@ skill is its full text in the agent's context.
 ## Running the evals
 
 ```bash
-cd plugins/backend-architecture
+cd plugins/<name>
 claude plugin eval . --ablation none --trust-plugin -j 4 --allow-tools Agent
 ```
+
+Each plugin's suite runs from its own folder. A skill moved to another plugin takes its case with it,
+and the grader's `input_match` changes to the new namespace.
 
 `--ablation none` skips the no-plugin comparison: a trigger case asks whether the plugin's skill
 loaded, which a run without the plugin cannot answer, so the second arm would double the cost for

@@ -69,8 +69,8 @@ What forces the decision, in two or three sentences.
 
 ## Decision outcome
 
-Chosen option: the short lifetime, because … (the trade itself is laid out in the `authentication`
-skill; this record says which side the project took and why)
+Chosen option: the short lifetime, because … (the trade itself is laid out in the stack's
+authentication skill; this record says which side the project took and why)
 
 ### Consequences
 

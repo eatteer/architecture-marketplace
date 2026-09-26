@@ -114,4 +114,4 @@ Verified against the code in front of you, not recalled.
 - [ ] Value objects, entity invariants, policies, use cases and mappers each have tests, and each
       repository query has an integration test.
 - [ ] A decision the feature made that the next person would have to reconstruct has a record (see
-      `decision-records`).
+      `engineering-workflow:decision-records`).

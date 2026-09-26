@@ -459,7 +459,7 @@ match this rule would break the API for a field the client can already see.
 
 **Sentence case for docs, comments and messages**: "User created successfully", not "User Created
 Successfully". Proper nouns, acronyms and products keep their casing (`NestJS`, `API`, `JWT`). A
-commit description follows `git-workflow`.
+commit description follows `engineering-workflow:git-workflow`.
 
 ## Two rules the linter cannot check
 

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "engineering-workflow",
+  "displayName": "Engineering Workflow",
+  "description": "The engineering workflow every stack shares, packaged as auto-invoking skills: the branching and commit methodology (long-lived branches only where an environment stands behind them, branch names prefixed by the commit type, Conventional Commits with a feature scope enforced by commitlint, one coherent change per commit) and architecture decision records (which decisions earn one, MADR, numbering, superseding instead of editing, one copy of the reasoning). It belongs to no stack, so it carries no stack prefix; the stack plugins declare it as a dependency. It depends on no other plugin and ships no runtime library.",
+  "version": "1.0.0",
+  "author": {
+    "name": "eatteer",
+    "email": "eatteer@gmail.com"
+  },
+  "homepage": "https://github.com/eatteer/architecture-marketplace/tree/main/plugins/engineering-workflow",
+  "repository": "https://github.com/eatteer/architecture-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "branching",
+    "conventional-commits",
+    "commitlint",
+    "adr",
+    "madr",
+    "decision-records"
+  ]
+}

@@ -11,7 +11,13 @@
       "name": "backend-architecture",
       "source": "./plugins/backend-architecture",
       "category": "development",
-      "description": "Core architecture, patterns and code conventions for the NestJS + TypeScript + MongoDB backend stack, packaged as auto-invoking skills, with a read-only convention reviewer and a skill that adopts the reference template. Covers universal code conventions, project bootstrap and module wiring, the domain/application/persistence/presentation layers, API documentation, money, transactions and consistency, event-driven side effects, pagination, error handling, observability, deployment, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations, testing, git workflow and decision records. Depends on nothing."
+      "description": "Core architecture, patterns and code conventions for the NestJS + TypeScript + MongoDB backend stack, packaged as auto-invoking skills, with a read-only convention reviewer and a skill that adopts the reference template. Covers universal code conventions, project bootstrap and module wiring, the domain/application/persistence/presentation layers, API documentation, money, transactions and consistency, event-driven side effects, pagination, error handling, observability, deployment, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations and testing. Requires engineering-workflow."
+    },
+    {
+      "name": "engineering-workflow",
+      "source": "./plugins/engineering-workflow",
+      "category": "development",
+      "description": "The engineering workflow every stack shares, packaged as auto-invoking skills: the branching and commit methodology with Conventional Commits, and architecture decision records. The stack plugins depend on it, so installing one pulls it in. Depends on nothing."
     }
   ]
 }
