@@ -1,7 +1,7 @@
 ---
 name: i18n
 description: "Translated text leaving the backend — the translation file layout per feature namespace, the translated title and detail of a failure, resolving the language of a request, resolving the language of a notification from the recipient rather than the sender, which validator takes a shared key and which a per-operation one, notification copy, domain error codes as translation keys, and keeping every key present in every configured locale."
-when_to_use: "Trigger on — adding or editing a translation file, adding a locale, translating the title or detail of a failure, wiring `i18nValidationMessage` on a validator, a validation message naming the property in code form, translating a domain error, an error that renders its key instead of a sentence, an email or notification that arrived in the wrong language, adding a new feature's translation namespace, or adding a member to a value union that has user-visible labels."
+when_to_use: "Trigger on — adding or editing a translation file, adding a locale, translating the title or detail of a failure, wiring `i18nValidationMessage` on a validator, a validation message naming the property in code form, translating a domain error, an error that renders its key instead of a sentence, an email or notification that arrived in the wrong language, emails that switched language after the user signed in from another browser, letting a user change the language of their own account, adding a new feature's translation namespace, or adding a member to a value union that has user-visible labels."
 ---
 
 # Internationalization
@@ -81,6 +81,19 @@ A `preferredLanguage` on any entity that can be notified is part of its domain s
 against the same locale value union as everything else, with the default applied at creation rather
 than at send time.
 
+**It changes only when its owner says so**, through a route on the caller's own account — never
+copied from the language a request arrived in. The request's language belongs to whichever browser
+sent it: a shared computer or a phone set to another locale would rewrite what every later message
+is written in, and nothing on screen would say the preference changed.
+
+```typescript
+// ❌ the account follows whichever browser signed in last
+user.changePreferredLanguage(Language.create(i18n.lang), performedBy, now);
+
+// ✅ only the owner's explicit choice, from the body of their own route
+user.changePreferredLanguage(Language.create(command.preferredLanguage), command.performedBy, now);
+```
+
 ## Validator messages
 
 Every request-DTO validator carries its message key explicitly. The validation classes of the
@@ -150,6 +163,8 @@ are.
 - [ ] Every key exists in every configured locale.
 - [ ] Every feature's namespace file matches its feature name.
 - [ ] Every notification resolves the language from the recipient, never from the request.
+- [ ] A stored `preferredLanguage` changes only through a route on the caller's own account; nothing
+      copies the request's language onto it.
 - [ ] Every request-DTO validator declares its message key: a generic one a `common.validation.*`
       key, a field- or limit-specific one a key in its operation's object; none interpolates.
 - [ ] Every notification this application renders has its copy in one nested object of its
