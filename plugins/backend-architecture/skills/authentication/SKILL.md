@@ -1,7 +1,7 @@
 ---
 name: authentication
-description: "Proving who a caller is — password hashing behind a port, issuing access and refresh tokens, what belongs in the token versus what is looked up, an HttpOnly cookie by default with a bearer header for non-browser clients, the token's resolution order, mirroring the transport in the login and refresh responses, refresh rotation and reuse detection, logout and revocation, the authentication guard and the principal it attaches, and marking a route public."
-when_to_use: "Trigger on — writing login/refresh/logout, hashing or verifying a password, signing or verifying a token, choosing token claims or lifetimes, setting or clearing an auth cookie, writing the authentication guard or `@CurrentUser()`, a mobile or service client that cannot use cookies, a session that cannot be revoked, a stolen refresh token rotated forever, a session that survives a password change or a suspension, two simultaneous refreshes that both succeed, a logout that answers 401, or a password with no maximum length."
+description: "Proving who a caller is — password hashing behind a port, issuing access and refresh tokens, what belongs in the token versus what is looked up, an HttpOnly cookie by default with a bearer header for non-browser clients, the token's resolution order, mirroring the transport in the login and refresh responses, refresh rotation and reuse detection, logout and revocation, the authentication guard and the principal it attaches, the session endpoint a cookie client reads its identity, permissions and access-token expiry from, and marking a route public."
+when_to_use: "Trigger on — writing login/refresh/logout, hashing or verifying a password, signing or verifying a token, choosing token claims or lifetimes, setting or clearing an auth cookie, writing the authentication guard or `@CurrentUser()`, writing `GET /auth/session` or a `/me` route, a browser client that cannot tell who is signed in or when to refresh because its token is HttpOnly, a mobile or service client that cannot use cookies, a session that cannot be revoked, a stolen refresh token rotated forever, a session that survives a password change or a suspension, two simultaneous refreshes that both succeed, a logout that answers 401, or a password with no maximum length."
 ---
 
 # Authentication
@@ -65,7 +65,15 @@ export type JWTPayload = {
 ```
 
 `iat` and `exp` are not part of the type: the signing library adds them from the configured
-lifetime, and nothing past the verifier reads them.
+lifetime. Verifying an access token answers the payload plus the instant it stops being accepted,
+converted once from `exp` inside the adapter, so nothing past the verifier handles the claim or its
+unit:
+
+```typescript
+export type VerifiedAccessToken = JWTPayload & {
+  expiresAt: Date;
+};
+```
 
 **What belongs in the token is what a guard needs to reject a request without a database read.**
 Identity, kind of principal, and permissions qualify. Anything a use case will load the entity for
@@ -313,6 +321,7 @@ export type Principal = {
   type: ActorTypeValue;
   permissions: string[];
   jti: string;
+  expiresAt: Date;
 };
 ```
 
@@ -329,6 +338,35 @@ decorator on a public route is a 401 somebody reports immediately, while a forgo
 protected route is an open endpoint nobody notices.
 
 Login and refresh are rate limited; that belongs to the `security` skill.
+
+## The session a browser reads
+
+A cookie client cannot read its own token, so it cannot tell who is signed in, what it may do, or
+when its access expires — and whatever it kept from the sign-in response is gone on the next reload.
+One route answers all three, `GET /auth/session`, open to any signed-in caller (the `authorization`
+skill owns how a route says it needs no permission). The client reads it on load and again after
+every refresh.
+
+```typescript
+export class SessionDTO {
+  public user!: SessionUserDTO;
+  public permissions!: string[];
+  public accessTokenExpiresAt!: string;
+}
+```
+
+- **The permissions and the expiry come from the token the request presented**, copied off the
+  principal onto the command. They are what the guards enforce until the next refresh; resolving
+  them again from the roles shows the client permissions no request of its can use yet.
+- **The user is loaded**, not read from the token: a name and an email do not belong in it (see
+  Tokens above).
+- **An account that is gone or no longer active answers 401** with the shared unauthenticated error,
+  never 404 or 403. The access token is still valid, but the refresh will refuse the account, and
+  the client has to sign in again rather than render a session nobody holds.
+- **The expiry is the access token's.** Login and refresh report the refresh token's, which is days
+  away: a client that schedules its refresh from that one discovers the real expiry as a 401.
+- **The user carries only what a client renders about itself** — id, name, email, language. Status,
+  roles and timestamps are the administration view of an account, behind its own permission.
 
 ## Checklist
 
@@ -354,3 +392,5 @@ Login and refresh are rate limited; that belongs to the `security` skill.
 - [ ] Logout is public, answers 204, always clears the cookies, and revokes the whole family.
 - [ ] One condition decides both which token is read and which transport answers.
 - [ ] Public routes are marked explicitly against a global guard.
+- [ ] One route answers the signed-in session: it loads the user, reports the token's permissions and
+      the access token's expiry, and answers 401 for an account that is gone or not active.

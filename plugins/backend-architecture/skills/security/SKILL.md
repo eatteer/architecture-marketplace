@@ -153,8 +153,9 @@ It is also the one limit a stranger can spend on somebody else's behalf: ten bad
 address lock its owner out for the rest of the window. Keep the window short, and make it a delay
 rather than an account lock.
 
-A rejected request answers 429 with `Retry-After`. A client with no idea when to retry retries
-immediately.
+A rejected request answers 429 with `Retry-After`, and CORS exposes it. A client with no idea when
+to retry retries immediately — and a browser hides every response header CORS does not name, so a
+front end on another origin sees the 429 and never the header.
 
 **Rate limiting is defense in depth, never the correctness fix.** It narrows the window; it does not
 close it. Two simultaneous requests still get through, so the endpoint's real guarantees —
@@ -338,7 +339,7 @@ Do not store what the product does not need. The safest handling of a field is n
 - [ ] The trust proxy hop count comes from validated configuration and matches the proxies in front
       of the process.
 - [ ] Login is limited per account as well as per address, keyed on the normalized, hashed email.
-- [ ] Rejections answer 429 with `Retry-After`.
+- [ ] Rejections answer 429 with `Retry-After`, and CORS exposes the header.
 - [ ] Auth cookies are `SameSite=strict` in code, with no setting able to weaken it.
 - [ ] CORS origins are enumerated from configuration, validated as exact origins at startup, and
       never reflected.
