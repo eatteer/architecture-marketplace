@@ -13,3 +13,4 @@ node_modules/
 
 # Eval runs
 plugins/*/evals/results/
+plugins/*/.claude-plugin/plugin.json.bak

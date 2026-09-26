@@ -228,6 +228,32 @@ agent, and when a new model becomes the default. A case that fails is a finding 
 not the case: rephrase the trigger until a realistic request reaches it, never the request until it
 reaches the trigger.
 
+### A plugin with `dependencies`
+
+`claude plugin eval <path>` cannot resolve a dependency: the sandbox has no marketplace to fetch it
+from, so the plugin under test is left out of the session **without an error**, and every trigger
+case scores 0 for a reason that has nothing to do with the trigger. The run's trace shows it — the
+`init` event lists no plugin but the built-in ones.
+
+Until the command can load a dependency, run the suite with the entry removed and put the manifest
+back straight after:
+
+```bash
+cd plugins/<name>
+cp .claude-plugin/plugin.json .claude-plugin/plugin.json.bak
+node -e "const f='.claude-plugin/plugin.json',m=require('./'+f);delete m.dependencies;require('fs').writeFileSync(f,JSON.stringify(m,null,2)+'\n')"
+claude plugin eval . --ablation none --trust-plugin -j 4 --allow-tools Agent
+mv .claude-plugin/plugin.json.bak .claude-plugin/plugin.json
+```
+
+Restore it even when the run fails: a manifest committed without its `dependencies` installs the
+plugin without the one it points into. `git diff .claude-plugin/plugin.json` before the commit
+confirms it; git ignores the backup, so a forgotten one is never committed in its place.
+
+A trigger case is unaffected — it asks only whether this plugin's skill loaded. A case whose answer
+needs a skill of the dependency cannot pass this way, and is run against the installed plugin
+instead, after a push.
+
 ## Skills describe patterns, not a codebase
 
 Skills are the starting point for the next project, so anything that inventories one particular
