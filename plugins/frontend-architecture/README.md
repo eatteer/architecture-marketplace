@@ -26,7 +26,7 @@ a second copy, so there is never a question of which statement is current.
 | `code-conventions` | Universal TypeScript and React rules — forbidden constructs, annotations, absence via `undefined`, effects, blank lines between statements, JSX siblings and hook calls, naming. Applies to every file |
 | `project-bootstrap` | Source tree, aliases, compiler strictness, the Vite config, the lint config and the project's own lint rule, scripts, `main.tsx` and the order of its providers |
 | `adding-feature` | The folder skeleton and the ordered steps, delegating each one to the skill that owns it |
-| `api-client` | Types generated from the OpenAPI document, the one client and its middlewares, `ApiError` from Problem Details, unwrapping the envelope, mappers |
+| `api-client` | Types generated from the OpenAPI document, the one client and its middlewares, `APIError` from Problem Details, unwrapping the envelope, mappers |
 | `server-state` | The query client's defaults, query options factories and their keys, mutations and invalidation, optimistic updates |
 | `data-fetching-states` | Pending, error, empty and ready, resolved in order; the altitude a state resolves at; loaders against skeletons in place; skeletons that keep the ready UI's height |
 | `error-handling` | Expected failures against bugs, where each surfaces, the error toast and the copyable report, error screens, the fullscreen loader for writes, what a `catch` may end in |
@@ -75,9 +75,11 @@ it depends on, and without it this one fails to load and no skill reaches the se
 
 ```json
 {
+  "skillListingBudgetFraction": 0.04,
   "extraKnownMarketplaces": {
     "architecture-marketplace": {
-      "source": { "source": "github", "repo": "eatteer/architecture-marketplace" }
+      "source": { "source": "github", "repo": "eatteer/architecture-marketplace" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
@@ -86,6 +88,15 @@ it depends on, and without it this one fails to load and no skill reaches the se
   }
 }
 ```
+
+`autoUpdate` refreshes the marketplace when Claude Code starts, so a new release of the plugin
+reaches every contributor without anyone running an update.
+
+`skillListingBudgetFraction` is the share of the context window, in characters, that the list of
+skills Claude reads every turn may take. The default, 1%, is 8,000 characters in a 200k window, and
+this plugin's skills and their triggers alone take about 28,000: past the budget a skill is listed
+by its name only, and a name is a much weaker trigger than its description. 4% fits them in a 200k
+window, at about 8,000 tokens a turn.
 
 **The plugin ships skills, not a `CLAUDE.md`.** Put this in the project's own so nothing has to be
 remembered:
@@ -102,7 +113,7 @@ its tests — the common case — needs all of them, not the first one that matc
 ## No runtime code
 
 This plugin ships no library to depend on. Every artifact the skills describe — the client and its
-middlewares, `ApiError`, the query options type, the error toast, the field-error helper — is written
+middlewares, `APIError`, the query options type, the error toast, the field-error helper — is written
 in the project that installs it. The skills say what shape those take and why.
 
 Beside its `SKILL.md`, a skill may carry files it points at, and each says what it is for:

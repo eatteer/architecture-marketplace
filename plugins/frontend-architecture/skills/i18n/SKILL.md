@@ -76,16 +76,25 @@ A count goes through `count`, and i18next picks the form:
 
 ```json
 {
-  "summary_one": "Page {{page}} of {{pages}} · {{count}} result",
-  "summary_other": "Page {{page}} of {{pages}} · {{count}} results"
+  "summary_one": "Page {{page}} of {{pages}} · {{total}} result",
+  "summary_other": "Page {{page}} of {{pages}} · {{total}} results"
 }
 ```
 
 ```tsx
-<p>{t("pagination.summary", { page, pages: Math.max(pages, 1), count: total })}</p>
+<p>
+  {t("pagination.summary", {
+    page: format.number(page),
+    pages: format.number(Math.max(pages, 1)),
+    total: format.number(total),
+    count: total,
+  })}
+</p>
 ```
 
-Numbers and dates inside a sentence are formatted before they are interpolated (see `formatting`).
+Numbers and dates inside a sentence are formatted before they are interpolated (see `formatting`),
+so 12345 results read "12,345" in English and "12.345" in Spanish. `count` stays
+the raw number, since it is what picks the plural, and the sentence shows the formatted `total`.
 
 ## Text outside a component
 
@@ -100,9 +109,9 @@ stays in the language the page started in.
 ```typescript
 export const LANGUAGE_VALUES = ["en", "es"] as const;
 
-export type LanguageValue = (typeof LANGUAGE_VALUES)[number];
+export type Language = (typeof LANGUAGE_VALUES)[number];
 
-export const DEFAULT_LANGUAGE: LanguageValue = "en";
+export const DEFAULT_LANGUAGE: Language = "en";
 ```
 
 - **The application speaks the backend's languages, and falls back to the backend's default**, so a

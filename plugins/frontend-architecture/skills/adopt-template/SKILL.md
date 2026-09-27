@@ -26,8 +26,9 @@ make it concrete. Something with the shape of:
 > This is a React + TypeScript single-page application on Vite, built against backend-template's
 > contract: its Problem Details errors, its cookie session with a refresh that works across tabs, and
 > its paginated lists. It already ships sign-in, a users screen gated by permissions, English and
-> Spanish, a light and a dark theme, and the whole shadcn catalog on Base UI — all of it working, none
-> of it example code. `npm run dev` starts it against the backend in `.env`; `npm run test:e2e` drives
+> Spanish, a light and a dark theme, and the whole shadcn catalog on Base UI — all of it working, with
+> `users` as the reference feature to copy or delete. `npm run dev` starts it against the backend in
+> `.env`; `npm run test:e2e` drives
 > the build against a real backend.
 >
 > The architecture rules live in the `frontend-architecture` skills, which load themselves when you
@@ -61,7 +62,7 @@ expect:
 
 | Where | What |
 | --- | --- |
-| `package.json` | `name` and `description` |
+| `package.json` | `name`, and the whole `description` — the template's own sentence names `backend-template`, and it goes with the rest of the sentence |
 | `CLAUDE.md` | the title on line 1 |
 | `README.md` | the title on line 1, the image tag in the deploy commands, and any section that talks about the template as a template ("Starting a real project"): rewrite it for the project rather than replacing the name inside it |
 | `index.html` | the `<title>`, written as "Frontend template", so a hyphenated search misses it |

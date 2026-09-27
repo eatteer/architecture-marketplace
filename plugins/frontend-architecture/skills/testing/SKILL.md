@@ -21,7 +21,9 @@ repeat each other.
 - **The network is the boundary that is mocked**, never the application's own modules. A test that
   mocks the API client or a query hook tests a copy of the wiring it replaced.
 - **Tests sit beside what they test**; the shared support — setup, handlers, builders, render helpers —
-  lives in `test/`, reached through `@test/` (see `project-bootstrap`).
+  lives in `test/`, reached through `@test/` (see `project-bootstrap`). A test of a feature's flow —
+  its screens rendered through the router, one route to the next — tests the feature rather than one
+  file, and sits at the feature's root (`features/users/users-list.test.tsx`).
 
 ## The setup
 

@@ -96,7 +96,16 @@ const sort: Sort<UserSortBy> = {
 ```
 
 A change of sort is a change of the list, so it goes through the same updater that resets the page
-(see `routing`).
+(see `routing`). Choosing the default order again takes the sort out of the URL instead of spelling
+it out, so the request and a link to the plain list stay the same:
+
+```typescript
+function changeSort(next: Sort<UserSortBy>): void {
+  const isDefault = next.sortBy === DEFAULT_USER_SORT.sortBy && next.sortOrder === DEFAULT_USER_SORT.sortOrder;
+
+  changeList(isDefault ? { sortBy: undefined, sortOrder: undefined } : next);
+}
+```
 
 ## The data table
 
@@ -108,9 +117,12 @@ nothing while the backend sorts and pages: the rows arrive in order, one page at
   accessible name stays the column's name (see `accessibility`). A column the backend cannot sort by
   is a plain `TableHead`.
 - **`DataTablePagination`** renders where the reader is and how much there is ("Page 2 of 3 · 25
-  results", a plural in every locale — see `i18n`), and Previous and Next. **Each is disabled when the
-  backend's `previous` or `next` is `null`**, and moves to the page the backend named: whether another
-  page exists is the backend's answer, never `page < pages` recomputed here.
+  results", a plural in every locale with its numbers formatted — see `i18n`), and Previous and
+  Next. **Each is disabled when the backend's `previous` or `next` is `null`** — and stays focusable,
+  so pressing Next onto the last page does not drop the reader's focus (see `accessibility`) — and
+  moves to the page the backend named: whether another page exists is the backend's answer, never
+  `page < pages` recomputed here. Its `DataTablePaginationSkeleton` is the same row, rendered beside
+  the table's skeleton.
 
 ```tsx
 <Button
@@ -183,8 +195,9 @@ const searchFilter = useDebouncedFilter(search, (value: string | undefined): voi
   when the input unmounts.
 - **`maxLength` is the backend's limit**, the same constant the search schema uses, so the reader
   cannot type a term the backend would refuse.
-- Each commit is a navigation, so each pause is an entry in the history, and Back walks through the
-  searches.
+- **Each commit is a navigation, but only the first is a step in the history.** Starting a search
+  pushes; refining or clearing it replaces, so Back leaves the search in one step however slowly it
+  was typed (the updater is `routing`'s).
 
 ## Checklist
 

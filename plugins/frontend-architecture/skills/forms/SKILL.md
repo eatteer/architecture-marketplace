@@ -40,14 +40,14 @@ export type CreateUserFormInput = {
   name: string;
   email: string;
   password: string;
-  preferredLanguage: LanguageValue | null;
+  preferredLanguage: Language | null;
 };
 
 export type CreateUserValues = {
   name: string;
   email: string;
   password: string;
-  preferredLanguage: LanguageValue | undefined;
+  preferredLanguage: Language | undefined;
 };
 
 export const CREATE_USER_DEFAULT_VALUES: CreateUserFormInput = {
@@ -70,7 +70,7 @@ export function buildCreateUserSchema(t: TFunction<"users">): z.ZodType<CreateUs
     name: z.string().trim().min(1, { error: t("form.errors.name_required") }),
     email: z.email({ error: t("form.errors.email_invalid") }),
     password: z.string().min(USER_PASSWORD_MIN_LENGTH, { error: t("form.errors.password_too_short", { min: USER_PASSWORD_MIN_LENGTH }) }),
-    preferredLanguage: z.enum(LANGUAGE_VALUES).nullable().transform((language: LanguageValue | null): LanguageValue | undefined => language ?? undefined),
+    preferredLanguage: z.enum(LANGUAGE_VALUES).nullable().transform((language: Language | null): Language | undefined => language ?? undefined),
   });
 }
 ```
@@ -144,10 +144,15 @@ Its submit button stays disabled while `!isDirty` — nothing changed is nothing
         value={field.value}
         inputRef={field.ref}
         onValueChange={(value) => {
-          field.onChange(typeof value === "string" && isLanguageValue(value) ? value : null);
+          field.onChange(typeof value === "string" && isLanguage(value) ? value : null);
         }}
       >
-        <SelectTrigger id={languageId} aria-invalid={fieldState.invalid} onBlur={field.onBlur}>
+        <SelectTrigger
+          id={languageId}
+          aria-invalid={fieldState.invalid}
+          aria-describedby={fieldState.invalid ? `${languageId}-error` : `${languageId}-description`}
+          onBlur={field.onBlur}
+        >
           <SelectValue />
         </SelectTrigger>
       </Select>
@@ -210,7 +215,7 @@ export function applyFieldErrors<T extends FieldValues>(
   setError: UseFormSetError<T>,
   fields: readonly Path<T>[],
 ): boolean {
-  if (!(error instanceof ApiError)) {
+  if (!(error instanceof APIError)) {
     return false;
   }
 
@@ -229,7 +234,8 @@ export function applyFieldErrors<T extends FieldValues>(
 
 The fields it may place errors on are the schema file's list, `as const satisfies readonly (keyof
 <Form>FormInput)[]`, so a field the form does not have is never targeted. It takes `unknown` because
-not every failure is an `ApiError` — a cancelled request reaches the form too. When it returns
+not every failure is an `APIError` — a bug in the mutation function (a mapper that reads a field
+the response lacks) reaches the form as whatever it threw. When it returns
 `false`, the form shows the rest itself, which is why its mutation sets `meta.errorToast: false`;
 whether that is a toast or an alert inside the form is `error-handling`'s.
 
@@ -266,8 +272,12 @@ function submit(values: CreateUserValues): void {
   request that reached the server and lost its response is retried by the reader and arrives twice;
   an endpoint that creates something irreversible needs an idempotency key of its own.
 - **The submit button is disabled while the mutation is pending** — and, on an edit form, while
-  nothing changed. **The cancel control never is**: backing out of a form must always work, and
-  cancelling does nothing that could race the save. It is a link to where the reader came from.
+  nothing changed — with `focusableWhenDisabled`, so the reader who pressed it keeps their place
+  (see `accessibility`).
+- **Every form has a way back, and it is a link to where the reader came from, never a disabled
+  button.** While the write is in flight the fullscreen loader covers the screen, the link
+  included: leaving a half-finished write is exactly what the loader prevents (see
+  `error-handling`). Before and after it, backing out always works.
 - **The values go to the mutation as the schema produced them**, when they already match the request
   body (see `api-client`).
 - **A form reports success upward** (`onCreated(id)`, `onSaved()`), and its page decides where to go.
@@ -312,5 +322,5 @@ is pending; its cancel button closes the dialog and is never disabled.
       the form has `noValidate`.
 - [ ] The mutation's `onError` places the backend's field errors and shows the rest.
 - [ ] The submit is latched by a ref released in `onSettled`, the submit button is disabled while
-      pending, and the cancel control never is.
+      pending and stays focusable, and the way back is a link, never a disabled button.
 - [ ] Every irreversible write is confirmed in an alert dialog; no reversible one is.

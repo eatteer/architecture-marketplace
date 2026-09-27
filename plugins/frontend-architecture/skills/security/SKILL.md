@@ -77,7 +77,8 @@ frame-ancestors 'none'
 **The policy holds the application to it, not the other way round.** When a library injects an inline
 `<style>` element, the library is told not to — the component library is configured without its style
 elements, and its one rule carried in the stylesheet (see `ui-components`) — rather than adding
-`'unsafe-inline'`.
+`'unsafe-inline'`. A catalog file that renders one itself is changed the same way: the chart's color
+rules go into a constructed stylesheet instead of an inline `<style>` (see `ui-components`).
 
 **Adding a provider that talks to another origin** — an error reporter, a Web Vitals collector (see
 `observability`) — adds exactly that origin to `connect-src`, and to `script-src` only if its script

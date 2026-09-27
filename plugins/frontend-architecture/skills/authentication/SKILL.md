@@ -35,7 +35,7 @@ async function fetchSession(signal: AbortSignal): Promise<Session | null> {
 
     return session;
   } catch (error: unknown) {
-    if (error instanceof ApiError && error.status === UNAUTHORIZED_STATUS) {
+    if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
       return null;
     }
 
@@ -57,8 +57,9 @@ export const sessionQuery = queryOptions({
 - **`staleTime: Infinity`**: the session changes only through a sign-in, a sign-out, a refresh or an
   edit of the account, and each of them updates or invalidates it.
 - **The account's language is applied here**, where every read of the session lands (see `i18n`).
-- **Permissions come from this answer**, never from a token (see `authorization`), and
-  `accessTokenExpiresAt` is kept in the model but schedules nothing: the refresh is reactive.
+- **Permissions come from this answer**, never from a token (see `authorization`). The mapper keeps
+  the user's own fields and the permissions, and leaves `accessTokenExpiresAt` behind: the refresh
+  is reactive, so nothing reads it (see `api-client` on fields nobody reads).
 
 Components read the user with `useSessionUser()`. Under the signed-in layout the guard already put
 the session in the cache, so it answers on the first render — and it tolerates `null`, because
@@ -67,7 +68,7 @@ signing out empties the session a moment before the page is left.
 ## Refresh on a 401
 
 An expired access token answers `401`, the same as no token. The client's last middleware catches
-that 401 before it becomes an `ApiError`, refreshes, and sends the request again (the order of the
+that 401 before it becomes an `APIError`, refreshes, and sends the request again (the order of the
 middlewares is `api-client`'s):
 
 - **It keeps a clone of each request as it leaves**, with the time it was sent: `fetch` consumes the
@@ -79,11 +80,11 @@ middlewares is `api-client`'s):
   read.
 
 ```typescript
-const NON_REFRESHING_PATHS = new Set<keyof paths>([
+const NON_REFRESHING_PATHS: ReadonlySet<string> = new Set([
   "/api/v1/auth/login",
   "/api/v1/auth/refresh",
   "/api/v1/auth/logout",
-]);
+] satisfies (keyof paths)[]);
 ```
 
 ### Once, across every tab
@@ -104,7 +105,7 @@ export function createRefreshCoordinator(refresh: () => Promise<unknown>): (sent
     try {
       await refresh();
     } catch (error: unknown) {
-      if (error instanceof ApiError && error.status === UNAUTHORIZED_STATUS) {
+      if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
         publishSessionEvent({ type: "signed-out", reason: "expired" });
 
         return "ended";
@@ -120,7 +121,7 @@ export function createRefreshCoordinator(refresh: () => Promise<unknown>): (sent
   }
 
   return (sentAt: number): Promise<RefreshOutcome> => {
-    inFlight ??= runExclusively(() => refreshUnlessDone(sentAt)).finally((): void => {
+    inFlight ??= runExclusively((): Promise<RefreshOutcome> => refreshUnlessDone(sentAt)).finally((): void => {
       inFlight = undefined;
     });
 
@@ -170,7 +171,7 @@ only place that reacts to those events:
 ```typescript
 queryClient.setQueryData(sessionKey, null);
 
-await router.navigate({ to: SIGN_IN_PATH, search: { redirect } });
+await router.navigate({ to: "/sign-in", search: { redirect } });
 
 queryClient.clear();
 queryClient.setQueryData(sessionKey, null);
@@ -189,8 +190,8 @@ queryClient.setQueryData(sessionKey, null);
 
 - **`useSignIn`** posts the credentials with `meta.errorToast: false` — the form shows wrong
   credentials beside the fields (see `forms` and `error-handling`) — and in `onSuccess` **awaits**
-  `fetchQuery({ ...sessionQuery, staleTime: 0 })` before publishing `signed-in`, so the page the reader
-  goes to next finds the session in the cache.
+  `fetchQuery({ ...sessionQuery, staleTime: ALWAYS_STALE_MS })` before publishing `signed-in`, so the
+  page the reader goes to next finds the session in the cache.
 - **`useSignOut`** posts to logout — which the backend always answers `204` — and publishes
   `signed-out`. It navigates nowhere and clears nothing itself: `SessionSync` does, as for every other
   way a session ends.

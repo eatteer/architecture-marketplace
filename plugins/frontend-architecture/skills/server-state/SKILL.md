@@ -1,6 +1,6 @@
 ---
 name: server-state
-description: "Server state with TanStack Query — the query client's defaults (stale time, retry that skips every 4xx), registering `ApiError` and the `meta` types, query options factories with hierarchical keys, the type a factory declares, per-query cache policy, reading from a component and from a route, mutation hooks and what each invalidates, returning the invalidation, cache work in the hook and screen work in `mutate`'s callbacks, optimistic updates with a rollback, and `setQueryData` without mutating."
+description: "Server state with TanStack Query — the query client's defaults (stale time, retry that skips every 4xx), registering `APIError` and the `meta` types, query options factories with hierarchical keys, the type a factory declares, per-query cache policy, reading from a component and from a route, mutation hooks and what each invalidates, returning the invalidation, cache work in the hook and screen work in `mutate`'s callbacks, optimistic updates with a rollback, and `setQueryData` without mutating."
 when_to_use: "Trigger on — writing `useQuery`, `useMutation`, `queryOptions`, a query key, a `*-queries.ts` or `*-mutations.ts` file, invalidating after a write, a list that still shows a deleted row, a screen that shows stale data after a save, a key string duplicated across files, a query key missing a variable, choosing `staleTime`, a 404 that takes seconds to appear because it is retried, `retry`, declaring the `meta` types, `mutate` vs `mutateAsync`, a callback that runs after the component unmounted, an optimistic update, `onMutate`, `setQueryData` or `getQueryData`, `ensureQueryData` vs `fetchQuery`, a `Register` declaration, or copying query data into `useState`."
 ---
 
@@ -15,7 +15,7 @@ stale the moment the next refetch lands.
 ```typescript
 declare module "@tanstack/react-query" {
   interface Register {
-    defaultError: ApiError;
+    defaultError: APIError;
     queryMeta: QueryMeta;
     mutationMeta: MutationMeta;
   }
@@ -35,7 +35,7 @@ export function createQueryClient(): QueryClient {
 }
 ```
 
-- **`defaultError: ApiError`**, because that is what the client throws (see `api-client`). Every
+- **`defaultError: APIError`**, because that is what the client throws (see `api-client`). Every
   `error` a query or mutation hands back is typed without a cast. Something else can still arrive — a
   mapper reading a field the response lacks throws a `TypeError` — and that is a bug the caches
   report (see `observability`).
@@ -64,7 +64,7 @@ export function createQueryClient(): QueryClient {
 
   ```typescript
   export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
-    if (error instanceof ApiError && error.isClientError) {
+    if (error instanceof APIError && error.isClientError) {
       return false;
     }
 
@@ -115,7 +115,7 @@ export const userQueries = {
   `export const sessionQuery = queryOptions({ … })`.
 - **Cache policy is per query, beside its key**: `staleTime: Number.POSITIVE_INFINITY` for data that
   changes only with events the application handles itself (the session changes with a sign-in, a
-  sign-out or a refresh, and each updates it), and `placeholderData: keepPreviousData` for a list
+  sign-out, a refresh or an edit of the account, and each updates it), and `placeholderData: keepPreviousData` for a list
   whose key changes with its filters, so the page on screen stays while the next one loads (see
   `data-fetching-states` for what the screen shows meanwhile).
 
@@ -126,8 +126,9 @@ export const userQueries = {
 - **In a route's loader or guard**: `context.queryClient.ensureQueryData(userQueries.detail(id))`,
   which answers from the cache when it can, so a page the reader already visited opens without a
   request. Whether a route loads before it renders is `routing`'s and `data-fetching-states`'.
-- **To force the network**, `fetchQuery({ ...sessionQuery, staleTime: 0 })` — after a sign-in, when
-  the cached answer is known to be wrong.
+- **To force the network**, `fetchQuery({ ...sessionQuery, staleTime: ALWAYS_STALE_MS })` — after a
+  sign-in, when the cached answer is known to be wrong. `ALWAYS_STALE_MS` is the query client's name
+  for zero, which is also every query's default.
 
 A query function never runs as a side effect of rendering anything else, and a component never calls
 the API client directly.
@@ -138,7 +139,7 @@ Each write is a hook in the feature's `-mutations.ts`, returning `useMutation`'s
 types spelled out:
 
 ```typescript
-export function useCreateUser(): UseMutationResult<string, ApiError, CreateUserValues> {
+export function useCreateUser(): UseMutationResult<string, APIError, CreateUserValues> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -158,11 +159,15 @@ export function useCreateUser(): UseMutationResult<string, ApiError, CreateUserV
 - **Invalidate the narrowest level that covers the change**, through the factory: a create changes
   the lists and no detail; an edit changes the detail and every list that shows it, which is the
   whole feature. A write that changes something another feature caches — the signed-in account's own
-  email — invalidates that too:
+  email — invalidates that too, and tells the other tabs (see `authentication`):
 
   ```typescript
   onSuccess: async (): Promise<void> => {
     const isOwnAccount = queryClient.getQueryData(sessionQuery.queryKey)?.user.id === id;
+
+    if (isOwnAccount) {
+      publishSessionEvent({ type: "updated" });
+    }
 
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: userQueries.all() }),
@@ -198,7 +203,7 @@ When the screen should change before the backend answers — a language switch, 
 does it in `onMutate`, returns what it needs to undo it, and undoes it in `onError`:
 
 ```typescript
-onMutate: async (language: LanguageValue): Promise<LanguageRollback> => {
+onMutate: async (language: Language): Promise<LanguageRollback> => {
   const previous = queryClient.getQueryData(sessionQuery.queryKey)?.user.preferredLanguage;
 
   setSessionLanguage(queryClient, language);
@@ -207,7 +212,7 @@ onMutate: async (language: LanguageValue): Promise<LanguageRollback> => {
 
   return { previous };
 },
-onError: async (_error: ApiError, _language: LanguageValue, rollback: LanguageRollback | undefined): Promise<void> => {
+onError: async (_error: APIError, _language: Language, rollback: LanguageRollback | undefined): Promise<void> => {
   if (rollback?.previous === undefined) {
     return;
   }
@@ -237,13 +242,14 @@ queryClient.setQueryData(
 
 ## Checklist
 
-- [ ] The query client registers `ApiError` and the `meta` types, keeps `staleTime` at `0` by
+- [ ] The query client registers `APIError` and the `meta` types, keeps `staleTime` at `0` by
       default, and retries no 4xx.
-- [ ] Every read goes through its feature's options factory, and no key is written anywhere else.
+- [ ] Every read goes through its feature's options factory — or its one constant, for a read that
+      exists once — and no key is written anywhere else.
 - [ ] Every key nests from the feature down and holds every value its function reads.
 - [ ] Every factory declares `AppQueryOptions<TData, TKey>` as its return type.
 - [ ] Every non-default `staleTime` or `placeholderData` sits on the query it applies to.
-- [ ] Every mutation hook spells out `UseMutationResult<TData, ApiError, TVariables>`.
+- [ ] Every mutation hook spells out `UseMutationResult<TData, APIError, TVariables>`.
 - [ ] Every mutation's `onSuccess` returns or awaits its invalidations, through the factory, at the
       narrowest level that covers the change.
 - [ ] Navigation, form errors and latches live in `mutate`'s callbacks; cache work lives in the hook.

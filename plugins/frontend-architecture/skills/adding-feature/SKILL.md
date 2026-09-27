@@ -23,7 +23,8 @@ src/locales/<language>/<feature>.json
 ```
 
 Only what the feature needs. A feature with no form has no `schemas/` for it, and one that reads
-nothing has no `api/`; an empty folder is a promise nobody kept. Tests sit beside what they test.
+nothing has no `api/`; an empty folder is a promise nobody kept. Tests sit beside what they test, and
+a test of the feature's screens through its routes at the feature's root (see `testing`).
 
 ## Order
 

@@ -50,7 +50,9 @@ browser, so a permission the API does not check is a permission nobody has to ho
 ### The route
 
 A route that needs a permission requires it in its `beforeLoad`, reading the session its layout's
-guard put in the context (the lifecycle is `routing`'s):
+guard put in the context (the lifecycle is `routing`'s). `SignedInContext`, exported beside the
+guards, names that context — the router's plus the session — so the callback's argument is typed in
+words a reader can follow:
 
 ```typescript
 export function requirePermissions(session: Session, required: readonly Permission[]): void {
@@ -62,7 +64,7 @@ export function requirePermissions(session: Session, required: readonly Permissi
 
 ```tsx
 export const Route = createFileRoute("/_app/users")({
-  beforeLoad: ({ context }): void => {
+  beforeLoad: ({ context }: { context: SignedInContext }): void => {
     requirePermissions(context.session, ["users:read"]);
   },
 });
@@ -98,7 +100,7 @@ const canCreateUsers = useHasPermissions(["users:create"]);
 **A route the reader may not open shows the forbidden screen in its place, and the URL stays.** It is
 not a redirect home and not a not-found page in disguise: the backend answers the same request `403`,
 and a reader who knows they lack a permission knows whom to ask for it. The route's error component
-renders it for a `ForbiddenError` and for an `ApiError` with status `403` alike, with no retry — asking
+renders it for a `ForbiddenError` and for an `APIError` with status `403` alike, with no retry — asking
 again changes nothing (see `error-handling`).
 
 `ForbiddenError` lives in `common/`, because the error component that shows it is shared, and it is

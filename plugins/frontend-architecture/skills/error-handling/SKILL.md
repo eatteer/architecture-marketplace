@@ -14,7 +14,7 @@ for developers.
 
 | Failure | Type |
 | --- | --- |
-| The backend answered with an error, or did not answer | `ApiError` (see `api-client`) |
+| The backend answered with an error, or did not answer | `APIError` (see `api-client`) |
 | A route the session's permissions do not open | `ForbiddenError`, thrown by the route's guard (see `authorization`) |
 | Anything else — a mapper reading a missing field, a render that throws | a bug |
 
@@ -38,10 +38,10 @@ That table is implemented once, in the query client's caches, so no screen decid
 
 ```typescript
 queryCache: new QueryCache({
-  onError: (error: ApiError, query: Query<unknown, unknown>): void => {
+  onError: (error: APIError, query: Query<unknown, unknown>): void => {
     reportUnexpectedError(error, "query");
 
-    if (query.state.data !== undefined && shouldToast(error, query.meta)) {
+    if (query.state.data !== undefined && query.meta?.errorToast !== false) {
       showErrorToast(error);
     }
   },
@@ -52,7 +52,9 @@ queryCache: new QueryCache({
   content; only a failed refetch behind data on screen would otherwise go unnoticed.
 - **A mutation toasts unless `meta.errorToast` is `false`**, which is what a caller that places the
   failure itself sets (see `server-state` for `meta`).
-- **`shouldToast` refuses a `401`** whatever the `meta` says.
+- **`showErrorToast` itself refuses a `401`**, whoever calls it: the caches, and a form that places
+  its own failure and toasts the rest. A check in the caches alone would let a form toast over the
+  redirect to sign-in.
 
 ### A form's failure
 
@@ -70,6 +72,10 @@ already registered, the connection dropped — goes to one of two places:
 
 ```typescript
 export function showErrorToast(error: unknown): void {
+  if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
+    return;
+  }
+
   const { title, detail } = describeError(error);
 
   async function copyAndConfirm(): Promise<void> {
@@ -79,7 +85,7 @@ export function showErrorToast(error: unknown): void {
       return;
     }
 
-    toast.update(toastId, { actionProps: { children: i18n.t("actions.error_copied"), disabled: true } });
+    toast.update(toastId, { actionProps: { children: i18n.t("actions.error_copied"), "aria-disabled": true } });
   }
 
   const toastId = toast.add({
@@ -104,8 +110,10 @@ export function showErrorToast(error: unknown): void {
   for the button, short enough not to pile up. Hovering holds it open.
 - **No id, trace id or error code on screen.** They mean nothing to the reader, and the report
   carries them for whoever needs them.
-- **"Copy error" copies the whole report**, and its label turns into "Copied", disabled. If the
-  browser refuses the clipboard, the label stays "Copy error", which is the truth.
+- **"Copy error" copies the whole report**, and its label turns into "Copied", disabled — with
+  `aria-disabled`, since a natively disabled button drops the focus of whoever just pressed it (see
+  `accessibility`). If the browser refuses the clipboard, the label stays "Copy error", which is the
+  truth.
 - **`priority: "high"`**: an error is announced assertively. The toast library then hides the visual
   toast from assistive technology and announces it from its own alert region, so a test finds it by
   its `alert` role and its buttons among hidden elements.
@@ -132,7 +140,7 @@ copies either sends the same thing:
 }
 ```
 
-An `ApiError` builds it with `toReport()`. A bug has no server answer to report, so its report is its
+An `APIError` builds it with `toReport()`. A bug has no server answer to report, so its report is its
 `name`, its `message` and the time — never its stack, which says nothing to the person it is pasted
 to and may say too much about the code.
 
@@ -152,7 +160,7 @@ export function RouteError({ error }: ErrorComponentProps): JSX.Element {
 
   const queryErrorResetBoundary = useQueryErrorResetBoundary();
 
-  useEffect(() => {
+  useEffect((): void => {
     queryErrorResetBoundary.reset();
   }, [queryErrorResetBoundary]);
 
@@ -160,7 +168,7 @@ export function RouteError({ error }: ErrorComponentProps): JSX.Element {
     return <Forbidden />;
   }
 
-  if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
+  if (error instanceof APIError && error.status === NOT_FOUND_STATUS) {
     return <NotFound />;
   }
 
@@ -201,7 +209,7 @@ export function FullscreenLoader(): JSX.Element | null {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-background/60">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 backdrop-blur-sm">
       <Spinner className="size-8" aria-label={t("loader.saving")} />
     </div>
   );

@@ -45,9 +45,10 @@ what the control does, in the reader's language — it is a translation like any
   returning focus to the trigger. A hand-built one never matches them.
 - **No positive `tabIndex`.** The order focus moves in is the document's order; changing it is
   changing the markup.
-- **Landmarks come from the shell**: one `<header>`, one `<main>` around the routed content, and the
-  navigation in a `<nav>` with an `aria-label`, so a reader can jump between them. A page adds its own
-  heading, never another `<main>`.
+- **Landmarks come from the shell**: one banner `<header>`, one `<main>` around the routed content,
+  and the navigation in a `<nav>` with an `aria-label`, so a reader can jump between them. A page
+  adds its own heading, never another `<main>`; a `<header>` inside the page's `<section>` groups
+  its title and actions and is no landmark.
 - **The document's language is kept in step with the screen's** (see `i18n`), so a screen reader
   pronounces the page in the language it is written in.
 
@@ -77,6 +78,10 @@ that just rendered is not its job; moving focus or the route's own heading is.
 - **A control that disappears takes focus with it.** When an action removes the element that had
   focus — a row deleted, a button that turns into text — focus is moved to what the reader will act
   on next, never left on the document's body.
+- **A button that becomes disabled under the reader's focus stays focusable** — a submit while its
+  write is pending, a "Copy error" once copied, a Next with no next page. A natively disabled button
+  drops focus to the body; the catalog's `Button` takes `focusableWhenDisabled` (it renders
+  `aria-disabled` instead), and a library button without that option gets `aria-disabled` itself.
 
 ## The lint
 
@@ -104,6 +109,7 @@ cannot find that way is usually one a screen reader cannot either (see `testing`
 - [ ] Every skeleton root and every table showing a placeholder page is `aria-busy`.
 - [ ] Every sortable header cell carries `aria-sort`; the button keeps the column's name.
 - [ ] Every error that replaces content has `role="alert"`, and the saving indicator has a name.
-- [ ] A failed submit focuses the first invalid field, and a removed control hands focus on.
+- [ ] A failed submit focuses the first invalid field, a removed control hands focus on, and a
+      button disabled under focus stays focusable.
 - [ ] Every `jsx-a11y` suspension is on one line, with its reason, inside a component that leaves the
       wiring to its caller.

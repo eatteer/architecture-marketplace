@@ -1,13 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link } from "@tanstack/react-router";
 import { useId, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { showErrorToast } from "@/common/components/error-toast";
-import { isLanguageValue, LANGUAGE_LABELS, LANGUAGE_VALUES } from "@/common/i18n/languages";
-import type { LanguageValue } from "@/common/i18n/languages";
+import { isLanguage, LANGUAGE_LABELS, LANGUAGE_VALUES } from "@/common/i18n/languages";
+import type { Language } from "@/common/i18n/languages";
 import { applyFieldErrors } from "@/common/lib/field-errors";
-import { Button } from "@/common/ui/button";
+import { Button, buttonVariants } from "@/common/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/common/ui/field";
 import { Input } from "@/common/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/common/ui/select";
@@ -26,7 +27,7 @@ type CreateUserFormProps = {
 };
 
 type LanguageItem = {
-  value: LanguageValue | null;
+  value: Language | null;
   label: string;
 };
 
@@ -51,7 +52,7 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
   // Choosing the first item again is how the reader takes a language back.
   const languageItems: LanguageItem[] = [
     { value: null, label: t("form.default_language") },
-    ...LANGUAGE_VALUES.map((value: LanguageValue): LanguageItem => ({ value, label: LANGUAGE_LABELS[value] })),
+    ...LANGUAGE_VALUES.map((value: Language): LanguageItem => ({ value, label: LANGUAGE_LABELS[value] })),
   ];
 
   function submit(values: CreateUserValues): void {
@@ -140,7 +141,7 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
                 value={field.value}
                 inputRef={field.ref}
                 onValueChange={(value) => {
-                  field.onChange(typeof value === "string" && isLanguageValue(value) ? value : null);
+                  field.onChange(typeof value === "string" && isLanguage(value) ? value : null);
                 }}
               >
                 <SelectTrigger
@@ -167,7 +168,10 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
           )}
         />
 
-        <Button type="submit" disabled={createUser.isPending}>{t("create.submit")}</Button>
+        <div className="flex gap-2">
+          <Button type="submit" disabled={createUser.isPending} focusableWhenDisabled>{t("create.submit")}</Button>
+          <Link to="/users" className={buttonVariants({ variant: "outline" })}>{t("create.cancel")}</Link>
+        </div>
       </FieldGroup>
     </form>
   );

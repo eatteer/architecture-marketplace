@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { LANGUAGE_VALUES } from "@/common/i18n/languages";
-import type { LanguageValue } from "@/common/i18n/languages";
+import type { Language } from "@/common/i18n/languages";
 
 import type { TFunction } from "i18next";
 
@@ -15,7 +15,7 @@ export type CreateUserFormInput = {
   name: string;
   email: string;
   password: string;
-  preferredLanguage: LanguageValue | null;
+  preferredLanguage: Language | null;
 };
 
 // What the backend receives: no choice is no property, and the account gets the backend's default.
@@ -23,7 +23,7 @@ export type CreateUserValues = {
   name: string;
   email: string;
   password: string;
-  preferredLanguage: LanguageValue | undefined;
+  preferredLanguage: Language | undefined;
 };
 
 export const CREATE_USER_DEFAULT_VALUES: CreateUserFormInput = {
@@ -41,6 +41,6 @@ export function buildCreateUserSchema(t: TFunction<"users">): z.ZodType<CreateUs
     name: z.string().trim().min(1, { error: t("form.errors.name_required") }),
     email: z.email({ error: t("form.errors.email_invalid") }),
     password: z.string().min(USER_PASSWORD_MIN_LENGTH, { error: t("form.errors.password_too_short", { min: USER_PASSWORD_MIN_LENGTH }) }),
-    preferredLanguage: z.enum(LANGUAGE_VALUES).nullable().transform((language: LanguageValue | null): LanguageValue | undefined => language ?? undefined),
+    preferredLanguage: z.enum(LANGUAGE_VALUES).nullable().transform((language: Language | null): Language | undefined => language ?? undefined),
   });
 }

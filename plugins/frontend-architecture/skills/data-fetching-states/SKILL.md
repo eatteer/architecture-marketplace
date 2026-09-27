@@ -21,7 +21,12 @@ function UsersListContent({ search, sort, onSort, onPageChange }: UsersListConte
   const users = useQuery(userQueries.list(search));
 
   if (users.isPending) {
-    return <UsersTableSkeleton />;
+    return (
+      <div className="flex flex-col gap-4">
+        <UsersTableSkeleton />
+        <DataTablePaginationSkeleton />
+      </div>
+    );
   }
 
   if (users.isError) {
@@ -36,7 +41,16 @@ function UsersListContent({ search, sort, onSort, onPageChange }: UsersListConte
   }
 
   if (users.data.items.length === 0) {
-    return <UsersEmpty title={t("list.empty.title")} />;
+    const isFiltered = search.search !== undefined || search.status !== undefined;
+
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>{t("list.empty.title")}</EmptyTitle>
+          <EmptyDescription>{t(isFiltered ? "list.empty.no_matches" : "list.empty.no_users")}</EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
   }
 
   return (
@@ -57,7 +71,9 @@ sign that one of them is missing.
 
 **The query result is read through its name**, not destructured into loose flags (see
 `code-conventions`): `users.isPending`, `users.error`, `users.data`. The narrowing only works on the
-object.
+object. Two reads have no states left to narrow, and destructure their `data`: a `useSuspenseQuery`,
+whose data is always there (below), and the session under the signed-in layout, which the guard put
+in the cache before anything rendered and whose hooks tolerate its `null` (see `authentication`).
 
 **Resolution happens in statements above the `return`, never inside JSX.** A ternary in the markup
 that tests `isError`, defaults `data` or reads through `?.` is resolution in disguise. Swapping one
@@ -122,7 +138,14 @@ missing — **not always the page**.
     }
 
     if (orders.isError) {
-      return <ErrorState error={orders.error} />;
+      return (
+        <ErrorState
+          error={orders.error}
+          onRetry={() => {
+            void orders.refetch();
+          }}
+        />
+      );
     }
 
     return <UserOrders orders={orders.data} />;
@@ -149,7 +172,7 @@ state at all:
 
 ```tsx
 export const Route = createFileRoute("/_app/users/$id/")({
-  loader: async ({ context, params }): Promise<void> => {
+  loader: async ({ context, params }: { context: RouterContext; params: { id: string } }): Promise<void> => {
     await context.queryClient.ensureQueryData(userQueries.detail(params.id));
   },
   pendingComponent: UserDetailPageSkeleton,
@@ -185,7 +208,7 @@ shell included.
 
 ## Not found against a real error
 
-Inside the error state there are two outcomes with different UI, split by the `ApiError`'s
+Inside the error state there are two outcomes with different UI, split by the `APIError`'s
 **`status`**, never by a feature's `code`:
 
 - **404** — the resource does not exist. A not-found view, **with no retry**: retrying cannot make it
@@ -241,7 +264,7 @@ page jumps when the data lands. Nothing fails when they drift — not the compil
   ```tsx
   export function UserDetailPageSkeleton(): JSX.Element {
     return (
-      <UserDetailLayout title={<Skeleton className="h-8 w-48" />}>
+      <UserDetailLayout title={<Skeleton className="h-8 w-48" />} isBusy>
         <UserDetailsSkeleton />
       </UserDetailLayout>
     );
@@ -254,6 +277,8 @@ page jumps when the data lands. Nothing fails when they drift — not the compil
   height of the bar drawn inside it; keep the real text element and put the placeholder inside it
   when the difference shows.
 - **The error and empty branches reserve the same space**, or recovering from an error moves the page.
+  The simplest reservation is one minimum height, a full page of rows, on the container every state
+  renders into.
 - **The skeleton's root says it is busy** — `aria-busy="true"` — so assistive technology does not
   read placeholders as content (see `accessibility`).
 

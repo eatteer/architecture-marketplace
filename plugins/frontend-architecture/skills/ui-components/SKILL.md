@@ -24,8 +24,11 @@ them; nothing a primitive already does is built again.
   from the linter or the typecheck; the tests load every module so an update that breaks one fails
   even where no screen uses it, and coverage leaves the folder out (see `testing`).
 - **A change to a catalog file is rare and says why beside it**, because the next update overwrites
-  it. The one kind the project makes is what the library cannot be told from outside — the toaster's
-  close button, which takes a translated `closeLabel`.
+  it. The project makes two kinds: what the library cannot be told from outside — the toaster's
+  close button, which takes a translated `closeLabel` — and what the Content-Security-Policy refuses
+  (the chart, below).
+- **The catalog keeps the registry's names**, so an update lands on the same files: its hook
+  `useIsMobile` stays in `use-mobile.ts`, which the sidebar imports by that path.
 
 ### Adding or updating a component
 
@@ -37,7 +40,9 @@ them; nothing a primitive already does is built again.
    export for a new variant or hook added to the hot-reload rule's allowed names, an accessibility
    rule suspended on its line with the reason when the component leaves the wiring to its caller.
 3. `npm run typecheck`, and the tests, which import the new module.
-4. Check its colors are tokens (below): the registry's are, and an edit that is not stands out.
+4. Check an edit of yours uses tokens (below). The registry's own classes are left as shipped —
+   an overlay's `bg-black/10`, the `dark:` refinements on its inputs — since the next update brings
+   them back; the rule against palette colors and `dark:` binds the code outside `common/ui/`.
 
 ## Base UI's vocabulary
 
@@ -115,8 +120,8 @@ a theme that differs from the system's.
 - **A change grows out of the control that made it**, as a circle revealed with a view transition:
 
   ```typescript
-  startThemeTransition(() => {
-    flushSync(() => {
+  startThemeTransition((): void => {
+    flushSync((): void => {
       setThemeState(nextTheme);
     });
 
@@ -153,6 +158,12 @@ A Base UI update that injects another element shows up as a CSP violation in the
 against the served image, which sends the real policy (see `testing`); its rule is added here the
 same way.
 
+The chart's registry file renders its color variables in an inline `<style>` through
+`dangerouslySetInnerHTML`, which the policy blocks, so in production a chart would lose its colors.
+The catalog's `chart.tsx` builds the same rules into a constructed stylesheet instead — the CSSOM,
+which the policy does not restrict — adopted in a `useInsertionEffect` and removed on unmount. It is
+the change an update of the chart has to carry forward.
+
 ## Checklist
 
 - [ ] Every primitive a screen uses comes from `common/ui/`; nothing the catalog has is rebuilt, and
@@ -160,8 +171,8 @@ same way.
 - [ ] Every file in `common/ui/` passes lint and typecheck, and every change to one carries its reason.
 - [ ] Triggers use `render`, overlays use `onOpenChange`, and a link that looks like a button is a
       `Link` with `buttonVariants()`.
-- [ ] Every color is a semantic token defined for both themes and mapped under `@theme`; no palette
-      color and no `dark:` color class.
+- [ ] Every color outside `common/ui/` is a semantic token defined for both themes and mapped under
+      `@theme`; no palette color and no `dark:` color class.
 - [ ] Every component with variants declares them with `cva` and merges classes with `cn`, the
       caller's last.
 - [ ] Every decorative icon has `aria-hidden="true"`.

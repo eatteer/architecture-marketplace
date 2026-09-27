@@ -1,5 +1,3 @@
 import type { Rule } from "eslint";
 
-declare const rule: Rule.RuleModule;
-
-export default rule;
+export declare const paddingAroundHooks: Rule.RuleModule;

@@ -171,7 +171,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Universal TypeScript and TSX style, naming and file suffixes, forbidden constructs, blank lines between statements, JSX siblings and hook calls, props typing, memoization under the compiler, effects | `code-conventions` |
 | Repo layout, `main.tsx` and the order of its providers, the aliases, compiler strictness, the bundler and test runner config, the lint config and the project's own lint rules, scripts, the hook | `project-bootstrap` |
 | Ordered steps to build a feature, its folder skeleton, and its checklist | `adding-feature` |
-| The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `ApiError` built from Problem Details | `api-client` |
+| The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `APIError` built from Problem Details | `api-client` |
 | Query options factories, hierarchical keys, mutations and what they invalidate, cache policy, retry, the registered error type and `meta`, optimistic updates | `server-state` |
 | The four states of a read, skeletons, the altitude a state resolves at, a route loader with a suspense query as the alternative to a skeleton in place, disabled queries, the page on screen while the next one loads | `data-fetching-states` |
 | Classifying a failure, which failures toast and how the toast behaves, the copyable error report, error screens and a route's error component, the fullscreen loader for writes, what a `catch` may end in | `error-handling` |

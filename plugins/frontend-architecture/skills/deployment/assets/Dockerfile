@@ -9,7 +9,7 @@ RUN npm ci
 COPY . .
 
 # Vite compiles every VITE_* variable into the bundle, so the API's address is fixed when the image is
-# built, not when it runs: one image per environment. Required, like every variable in .env.example —
+# built, not when it runs: one image per environment. Required, like every VITE_* variable in .env.example —
 # an image built without it would call `undefined/api/v1`.
 ARG VITE_API_URL
 RUN test -n "$VITE_API_URL" || { echo "Build with --build-arg VITE_API_URL=<the API's origin>" >&2; exit 1; }

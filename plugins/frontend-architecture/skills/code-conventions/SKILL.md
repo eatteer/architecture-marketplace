@@ -57,8 +57,14 @@ trusts it into a red build.
   function handed to another — **except a handler written inline in a JSX attribute, which annotates
   neither.** The attribute's own type already types it; spelling out a DOM event
   (`FormEvent<HTMLFormElement>`) or a render prop's arguments is a long type nobody reads, and one
-  that can disagree with the attribute. A test runner's callbacks (`describe`, `it`) are the other
-  exception, for the same reason.
+  that can disagree with the attribute. The other exception is what a test hands its runner — the
+  runner's own callbacks (`describe`, `it`, `beforeEach`) and the thunks its helpers take
+  (`expect(() => …)`, `waitFor`, `act`, `mockImplementation`) — whose signature nobody reads either.
+  A test's own helpers and a fake backend's handlers are ordinary functions, annotated like any.
+
+  The linter cannot draw this line: `allowTypedFunctionExpressions` lets every callback typed by its
+  context through, `useEffect`'s and a router option's included. The rule is this skill's, and the
+  reviewer's to hold.
 
   ```tsx
   // ✅ an ordinary callback: both annotated
@@ -101,7 +107,7 @@ trusts it into a red build.
      predicate:
 
      ```typescript
-     export function isLanguageValue(value: string): value is LanguageValue {
+     export function isLanguage(value: string): value is Language {
        return (LANGUAGE_VALUES as readonly string[]).includes(value);
      }
      ```
@@ -248,6 +254,7 @@ contract, and cloning instead would drop what the client set on it.
     setSeen(value);
 
     if (value !== committed) {
+      setCommitted(value);
       setDraft(value ?? "");
     }
   }
@@ -306,6 +313,7 @@ a run of single-line siblings stays packed.
     id={emailId}
     type="email"
     aria-invalid={errors.email !== undefined}
+    aria-describedby={errors.email ? `${emailId}-error` : undefined}
     {...register("email")}
   />
 
@@ -331,7 +339,16 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
 
   const isSubmitting = useRef(false);
 
-  return <form aria-labelledby={nameId} data-email={emailId} data-busy={isSubmitting.current} />;
+  function submit(values: CreateUserValues): void {
+    if (isSubmitting.current) {
+      return;
+    }
+
+    isSubmitting.current = true;
+    createUser.mutate(values);
+  }
+
+  return <CreateUserFields title={t("create.title")} nameId={nameId} emailId={emailId} onSubmit={submit} />;
 }
 ```
 
@@ -387,7 +404,9 @@ cannot.
   a mapper, `field` and `fieldState` from the form library, `value` and `label` on the items a select
   renders, and a generic helper over `unknown`.
 - **No single-letter parameters.** `(event) =>`, not `(e) =>`; `(error: unknown)`, not `(e)`. An
-  unused positional parameter is `_` (`Array.from({ length }, (_: unknown, row: number) => …)`).
+  unused positional parameter is `_`: `Array.from({ length }, (_: unknown, row: number) …)`. The one
+  exception is `t`, the translator: it is i18next's own name, and every file that shows text reads
+  it.
 - **Sentence case for docs, comments and messages**: "Copy error", not "Copy Error". Proper nouns,
   acronyms and products keep their casing. A commit description follows
   `engineering-workflow:git-workflow`.
@@ -398,7 +417,7 @@ cannot.
 - [ ] No TypeScript `enum`; every enumerable concept is an `as const` array with its derived union,
       or the backend's generated array.
 - [ ] Every parameter, return type and class property carries a type, callbacks included — all but
-      an inline JSX attribute handler and a test runner's callbacks, which carry none.
+      an inline JSX attribute handler and what a test hands its runner and the runner's helpers.
 - [ ] Every `interface` reopens a library's declaration; every other shape is a `type`.
 - [ ] Every promise is awaited, returned, or `void`ed where its failure is already handled.
 - [ ] Every literal that carries meaning and is not a value-union member is a named constant.

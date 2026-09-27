@@ -1,6 +1,6 @@
 ---
 name: formatting
-description: "Dates, numbers and money on screen — `Intl` bound to the language on screen through one hook, ISO 8601 dates from the backend kept as strings and shown in the reader's time zone, date and date-time styles, numbers with the locale's separators, amounts in minor units as strings formatted exactly with their currency's decimals, the pure formatters beside the hook, and a value that may be absent guarded rather than formatted as a placeholder."
+description: "Dates, numbers and money on screen — `Intl` bound to the language on screen through one hook, ISO 8601 dates from the backend kept as strings and shown in the reader's time zone, date and date-time styles, numbers with the locale's separators, amounts in minor units as strings formatted exactly with their currency's decimals, the pure formatters the hook binds, and a value that may be absent guarded rather than formatted as a placeholder."
 when_to_use: "Trigger on — showing a date, a time, a number, a price or an amount, `toLocaleString`, `toLocaleDateString`, `new Date()` in a component, `Intl.DateTimeFormat` or `Intl.NumberFormat`, a date library like date-fns, dayjs or moment, `useFormatters`, `formatDate`, `formatMoney`, `amountMinor`, dividing by 100, `toFixed`, `parseFloat` on an amount, a currency with no decimals or three, a date shown in UTC instead of the reader's time, a date or number that does not change with the language, or a formatter that returns an empty string or a dash for a missing value."
 ---
 
@@ -38,6 +38,9 @@ const format = useFormatters();
 - **Each formatter is also a pure function that takes the language** — `formatDate(isoDate,
   language)` — for the code that is not a component and for the tests, which assert on a literal (see
   `code-conventions` for pure functions).
+- **The pure functions live in `common/lib/format.ts` and the hook in
+  `common/hooks/use-formatters.ts`**, like every shared hook (see `project-bootstrap` for the tree):
+  the hook imports the functions, never the other way round.
 - **The styles are named, not patterns**: `dateStyle: "medium"`, `timeStyle: "short"`. A pattern like
   `dd/MM/yyyy` is one country's order written into every language.
 

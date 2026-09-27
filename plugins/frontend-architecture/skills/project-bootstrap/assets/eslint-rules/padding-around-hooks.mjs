@@ -41,7 +41,7 @@ function functionName(node) {
 }
 
 /** @type {import("eslint").Rule.RuleModule} */
-const rule = {
+export const paddingAroundHooks = {
   meta: {
     type: "layout",
     fixable: "whitespace",
@@ -127,5 +127,3 @@ const rule = {
     };
   },
 };
-
-export default rule;

@@ -61,7 +61,7 @@ export function createAppRouter(
     history,
     context: { queryClient },
     defaultPreload: "intent",
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: ALWAYS_STALE_MS,
     defaultErrorComponent: RouteError,
     defaultNotFoundComponent: NotFound,
     scrollRestoration: true,
@@ -75,7 +75,7 @@ export function createAppRouter(
   optional `history` is how a test renders the application at a path with an in-memory one.
 - **`defaultPreload: "intent"`** runs a route's loader when the reader hovers or focuses a link to it,
   so the page is often ready by the click.
-- **`defaultPreloadStaleTime: 0`**, because the query cache already decides what is fresh (see
+- **`defaultPreloadStaleTime` of zero**, because the query cache already decides what is fresh (see
   `server-state`); the router's own cache would only keep a second copy of the same answer.
 - **The error and not-found components are defaults**, so no route repeats them. What the error
   component shows for each failure is `error-handling`'s.
@@ -112,10 +112,10 @@ other**, and only then **every loader, in parallel**. The order is what each is 
 
 ```tsx
 export const Route = createFileRoute("/_app/users/$id/edit")({
-  beforeLoad: ({ context }): void => {
+  beforeLoad: ({ context }: { context: SignedInContext }): void => {
     requirePermissions(context.session, ["users:update"]);
   },
-  loader: async ({ context, params }): Promise<void> => {
+  loader: async ({ context, params }: { context: RouterContext; params: { id: string } }): Promise<void> => {
     await context.queryClient.ensureQueryData(userQueries.detail(params.id));
   },
   pendingComponent: EditUserPageSkeleton,
@@ -161,8 +161,12 @@ const navigate = usersRoute.useNavigate();
 ```
 
 ```typescript
-function changeList(change: Partial<UsersSearch>): void {
-  void navigate({ search: (previous: UsersSearch): UsersSearch => ({ ...previous, ...change, page: undefined }) });
+function changeList(change: Partial<UsersSearch>, replace = false): void {
+  void navigate({ search: (previous: UsersSearch): UsersSearch => ({ ...previous, ...change, page: undefined }), replace });
+}
+
+function changeFilters(change: Partial<UsersSearch>): void {
+  changeList(change, "search" in change && search.search !== undefined);
 }
 
 function changePage(page: number): void {
@@ -175,6 +179,9 @@ function changePage(page: number): void {
 - **Any change but the page itself resets the page.** Page 3 of the old results says nothing about
   the new ones, and a filter that narrows the list to one page would otherwise show an empty one.
 - **The updater starts from `previous`**, so a change to one param keeps the others.
+- **A change is a step in the history, except refining a search.** Starting one pushes, so Back
+  returns to the list without it; refining or clearing it replaces that step, so a pause every few
+  keys does not pile up entries (see `pagination` for the text filter).
 - **Navigating is the only way the screen's state changes** — no copy of a param in `useState`, and no
   effect that pushes state into the URL. An input that must answer faster than the URL does keeps a
   draft of its own (see `pagination` for the text filter).

@@ -45,7 +45,10 @@ What goes inside a feature folder, and how features depend on each other, is `ad
 
 ## The aliases
 
-Every import is absolute: `@/` is `src/`, and `@test/` is the test support under `test/`.
+Every import in `src/` and `test/` is absolute: `@/` is `src/`, and `@test/` is the test support
+under `test/`. The two folders outside them import relatively: the end-to-end suite, which has no
+aliases because it never imports the application, and `eslint-rules/`, which the linter loads
+before any alias exists.
 
 ```typescript
 import { apiClient } from "@/common/api/client";
@@ -127,12 +130,12 @@ The core is the same set a TypeScript project needs anywhere:
 | --- | --- |
 | `@typescript-eslint/no-explicit-any` | `any` is forbidden by convention and accepted by the build |
 | `no-console` | A `console.log` in a component passes review and ships |
-| `@typescript-eslint/explicit-function-return-type` (`allowTypedFunctionExpressions`) | Return types drift to whatever is inferred; the option is what lets an inline JSX handler go unannotated |
+| `@typescript-eslint/explicit-function-return-type` (`allowTypedFunctionExpressions`) | Return types drift to whatever is inferred; the option lets an inline JSX handler go unannotated, and with it every callback typed by its context — which of those still annotate is `code-conventions`' rule, not the linter's |
 | `@typescript-eslint/explicit-member-accessibility` | `public`/`private` becomes optional, so it stops meaning anything |
 | `@typescript-eslint/no-floating-promises` | An unawaited call loses its errors silently |
 | `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) with the import plugin's `prefer-top-level` | A type reference becomes a runtime import |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards |
-| `@stylistic/padding-line-between-statements`, `"always"` around every `multiline-` statement | A wrapped call butts against the next statement |
+| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type` | A wrapped call butts against the next statement |
 | The import plugin's `order`, with `@/` and `@test/` as internal groups | Every file orders its imports its own way |
 
 A front end adds its own:
@@ -155,7 +158,7 @@ type declaration [assets/eslint-rules/padding-around-hooks.d.mts](assets/eslint-
 into the project's `eslint-rules/`, and register it as a local plugin:
 
 ```typescript
-import paddingAroundHooks from "./eslint-rules/padding-around-hooks.mjs";
+import { paddingAroundHooks } from "./eslint-rules/padding-around-hooks.mjs";
 
 export default tseslint.config({
   plugins: {
@@ -229,6 +232,7 @@ if (!rootElement) { throw new Error("index.html has no #root element to mount th
 
 applyResolvedTheme(resolveTheme(readStoredTheme(), getSystemTheme()));
 reportUncaughtErrors();
+reportWebVitals();
 reloadOnPreloadError();
 
 const queryClient = createQueryClient();
@@ -256,7 +260,8 @@ Before the render:
 - **The theme is applied to the document before React starts**, or a dark theme flashes light for as
   long as the bundle takes to boot (see `ui-components`).
 - **The listeners for uncaught errors and for a chunk that fails to load are installed before
-  anything can throw or lazy-load** (see `observability` and `routing`).
+  anything can throw or lazy-load**, and the Web Vitals are measured from before the first paint
+  (see `observability` and `routing`).
 - **The query client and the router are created once, outside any component**, and the router
   receives the client as context, so its loaders read through the same cache the components do.
 
@@ -287,5 +292,5 @@ how a missing cleanup shows up in development instead of in production.
       `eslint-rules/`, and generated files are ignored.
 - [ ] Every suspended rule is suspended on one line, with its reason.
 - [ ] The scripts have the names above, and the pre-commit hook runs `lint-staged` then `typecheck`.
-- [ ] `main.tsx` applies the theme and installs the error and preload listeners before the render,
-      and the providers nest in the order above.
+- [ ] `main.tsx` applies the theme, installs the error and preload listeners and starts the Web
+      Vitals before the render, and the providers nest in the order above.

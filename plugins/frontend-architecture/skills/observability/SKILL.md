@@ -40,12 +40,22 @@ export type ErrorSource = "boundary" | "query" | "uncaught" | "unhandled-rejecti
 export type ErrorReporter = (error: unknown, source: ErrorSource) => void;
 
 export function isExpectedError(error: unknown): boolean {
-  return error instanceof ApiError || error instanceof ForbiddenError;
+  return error instanceof APIError || error instanceof ForbiddenError;
 }
+
+const reportedErrors = new WeakSet<object>();
 
 export function reportUnexpectedError(error: unknown, source: ErrorSource): void {
   if (isExpectedError(error)) {
     return;
+  }
+
+  if (typeof error === "object" && error !== null) {
+    if (reportedErrors.has(error)) {
+      return;
+    }
+
+    reportedErrors.add(error);
   }
 
   reporter(error, source);
@@ -53,7 +63,7 @@ export function reportUnexpectedError(error: unknown, source: ErrorSource): void
 ```
 
 - **`reportUnexpectedError` is the one entry point.** It drops what the screen already shows and is
-  not a bug — the server's answer (`ApiError`) and a route the reader's permissions do not open
+  not a bug — the server's answer (`APIError`) and a route the reader's permissions do not open
   (`ForbiddenError`) — and hands everything else to the installed reporter. Which failures are
   expected is `error-handling`'s classification; this is where it is applied.
 - **`source` says where the error surfaced**, so a provider can group by it:
@@ -96,8 +106,12 @@ const onUnhandledRejection = (event: PromiseRejectionEvent): void => {
 ```
 
 They are installed in `main.tsx`, before anything can throw (see `project-bootstrap`). An error a
-boundary caught never reaches them — React hands it to `onCaughtError` instead — so each error has
-exactly one path to the port.
+boundary caught never reaches them — React hands it to `onCaughtError` instead.
+
+**Each error is reported once, even when it surfaces twice.** A loader's query function that throws
+is reported by the query cache, and then the router rethrows the same error into its boundary; a
+`useSuspenseQuery` does the same. `reportUnexpectedError` remembers the error objects it has handed
+over, in a `WeakSet` (above), and drops the second sighting.
 
 ## Web Vitals
 
@@ -133,8 +147,8 @@ export function reportWebVitals(listeners: readonly MetricListener[] = METRIC_LI
 ## Checklist
 
 - [ ] Every request carries a `traceparent`, and the error report's trace id falls back to it.
-- [ ] Every unexpected error reaches the port through `reportUnexpectedError`, from exactly one of the
-      four sources, and no `ApiError` or `ForbiddenError` is reported.
+- [ ] Every unexpected error reaches the port through `reportUnexpectedError`, once, under the first
+      source it surfaced from, and no `APIError` or `ForbiddenError` is reported.
 - [ ] The query and mutation caches report through the port before deciding a toast.
 - [ ] The window's listeners call `preventDefault` and are installed before the first render.
 - [ ] Any provider is installed with `setErrorReporter` or `setWebVitalsReporter` before the first
