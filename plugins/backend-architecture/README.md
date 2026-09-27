@@ -80,9 +80,11 @@ it depends on, and without it this one fails to load and no skill reaches the se
 
 ```json
 {
+  "skillListingBudgetFraction": 0.04,
   "extraKnownMarketplaces": {
     "architecture-marketplace": {
-      "source": { "source": "github", "repo": "eatteer/architecture-marketplace" }
+      "source": { "source": "github", "repo": "eatteer/architecture-marketplace" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
@@ -91,6 +93,15 @@ it depends on, and without it this one fails to load and no skill reaches the se
   }
 }
 ```
+
+`autoUpdate` refreshes the marketplace when Claude Code starts, so a new release of the plugin
+reaches every contributor without anyone running an update.
+
+`skillListingBudgetFraction` is the share of the context window, in characters, that the list of
+skills Claude reads every turn may take. The default, 1%, is 8,000 characters in a 200k window, and
+this plugin's skills and their triggers alone take about 28,000: past the budget a skill is listed
+by its name only, and a name is a much weaker trigger than its description. 4% fits them in a 200k
+window, at about 8,000 tokens a turn.
 
 **The plugin ships skills, not a `CLAUDE.md`.** Put this in the project's own so nothing has to be
 remembered:

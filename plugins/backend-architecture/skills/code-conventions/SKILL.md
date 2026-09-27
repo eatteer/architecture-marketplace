@@ -76,7 +76,8 @@ trusts it into a red build.
 
   A callback is a function like any other: every arrow parameter and its return type are annotated
   (`.map((user: User): UserDTO => ...)`), except where nobody reads the signature — a decorator's
-  thunk (`@Type(() => Number)`) and a test runner's own callbacks (`describe`, `it`, `beforeEach`).
+  thunk (`@Type(() => Number)`), a test runner's callbacks (`describe`, `it`) and the thunks a test
+  hands the runner's helpers (`expect(() => …)`, `mockImplementation`). A test's own helpers are not.
 
 - **No TypeScript `enum`.** An enumerable concept is a `const` array with its union type derived
   from it (`domain-modeling` owns the shape), validated at the boundary with `@IsIn` over the same
@@ -480,7 +481,7 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
       something else already validated.
 - [ ] No TypeScript `enum`; every enumerable concept is an `as const` array with its derived union.
 - [ ] Every parameter, return type and class property carries an explicit type, callbacks included
-      — all but a decorator's thunk and a test runner's callbacks.
+      — all but a decorator's thunk and what a test hands its runner and the runner's helpers.
       A local carries one only where inference would give the wrong type.
 - [ ] Every injected port is an interface behind `@Inject(TOKEN)`; every concrete injection is one
       of the listed cases.
