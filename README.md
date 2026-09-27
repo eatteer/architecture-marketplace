@@ -8,11 +8,12 @@ Maintain the rules in one place; every project that installs a plugin gets the u
 | Plugin | Kind | Covers |
 | ------ | ---- | ------ |
 | [`backend-architecture`](plugins/backend-architecture/) | **core** | Code conventions, project bootstrap and module wiring, the steps to add a feature, the four layers of a feature, API documentation, money, transactions and consistency, event-driven side effects, pagination, error handling, observability, deployment, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations, testing — see [its README](plugins/backend-architecture/README.md) for the full list |
+| [`frontend-architecture`](plugins/frontend-architecture/) | **core** | Code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state, the states a read renders, error handling, forms — see [its README](plugins/frontend-architecture/README.md) for the full list |
 | [`engineering-workflow`](plugins/engineering-workflow/) | shared | Git workflow — branch flow, branch naming, Conventional Commits — and architecture decision records |
 
-`engineering-workflow` depends on nothing and holds the rules every stack shares. `backend-architecture`
-declares it as a dependency, so installing the stack plugin pulls it in automatically and it cannot
-be disabled while the stack plugin is active.
+`engineering-workflow` depends on nothing and holds the rules every stack shares. Each stack plugin
+declares it as a dependency, so installing a stack plugin pulls it in automatically and it cannot be
+disabled while a stack plugin that depends on it is active.
 
 Plugin names carry a stack prefix, except a plugin that serves every stack. One marketplace hosts
 every stack, and the versioning rule is per plugin, so a release in one stack is invisible to
@@ -25,7 +26,7 @@ projects on another.
 claude plugin marketplace add eatteer/architecture-marketplace
 
 # 2. Install the stack plugin — its dependency, engineering-workflow, comes with it
-claude plugin install backend-architecture@architecture-marketplace
+claude plugin install backend-architecture@architecture-marketplace    # or frontend-architecture
 ```
 
 The skills auto-invoke once installed — nothing to copy or wire up. Each skill's `description` and

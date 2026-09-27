@@ -1,0 +1,291 @@
+---
+name: project-bootstrap
+description: "Standing a new single-page application up and the files every project needs before any feature exists — the source tree and what `common/` may hold, the `@/` and `@test/` aliases declared once, compiler strictness and the project references, the Node version, the Vite config and the order of its plugins, the React Compiler outside the test runner, the lint config and the project's own lint rule, package scripts, the pre-commit hook, and `main.tsx`: what runs before the first render and the order of the providers."
+when_to_use: "Trigger on — starting a project, editing `vite.config.ts`, `tsconfig*.json`, `eslint.config.mjs`, `package.json` scripts, `.nvmrc` or the pre-commit hook, choosing lint rules or adding an ESLint plugin, a rule in `eslint-rules/`, editing `main.tsx` or adding a provider, where a cross-cutting file goes, `common/` importing from a feature, an import that resolves in the editor but not in the bundle or the tests, a Node API reaching browser code, the React Compiler and coverage, a dark theme that flashes light on load, a type error in a file nobody staged, or a plugin that only works in one order."
+---
+
+# Project bootstrap
+
+## The source tree
+
+```text
+src/
+├── common/
+│   ├── api/            the one HTTP client, its middlewares, the error type, the generated schema
+│   ├── config/         validated build-time configuration
+│   ├── i18n/           the translation setup and its types
+│   ├── query/          the query client and the shared query types
+│   ├── ui/             the component catalog, as the registry ships it
+│   ├── components/     the application's own shared components — the shell, error screens, toasts
+│   ├── hooks/          shared hooks
+│   └── lib/            shared helpers — formatting, error reporting
+├── features/
+│   └── <feature>/      api/ components/ pages/ schemas/ model/
+├── locales/<language>/<namespace>.json
+├── routes/             one file per route: guards, loaders, the page it renders
+├── main.tsx
+├── router.ts
+└── styles.css
+test/                   the test runner's setup, the network mock's handlers, builders
+e2e/                    the end-to-end suite
+eslint-rules/           the project's own lint rules
+docs/adr/               decision records
+```
+
+`common/` holds what is **generic**, not what is merely shared. The test is whether you can state
+the thing without naming a feature: a client that turns Problem Details into errors is generic; the
+session a sign-in creates is the `auth` feature's, even though every page reads it.
+
+**`common/` never imports from `features/`.** When a shared component shows something a feature owns
+— the account menu inside the application shell — the shell takes it as a prop, and the route that
+renders the shell passes the feature's component in. The dependency then points one way, and a
+feature can be deleted without editing `common/`.
+
+What goes inside a feature folder, and how features depend on each other, is `adding-feature`'s.
+
+## The aliases
+
+Every import is absolute: `@/` is `src/`, and `@test/` is the test support under `test/`.
+
+```typescript
+import { apiClient } from "@/common/api/client";
+```
+
+**The aliases are declared once, in the application's compiler config, and every tool reads them
+from there.** Vite's `resolve.tsconfigPaths` makes the bundler and the test runner resolve through
+the compiler's `paths`, so there is no second list to fall out of step. The one extra copy is in the
+root `tsconfig.json`, which compiles nothing: the component registry's CLI reads its aliases from
+the root config, and nothing else looks there.
+
+`@test/` never appears in application code: the build excludes `test/`, so an import of it compiles
+in the editor and fails in the bundle.
+
+## Compiler strictness and the project references
+
+`strict` on, and with it `noUncheckedIndexedAccess` (an array read is `T | undefined` until checked),
+`noImplicitOverride`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`,
+`verbatimModuleSyntax` (see `code-conventions` for what it does to type imports) and
+`erasableSyntaxOnly`, which rejects the TypeScript that emits code — an `enum`, a parameter
+property — so what the bundler strips is only ever types.
+
+The root `tsconfig.json` has no files of its own; it references one config per environment, and
+`tsc -b` checks them all:
+
+| Config | Covers | Types |
+| --- | --- | --- |
+| `tsconfig.app.json` | `src/`, without the tests | the bundler's client types only |
+| `tsconfig.test.json` | the tests in `src/` and `test/` | the app's, plus Node |
+| `tsconfig.node.json` | `vite.config.ts` | Node |
+| `tsconfig.e2e.json` | `e2e/` and the end-to-end runner's config | Node and the DOM, no aliases |
+
+The split is what keeps a Node API out of browser code: the application's config has no Node types,
+so `process.env` or `node:fs` in a component is a compile error rather than a runtime one.
+
+## Runtime version and editor settings
+
+The Node version is stated once and kept in step wherever it is written: `.nvmrc`, the `engines`
+field of `package.json`, and the Dockerfile's build stage. Editor settings (`.editorconfig`,
+`.vscode/`) are optional project files; the linter remains what enforces the format.
+
+## The Vite config
+
+```typescript
+export default defineConfig({
+  plugins: [
+    tanstackRouter({ target: "react", autoCodeSplitting: true }),
+    react(),
+    ...(process.env.VITEST ? [] : [babel({ presets: [reactCompilerPreset()] })]),
+    tailwindcss(),
+  ],
+  resolve: {
+    tsconfigPaths: true,
+  },
+});
+```
+
+- **The router's plugin comes first.** It generates the route tree and splits each route into its
+  own chunk, and the React plugin has to see the code it produces (see `routing`).
+- **The React Compiler runs in the build and not under the test runner.** It adds a cache branch to
+  every component, taken only on a re-render with the same props, and coverage counts those as
+  branches of the application's own code — the same tests measure several points lower with it on.
+  The compiled output is what the end-to-end suite exercises, because it runs against the build (see
+  `testing`).
+- **The test runner's config lives in the same file**, so the tests resolve modules exactly as the
+  build does. What it sets — the environment, the setup file, the configuration the tests run with,
+  the coverage floor — is `testing`'s.
+
+## Lint, format, and the hook
+
+The linter owns formatting and import order, and `--fix` applies it; where the linter and a
+convention disagree, the linter wins (see `code-conventions`). **So the config has to enable the
+rules those conventions depend on** — a convention the linter stays silent about holds only while
+everyone remembers it.
+
+The core is the same set a TypeScript project needs anywhere:
+
+| Rule | Without it |
+| --- | --- |
+| `@typescript-eslint/no-explicit-any` | `any` is forbidden by convention and accepted by the build |
+| `no-console` | A `console.log` in a component passes review and ships |
+| `@typescript-eslint/explicit-function-return-type` (`allowTypedFunctionExpressions`) | Return types drift to whatever is inferred; the option is what lets an inline JSX handler go unannotated |
+| `@typescript-eslint/explicit-member-accessibility` | `public`/`private` becomes optional, so it stops meaning anything |
+| `@typescript-eslint/no-floating-promises` | An unawaited call loses its errors silently |
+| `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) with the import plugin's `prefer-top-level` | A type reference becomes a runtime import |
+| `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards |
+| `@stylistic/padding-line-between-statements`, `"always"` around every `multiline-` statement | A wrapped call butts against the next statement |
+| The import plugin's `order`, with `@/` and `@test/` as internal groups | Every file orders its imports its own way |
+
+A front end adds its own:
+
+| Rule | Without it |
+| --- | --- |
+| `react-hooks` (`recommended-latest`) | A conditional hook, and the patterns the compiler cannot memoize — state set in an effect, a ref read while rendering |
+| `react-refresh/only-export-components` | A module that exports a component and something else loses its state on every hot reload |
+| `jsx-a11y` (`recommended`) | A control with no accessible name passes review (see `accessibility`) |
+| `@stylistic/jsx-newline` (`prevent`, `allowMultilines`) | A multi-line element butts against its siblings |
+| `local/padding-around-hooks` | The hook calls that open a component run into the work that uses them |
+| `better-tailwindcss` (`recommended-error`) | A class the theme does not define, or two that conflict, render as nothing |
+| `@tanstack/eslint-plugin-query` and `-router` | A query key that misses a variable its function reads; route options in an order the types cannot infer |
+| `no-restricted-imports` of a second headless UI library | Two libraries with two APIs for the same components (see `ui-components`) |
+| `no-restricted-syntax` on `import.meta.env` outside the configuration module | A variable read raw, past its validation (see `configuration`) |
+
+**The hook-spacing rule is the project's own.** Copy
+[assets/eslint-rules/padding-around-hooks.mjs](assets/eslint-rules/padding-around-hooks.mjs) and its
+type declaration [assets/eslint-rules/padding-around-hooks.d.mts](assets/eslint-rules/padding-around-hooks.d.mts)
+into the project's `eslint-rules/`, and register it as a local plugin:
+
+```typescript
+import paddingAroundHooks from "./eslint-rules/padding-around-hooks.mjs";
+
+export default tseslint.config({
+  plugins: {
+    local: { rules: { "padding-around-hooks": paddingAroundHooks } },
+  },
+  rules: {
+    "local/padding-around-hooks": "error",
+  },
+});
+```
+
+It has an autofix and a test of its own in the project's suite. What it enforces, and why, is
+`code-conventions`'.
+
+Three more decisions every config makes:
+
+- **Generated files are ignored, not fixed.** The API's schema and the route tree are rewritten by
+  their generators on every run, so lint errors in them would come back on the next one.
+- **`react-refresh` lists names instead of switching off.** Route files export `Route`, and a
+  component library ships its variants and hooks beside the component; the rule's
+  `allowExportNames` names each, so a new non-component export still has to be looked at.
+- **A plugin that declares too old a peer range is kept with an `overrides` entry and the reason
+  beside it**, in the `"//"` key of `package.json` that npm ignores — not by pinning the linter back.
+
+The `no-unsafe-*` family is left off: those fire on values coming out of third-party types the
+project does not control — a chart library's payloads, a body before its schema parses it — rather
+than on `any` written here, which the first rule already rejects.
+
+Where a rule has to be suspended, suspend it on the line, with the reason after `--`:
+
+```typescript
+// eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's control flow: a thrown redirect is how `beforeLoad` navigates.
+throw redirect({ to: "/sign-in" });
+```
+
+Scripts every project has, under these names:
+
+```json
+{
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "lint": "eslint \"{src,test,e2e}/**/*.{ts,tsx}\" \"*.config.ts\" --fix",
+  "typecheck": "tsc -b",
+  "test": "vitest run --coverage",
+  "test:e2e": "playwright test",
+  "api:types": "openapi-typescript <the backend's OpenAPI URL> --output <the schema file> …"
+}
+```
+
+`build` does not typecheck: the bundler strips types without reading them, exactly as the tests do,
+which is why the typecheck is its own script and its own step in the hook. What `api:types` passes is
+`api-client`'s; what each test script runs is `testing`'s.
+
+A pre-commit hook runs the linter on the staged files, then `typecheck` over the whole project. The
+second is there because nothing else before a push catches a cross-file type error — a component
+that gained a required prop while its callers and its test were not updated. The staged-file linter
+cannot see those files, and neither the bundler nor the test runner reads types.
+
+## `main.tsx`
+
+The entry point does three things before React renders anything, then mounts the providers.
+
+```tsx
+import "@/styles.css";
+import "@/common/i18n/i18n";
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement) { throw new Error("index.html has no #root element to mount the application into"); }
+
+applyResolvedTheme(resolveTheme(readStoredTheme(), getSystemTheme()));
+reportUncaughtErrors();
+reloadOnPreloadError();
+
+const queryClient = createQueryClient();
+const router = createAppRouter(queryClient);
+
+createRoot(rootElement, { onCaughtError: handleCaughtError }).render(
+  <StrictMode>
+    <CSPProvider disableStyleElements>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <FullscreenLoader />
+          <AppToaster />
+        </QueryClientProvider>
+      </ThemeProvider>
+    </CSPProvider>
+  </StrictMode>,
+);
+```
+
+Before the render:
+
+- **The stylesheet and the translations are imported for their side effects, first**, so the first
+  paint is styled and in the reader's language.
+- **The theme is applied to the document before React starts**, or a dark theme flashes light for as
+  long as the bundle takes to boot (see `ui-components`).
+- **The listeners for uncaught errors and for a chunk that fails to load are installed before
+  anything can throw or lazy-load** (see `observability` and `routing`).
+- **The query client and the router are created once, outside any component**, and the router
+  receives the client as context, so its loaders read through the same cache the components do.
+
+The providers, outermost first — each wraps what reads it:
+
+1. **The UI library's CSP settings**, since any primitive may read them: it renders no inline
+   `<style>` element that the Content-Security-Policy would refuse (see `security`).
+2. **The theme**, since everything paints with it.
+3. **The query client**, around the router, whose loaders use it.
+4. **The router, with the fullscreen loader and the toaster as its siblings** — never inside a
+   route, so a navigation never unmounts them (see `error-handling`).
+
+`onCaughtError` receives every error a boundary caught, which React otherwise writes to the console;
+what it does with them is `error-handling`'s. `StrictMode` stays on: its double-invoked effects are
+how a missing cleanup shows up in development instead of in production.
+
+## Checklist
+
+- [ ] Nothing under `common/` imports from `features/`.
+- [ ] The aliases are declared once in the application's compiler config and resolved everywhere
+      through it.
+- [ ] `tsc -b` covers the application, the tests, the tooling config and the end-to-end suite, and
+      only the tests and the tooling get Node's types.
+- [ ] The Node version agrees in `.nvmrc`, `engines` and the Dockerfile.
+- [ ] The router's plugin runs before the React plugin, and the React Compiler is off under the test
+      runner.
+- [ ] Every rule in both lint tables is on, the hook-spacing rule is registered from
+      `eslint-rules/`, and generated files are ignored.
+- [ ] Every suspended rule is suspended on one line, with its reason.
+- [ ] The scripts have the names above, and the pre-commit hook runs `lint-staged` then `typecheck`.
+- [ ] `main.tsx` applies the theme and installs the error and preload listeners before the render,
+      and the providers nest in the order above.

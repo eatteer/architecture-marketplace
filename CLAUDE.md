@@ -35,7 +35,7 @@ each with one job:
 | Folder | Holds | The `SKILL.md` says |
 | --- | --- | --- |
 | `references/` | Markdown consulted now and then: a lookup table, a recipe written only when a rule first needs it | when to read it |
-| `examples/` | Real `.ts` files for the long canonical snippets: a complete entity, use case, repository, controller, schema | when to read it |
+| `examples/` | Real `.ts` or `.tsx` files for the long canonical snippets: a complete entity, use case, repository, controller, schema, form | when to read it |
 | `scripts/` | A program the model **runs**, never reads — only its output costs context | that it is run, the command with `${CLAUDE_SKILL_DIR}`, and what to do after |
 | `assets/` | A file a project **copies** as its starting point: a template, a `Dockerfile` | that it is copied, and where to |
 
@@ -162,6 +162,33 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Branch naming, branch flow, commit messages | `git-workflow` |
 | Architecture decision records: which decisions earn one, format, numbering, superseding | `decision-records` |
 
+### Ownership map — `frontend-architecture`
+
+| Concept | Owner |
+| --- | --- |
+| Universal TypeScript and TSX style, naming and file suffixes, forbidden constructs, blank lines between statements, JSX siblings and hook calls, props typing, memoization under the compiler, effects | `code-conventions` |
+| Repo layout, `main.tsx` and the order of its providers, the aliases, compiler strictness, the bundler and test runner config, the lint config and the project's own lint rules, scripts, the hook | `project-bootstrap` |
+| Ordered steps to build a feature, its folder skeleton, and its checklist | `adding-feature` |
+| The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `ApiError` built from Problem Details | `api-client` |
+| Query options factories, hierarchical keys, mutations and what they invalidate, cache policy, retry, the registered error type and `meta`, optimistic updates | `server-state` |
+| The four states of a read, skeletons, the altitude a state resolves at, a route loader with a suspense query as the alternative to a skeleton in place, disabled queries, the page on screen while the next one loads | `data-fetching-states` |
+| Classifying a failure, which failures toast and how the toast behaves, the copyable error report, error screens and a route's error component, the fullscreen loader for writes, what a `catch` may end in | `error-handling` |
+| Form libraries and schemas, the form as the boundary of controlled values, the backend's field errors placed on fields, the submit latch, confirmation before an irreversible write, wiring a field's label, description and error | `forms` |
+| File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load | `routing` |
+| The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, text filters debounced into the URL | `pagination` |
+| The shadcn catalog on Base UI and how a component is added or updated, semantic tokens, variants, class merging, overlays, the theme | `ui-components` |
+| Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |
+| Translation namespaces and files, typed keys, key casing, locale parity, plurals per locale, the language the backend is asked for, the document's `lang` | `i18n` |
+| Dates, numbers and money on screen | `formatting` |
+| The cookie session, reading it from the API, refresh once across tabs, session events between tabs, sign-in and sign-out, clearing the cache, redirect-back and which targets it follows | `authentication` |
+| Permissions from the session, gating a route, a query and a component, forbidden against not found | `authorization` |
+| Build-time variables, their validation, nothing secret in the bundle | `configuration` |
+| Cross-site scripting, raw HTML, untrusted URLs rendered as links, the Content-Security-Policy, dependencies | `security` |
+| The W3C trace context the browser starts and where its id ends up, the error-reporter port, Web Vitals | `observability` |
+| Test boundaries, the console guard, the network mock, builders, the end-to-end suite, the coverage floor | `testing` |
+| The static image, the SPA fallback, cache headers, where the security headers are sent from | `deployment` |
+| Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
+
 ## A skill's `description` and `when_to_use` are its trigger
 
 Skills auto-invoke off two frontmatter fields, so both are functional text, not a summary. When a
@@ -286,13 +313,18 @@ next to it — so an example that violates the rule it illustrates teaches the v
 more effectively than the prose prevents it.
 
 **The snippet check enforces what a linter can.** `npm run check:snippets`
-(`tools/check-snippets.mjs`) lints every ```` ```typescript ```` block in the Markdown of a skill or
-an agent — `SKILL.md` and `references/` — and every `examples/**/*.ts`, with the rules of the
-reference project's linter that need no type information: no `any`, explicit return types and member
-accessibility, braces on every guard, no `console`, type-only imports as their own statement, no
-`enum`, a blank line on each side of a multi-line statement. Snippets are fragments, so they are wrapped as little as they need to parse and never
-compiled; an undeclared identifier is not an error. `npm install` wires it as the pre-commit hook. A
-report names the file, the block number, and the line inside the block.
+(`tools/check-snippets.mjs`) lints every ```` ```typescript ```` and ```` ```tsx ```` block in the
+Markdown of a skill or an agent — `SKILL.md` and `references/` — and every `examples/**/*.ts` and
+`.tsx`, with the rules of **that plugin's** reference project's linter that need no type information:
+no `any`, explicit return types and member accessibility, braces on every guard, no `console`,
+type-only imports as their own statement, no `enum`, a blank line on each side of a multi-line
+statement. The frontend's adds its JSX spacing rule, its own rule for the hook calls that open a
+component — loaded from the asset the plugin ships, so the check and a project run the same file —
+and the ban on a second headless UI library. Each plugin with snippets has its entry in the tool's
+`CONFIGS`; one without is reported rather than judged by another stack's rules. Snippets are
+fragments, so they are wrapped as little as they need to parse and never compiled; an undeclared
+identifier is not an error. `npm install` wires it as the pre-commit hook. A report names the file,
+the block number, and the line inside the block.
 
 A block that must break one of those rules to make its point — a ❌ that shows the violation itself —
 is excluded by writing `<!-- snippet-check: skip -->` on the line before its opening fence. Nothing

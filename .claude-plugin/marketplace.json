@@ -14,6 +14,12 @@
       "description": "Core architecture, patterns and code conventions for the NestJS + TypeScript + MongoDB backend stack, packaged as auto-invoking skills, with a read-only convention reviewer and a skill that adopts the reference template. Covers universal code conventions, project bootstrap and module wiring, the domain/application/persistence/presentation layers, API documentation, money, transactions and consistency, event-driven side effects, pagination, error handling, observability, deployment, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations and testing. Requires engineering-workflow."
     },
     {
+      "name": "frontend-architecture",
+      "source": "./plugins/frontend-architecture",
+      "category": "development",
+      "description": "Core architecture, patterns and code conventions for the React + TypeScript single-page application stack, packaged as auto-invoking skills. Covers universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling, and forms. Requires engineering-workflow."
+    },
+    {
       "name": "engineering-workflow",
       "source": "./plugins/engineering-workflow",
       "category": "development",

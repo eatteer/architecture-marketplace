@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "frontend-architecture",
+  "displayName": "Frontend Architecture",
+  "description": "Architecture, patterns and code conventions for the React/TypeScript single-page application stack (Vite, TanStack Router and Query, openapi-fetch with types generated from the backend's OpenAPI, React Hook Form with Zod, shadcn on Base UI, Tailwind). Auto-invoking skills that guide universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling with toasts and error screens, and forms as the boundary of controlled values. This is the core frontend plugin. It requires the engineering-workflow plugin, which owns the git workflow and architecture decision records, and ships no runtime library.",
+  "version": "1.0.0",
+  "dependencies": [
+    "engineering-workflow"
+  ],
+  "author": {
+    "name": "eatteer",
+    "email": "eatteer@gmail.com"
+  },
+  "homepage": "https://github.com/eatteer/architecture-marketplace/tree/main/plugins/frontend-architecture",
+  "repository": "https://github.com/eatteer/architecture-marketplace",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "react",
+    "typescript",
+    "vite",
+    "tanstack-router",
+    "tanstack-query",
+    "architecture",
+    "conventions"
+  ]
+}
