@@ -8,7 +8,7 @@ Maintain the rules in one place; every project that installs a plugin gets the u
 | Plugin | Kind | Covers |
 | ------ | ---- | ------ |
 | [`backend-architecture`](plugins/backend-architecture/) | **core** | Code conventions, project bootstrap and module wiring, the steps to add a feature, the four layers of a feature, API documentation, money, transactions and consistency, event-driven side effects, pagination, error handling, observability, deployment, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations, testing — see [its README](plugins/backend-architecture/README.md) for the full list |
-| [`frontend-architecture`](plugins/frontend-architecture/) | **core** | Code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state, the states a read renders, error handling, forms — see [its README](plugins/frontend-architecture/README.md) for the full list |
+| [`frontend-architecture`](plugins/frontend-architecture/) | **core** | Code conventions, project bootstrap and the lint config, the API client, server state and the states a read renders, error handling, forms, routing, pagination, the component catalog, accessibility, i18n, authentication and authorization, security, testing, deployment — see [its README](plugins/frontend-architecture/README.md) for the full list |
 | [`engineering-workflow`](plugins/engineering-workflow/) | shared | Git workflow — branch flow, branch naming, Conventional Commits — and architecture decision records |
 
 `engineering-workflow` depends on nothing and holds the rules every stack shares. Each stack plugin

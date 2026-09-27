@@ -11,11 +11,13 @@ everything it documents must produce correct code with nothing else installed.
 
 | Component | How it runs | What it is |
 | --- | --- | --- |
-| 8 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
+| 21 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
+| `adopt-template` | You run it once: `/frontend-architecture:adopt-template [project-name] "[description]"` | Turns a fresh clone of [`frontend-template`](https://github.com/eatteer/frontend-template) into your project: summarizes what the clone contains, asks for the name and description, rewrites every generic name — package, page title, the application's name in every language, documentation — and verifies the result. It never runs on its own |
+| `convention-reviewer` agent | Ask for a review against the conventions, or `@agent-frontend-architecture:convention-reviewer` | A read-only reviewer that loads every skill governing a diff and checks it rule by rule, reporting each violation with file, line, rule and owning skill |
 
 ## How it works
 
-The skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
+The 21 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
 wire up. Each one owns a set of rules, and any rule that comes up elsewhere is a pointer rather than
 a second copy, so there is never a question of which statement is current.
 
@@ -29,11 +31,25 @@ a second copy, so there is never a question of which statement is current.
 | `data-fetching-states` | Pending, error, empty and ready, resolved in order; the altitude a state resolves at; loaders against skeletons in place; skeletons that keep the ready UI's height |
 | `error-handling` | Expected failures against bugs, where each surfaces, the error toast and the copyable report, error screens, the fullscreen loader for writes, what a `catch` may end in |
 | `forms` | The form as the boundary of controlled values, the schema file, edit forms that mount filled, the backend's field errors on fields, the submit latch, confirmation |
+| `routing` | File routes, the router's defaults, `beforeLoad` and loaders in a route's lifecycle, search params validated and reset, route parameter names, code splitting and a chunk that fails to load |
+| `pagination` | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, pagination controls, select and debounced text filters |
+| `ui-components` | shadcn's catalog on Base UI and how a component is added or updated, Base UI's composition, semantic tokens, variants, `cn`, the theme |
+| `accessibility` | Accessible names, native elements, landmarks, `aria-busy` and `aria-sort`, live regions, focus, the accessibility lint |
+| `i18n` | Bundled namespaces, snake_case keys typed from the reference locale, the parity test, plurals per locale, the starting language, the account's language, `x-lang`, `<html lang>` |
+| `formatting` | Dates, numbers and money through `Intl`, bound to the language on screen; amounts in minor units without a float |
+| `authentication` | The cookie session read from the API, the refresh once across tabs, session events, the one place a session ends, sign-in and sign-out, redirect-back |
+| `authorization` | The permission catalog, the route, the component and the API as the three places a permission is checked, the forbidden screen |
+| `configuration` | Build-time variables, validated once and never secret, the tests' own values, same-site origins |
+| `security` | What React escapes and the ways around it, URLs from data, the Content-Security-Policy, dependencies |
+| `observability` | The trace every request starts, the error-reporter port and its sources, the Web Vitals port |
+| `testing` | Which layer tests what, the console guard, the network mock, builders, determinism seams, the coverage floor, the end-to-end suite |
+| `deployment` | The static image on unprivileged nginx, the API's address as a build argument, the SPA fallback, cache headers, where headers are sent from |
 
 ## Requires
 
 The **`engineering-workflow`** plugin. It owns the rules every stack shares, and these skills point
-at them rather than keeping a copy: `code-conventions` at `git-workflow` (the commit format), and
+at them rather than keeping a copy: `code-conventions` and the `convention-reviewer` agent at
+`git-workflow` (the commit format, the integration branch a review diffs against), and
 `adding-feature` at `decision-records` (when a choice earns a record).
 
 It is declared in this plugin's `dependencies`, so installing this plugin pulls it in, and it cannot
@@ -93,7 +109,7 @@ Beside its `SKILL.md`, a skill may carry files it points at, and each says what 
 | --- | --- | --- |
 | Examples | A complete create form and its schema file, read before writing a form | `forms` |
 | References | The naming and file-suffix tables, read before naming something | `code-conventions` |
-| Assets | The project's own lint rule for the hook calls that open a component, and its type declaration, copied into the project | `project-bootstrap` |
+| Assets | Files copied into a project — the project's own lint rule for the hook calls that open a component and its type declaration; the `Dockerfile`, `nginx.conf` and `.dockerignore` | `project-bootstrap`, `deployment` |
 
 ## What this plugin leaves open
 

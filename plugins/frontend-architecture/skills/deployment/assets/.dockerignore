@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+playwright
+playwright-report
+test-results
+.git
+.husky
+.env
+.env.*
+*.md
