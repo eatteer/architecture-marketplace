@@ -100,6 +100,13 @@ export default defineConfig({
     ...(process.env.VITEST ? [] : [babel({ presets: [reactCompilerPreset()] })]),
     tailwindcss(),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        strictExecutionOrder: true,
+      },
+    },
+  },
   resolve: {
     tsconfigPaths: true,
   },
@@ -113,6 +120,10 @@ export default defineConfig({
   branches of the application's own code — the same tests measure several points lower with it on.
   The compiled output is what the end-to-end suite exercises, because it runs against the build (see
   `testing`).
+- **Modules run in the order they are imported**, whichever chunk the bundler puts them in
+  (`strictExecutionOrder`). Without it, a chunk that several routes share runs before the entry's
+  first import, and a module imported first for its side effect — configuring Zod before any schema
+  is built — runs too late. It costs nothing measurable: the bundler splits the chunks differently.
 - **The test runner's config lives in the same file**, so the tests resolve modules exactly as the
   build does. What it sets — the environment, the setup file, the configuration the tests run with,
   the coverage floor — is `testing`'s.
@@ -223,6 +234,7 @@ cannot see those files, and neither the bundler nor the test runner reads types.
 The entry point does three things before React renders anything, then mounts the providers.
 
 ```tsx
+import "@/common/config/zod";
 import "@/styles.css";
 import "@/common/i18n/i18n";
 
@@ -255,7 +267,10 @@ createRoot(rootElement, { onCaughtError: handleCaughtError }).render(
 
 Before the render:
 
-- **The stylesheet and the translations are imported for their side effects, first**, so the first
+- **Zod is configured before anything else is imported**, since the configuration and the API's
+  schemas are built when their modules load, and it has to be jitless by then (see `security`). The
+  test setup imports the same module, so the tests parse the way the browser does.
+- **The stylesheet and the translations are imported for their side effects next**, so the first
   paint is styled and in the reader's language.
 - **The theme is applied to the document before React starts**, or a dark theme flashes light for as
   long as the bundle takes to boot (see `ui-components`).
@@ -286,11 +301,11 @@ how a missing cleanup shows up in development instead of in production.
 - [ ] `tsc -b` covers the application, the tests, the tooling config and the end-to-end suite, and
       only the tests and the tooling get Node's types.
 - [ ] The Node version agrees in `.nvmrc`, `engines` and the Dockerfile.
-- [ ] The router's plugin runs before the React plugin, and the React Compiler is off under the test
-      runner.
+- [ ] The router's plugin runs before the React plugin, the React Compiler is off under the test
+      runner, and the build keeps the modules' execution order.
 - [ ] Every rule in both lint tables is on, the hook-spacing rule is registered from
       `eslint-rules/`, and generated files are ignored.
 - [ ] Every suspended rule is suspended on one line, with its reason.
 - [ ] The scripts have the names above, and the pre-commit hook runs `lint-staged` then `typecheck`.
-- [ ] `main.tsx` applies the theme, installs the error and preload listeners and starts the Web
+- [ ] `main.tsx` imports the Zod configuration first, applies the theme, installs the error and preload listeners and starts the Web
       Vitals before the render, and the providers nest in the order above.

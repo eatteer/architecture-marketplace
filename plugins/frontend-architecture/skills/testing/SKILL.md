@@ -149,7 +149,10 @@ router's development warnings would fail the console guard.
 - **The console guard applies here too**, on the browser context: any error, warning or uncaught
   exception fails the test, **except** the line the browser writes for every response with a `4xx`
   status (`Failed to load resource: … status of 4xx`), since the flows provoke 400, 401 and 409 on
-  purpose and the page shows each one. A `5xx` or a failed connection still fails.
+  purpose and the page shows each one. A `5xx` or a failed connection still fails. **So does any
+  refusal of the Content-Security-Policy**: the page reports its `securitypolicyviolation` events to
+  the guard through a binding, because the browser does not write to the console a refusal the
+  library that caused it catches (see `security`).
 - **A request is held with `page.route`** to look at the screen while it is in flight — the skeleton,
   the fullscreen loader — and released to see what follows.
 - **Data a spec creates carries a tag unique to the run**, in the names and emails it writes, so a

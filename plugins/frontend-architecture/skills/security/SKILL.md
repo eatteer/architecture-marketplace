@@ -80,6 +80,21 @@ elements, and its one rule carried in the stylesheet (see `ui-components`) — r
 `'unsafe-inline'`. A catalog file that renders one itself is changed the same way: the chart's color
 rules go into a constructed stylesheet instead of an inline `<style>` (see `ui-components`).
 
+**A library that probes for `eval` is told not to probe.** Zod tries `new Function` the first time it
+builds an object schema, to compile its parsers, and catches the refusal — the application works,
+but every load reports a violation, which a policy with a report endpoint would send on every visit.
+It is configured jitless before any schema exists, in a module imported first (see
+`project-bootstrap`):
+
+```typescript
+import { z } from "zod";
+
+z.config({ jitless: true });
+```
+
+A refusal a library catches never reaches the console, so the end-to-end suite listens for the
+page's `securitypolicyviolation` events and fails on any (see `testing`).
+
 **Adding a provider that talks to another origin** — an error reporter, a Web Vitals collector (see
 `observability`) — adds exactly that origin to `connect-src`, and to `script-src` only if its script
 cannot be bundled. A policy that fails in production and passes locally is caught by running the
@@ -106,6 +121,6 @@ Every package runs with the page's privileges, so adding one is a decision:
 - [ ] No token is stored or readable by a script.
 - [ ] The server sends the policy above, with `connect-src` naming only this origin, the API and each
       provider the application reports to.
-- [ ] No `'unsafe-inline'` or `'unsafe-eval'`; a library that injects inline content is configured not
-      to.
+- [ ] No `'unsafe-inline'` or `'unsafe-eval'`; a library that injects inline content or probes for
+      `eval` is configured not to, Zod with `jitless` before any schema is built.
 - [ ] The lockfile is committed, and every new dependency was weighed before it was added.
