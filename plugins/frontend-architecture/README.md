@@ -126,8 +126,10 @@ the answer:
 
 Every change to this plugin passes Claude Code's own manifest validator and a lint of every
 TypeScript and TSX snippet and example against the conventions the skills teach — with the same
-hook-spacing rule the project copies from `project-bootstrap`. How to run them is in the
-marketplace's contributing notes.
+hook-spacing rule the project copies from `project-bootstrap`. Its [`evals/`](evals/) suite, run
+with `claude plugin eval`, checks that each skill loads for a realistic request that does not name
+it, that unrelated requests load none, that `adopt-template` never runs on its own, and that the
+reviewer finds planted violations. How to run them is in the marketplace's contributing notes.
 
 ## License
 
