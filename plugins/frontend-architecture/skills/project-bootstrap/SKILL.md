@@ -148,6 +148,7 @@ The core is the same set a TypeScript project needs anywhere:
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards |
 | `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement, and a declaration against the work that uses it |
 | `local/padding-between-expression-kinds` | An assignment, a function call, a method call and an awaited step run together |
+| `@stylistic/padded-blocks`, `"never"` for blocks, classes and switches | A body opens or closes on a blank line, and nothing else stops it |
 | `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
 | `@typescript-eslint/naming-convention` over a list of abbreviations | `APIError` beside `ApiPagination`: one word, two spellings |
 | The import plugin's `order`, with `@/` and `@test/` as internal groups | Every file orders its imports its own way |
