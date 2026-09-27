@@ -27,7 +27,7 @@ import tseslint from "typescript-eslint";
 
 // The frontend's own rule, shipped as an asset of the skill that owns the lint config: the snippets
 // are checked against the very file a project copies.
-import paddingAroundHooks from "../plugins/frontend-architecture/skills/project-bootstrap/assets/eslint-rules/padding-around-hooks.mjs";
+import { paddingAroundHooks } from "../plugins/frontend-architecture/skills/project-bootstrap/assets/eslint-rules/padding-around-hooks.mjs";
 
 const REPOSITORY_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const PLUGINS_ROOT = join(REPOSITORY_ROOT, "plugins");
@@ -88,6 +88,7 @@ const SHARED_RULES = {
   ],
   "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
   curly: ["error", "all"],
+  "@stylistic/no-multiple-empty-lines": ["error", { max: 1, maxBOF: 0, maxEOF: 0 }],
   "@stylistic/padding-line-between-statements": [
     "error",
     { blankLine: "always", prev: MULTILINE_STATEMENTS, next: "*" },
