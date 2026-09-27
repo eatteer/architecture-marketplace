@@ -1,7 +1,7 @@
 ---
 name: code-conventions
 description: "Universal TypeScript/NestJS conventions for every file in any layer — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases), type annotations, `interface` vs `type`, optional calls, absence via `undefined`, no magic values, constructor injection, pure functions, no mutation of data you do not own, type-only imports, floating promises, named exports, comments and JSDoc, blank lines, braces, abbreviations in names, the naming and file-suffix tables."
-when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a blank line between two one-line statements, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
+when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, a test double cast `as unknown as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a blank line between two one-line statements, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
 ---
 
 # Universal code conventions
@@ -123,7 +123,7 @@ trusts it into a red build.
   - another use case injected into one.
 
   Never property injection, in any of those cases.
-- **The `as` cast is forbidden** except three cases, and all three share one shape: the value has
+- **The `as` cast is forbidden** except four cases. The first three share one shape: the value has
   already been checked, and the cast only tells the compiler what something else proved at runtime.
 
   1. `as const`.
@@ -133,6 +133,12 @@ trusts it into a red build.
      by the time the handler runs (see `presentation-layer`). The cast is sanctioned **there and
      nowhere deeper** — further in, nothing has validated the value and the cast would be a guess.
   3. Narrowing an opaque transaction handle at the infrastructure boundary that declares it.
+  4. **In a spec**, a double of a *class* the code under test takes concretely — a framework
+     service, the execution context, a use case injected by its class — written as a literal of the
+     members the test touches and cast `as unknown as`. A class with private members admits no
+     literal, so nothing else builds one. A port is never cast: its double is typed
+     `jest.Mocked<IPort>` and implements every member (see `testing`), which is what makes a new
+     method break it.
 
   A value object validating a string against its own catalog is **not** one of them, and does not
   need to be — which is also why a persistence mapper needs no cast: it hands the stored string to
@@ -472,8 +478,8 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
 
 ## Checklist
 
-- [ ] No `any`, no `!`, and every `as` is one of the three sanctioned cases — each one a value
-      something else already validated.
+- [ ] No `any`, no `!`, and every `as` is one of the four sanctioned cases, and no port double
+      in a spec is cast.
 - [ ] No optional call (`?.()`); every conditional call is an `if`.
 - [ ] No TypeScript `enum`; every enumerable concept is an `as const` array with its derived union.
 - [ ] Every parameter, return type and class property carries an explicit type, callbacks included
