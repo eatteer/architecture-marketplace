@@ -1,7 +1,7 @@
 # Naming tables
 
-The two lookup tables of the `code-conventions` skill. The rules that explain them, and settle what
-they cannot, stay in that skill's `SKILL.md`.
+The two lookup tables of the `code-conventions` skill, each with the rules that read it. What the
+tables cannot settle stays in that skill's `SKILL.md`.
 
 ## Names by context
 
@@ -13,8 +13,8 @@ they cannot, stay in that skill's `SKILL.md`.
 | A companion skeleton | `<Component>Skeleton`, in the component's file | `UsersTableSkeleton` |
 | Hooks | `use` + PascalCase; the file is its kebab-case | `useDebouncedFilter` in `use-debounced-filter.ts` |
 | Types | PascalCase, no prefix | `User`, `Paginated<T>`, `Session` |
-| Acronyms in types | UPPERCASE | `UserDTO`, `APIPagination` |
-| Acronyms in variables and properties | camelCase | `apiClient`, `apiUrl` |
+| Abbreviations | one word in capitals; all lowercase at the start of a camelCase name | `UserDTO`, `APIError`, `buildAPIError`, `apiClient` |
+| `Id` | a word, as the backend's fields spell it | `userId`, `roleIds` |
 | Functions, variables | camelCase | `resolveRedirect()`, `sessionKey` |
 | Module-level constants | SCREAMING_SNAKE_CASE | `FILTER_DEBOUNCE_MS` |
 | A duration or a size | the unit as a suffix | `ERROR_TOAST_TIMEOUT_MS`, `USERS_PAGE_SIZE` |

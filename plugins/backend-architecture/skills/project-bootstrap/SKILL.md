@@ -1,7 +1,7 @@
 ---
 name: project-bootstrap
 description: "Standing a new backend up and the files every project needs before any feature exists — the source tree and `common/`, the `@/` and `@test/` aliases, compiler strictness, the Node version, lint setup, package scripts, the pre-commit hook, `main.ts` and the order of its steps, global pipes and filters, the root module, the modules that configure the framework, and the local stack."
-when_to_use: "Trigger on — starting a project, choosing lint rules, editing `main.ts`, `app.module.ts`, `tsconfig.json`, the lint config, `package.json` scripts, `.nvmrc` or the pre-commit hook, a `forRootAsync` factory, the order global pipes, filters and guards are registered in, a pipe that trims every string in the body, where a cross-cutting file goes, an import that resolves in the editor but not at runtime, a type error in a file nobody staged, editing the compose file or pinning an image, a local replica set that never elects a primary, a build that emits `dist/src/main.js`, or a container that cannot bind its port because another project holds it."
+when_to_use: "Trigger on — starting a project, choosing lint rules, a rule in `eslint-rules/`, editing `main.ts`, `app.module.ts`, `tsconfig.json`, the lint config, `package.json` scripts, `.nvmrc` or the pre-commit hook, a `forRootAsync` factory, the order global pipes, filters and guards are registered in, a pipe that trims every string in the body, where a cross-cutting file goes, an import that resolves in the editor but not at runtime, a type error in a file nobody staged, editing the compose file or pinning an image, a local replica set that never elects a primary, a build that emits `dist/src/main.js`, or a container that cannot bind its port because another project holds it."
 ---
 
 # Project bootstrap
@@ -29,7 +29,7 @@ src/
 **Anything a deployment runs lives under `src/`.** The build compiles only `src/`, and the image
 holds only the build, so a command kept outside it cannot run where it is needed (see the
 `deployment` skill). A top-level `scripts/` holds what only a developer's machine runs — bringing
-the local stack up, for instance.
+the local stack up, for instance — and a top-level `eslint-rules/` the project's own lint rules.
 
 `common/` holds what is **generic**, not what is **shared**. The test is whether you can state the
 concept's rules without naming a business entity; the `domain-modeling` skill owns it, and it is the
@@ -134,7 +134,63 @@ At minimum:
 | `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) | A type reference becomes a runtime `require`, and closes a cycle the container finds at boot |
 | The import plugin's type-specifier-style rule (`prefer-top-level`) | `import { type X }` mixes a type into a value import, which the first rule does not reject |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards, and a body that grows a second line without them |
-| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type` | A wrapped call butts against the next statement and the two read as one lump |
+| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement and the two read as one lump, and a declaration runs into the work that uses it |
+| `local/padding-between-expression-kinds` | An assignment, a call and an awaited step run together |
+| `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
+| `@typescript-eslint/naming-convention` over a list of abbreviations | `ApiError` beside `APIPagination`: one word, two spellings |
+
+**One rule is the project's own.** Copy
+[assets/eslint-rules/padding-between-expression-kinds.mjs](assets/eslint-rules/padding-between-expression-kinds.mjs)
+and its type declaration
+[assets/eslint-rules/padding-between-expression-kinds.d.mts](assets/eslint-rules/padding-between-expression-kinds.d.mts)
+into the project's `eslint-rules/`, and register it as a local plugin:
+
+```typescript
+import { paddingBetweenExpressionKinds } from "./eslint-rules/padding-between-expression-kinds.mjs";
+
+export default tseslint.config({
+  plugins: {
+    local: { rules: { "padding-between-expression-kinds": paddingBetweenExpressionKinds } },
+  },
+  rules: {
+    "local/padding-between-expression-kinds": "error",
+  },
+});
+```
+
+It has an autofix and a test of its own in the project's suite. What it enforces, and why, is
+`code-conventions`'.
+
+**The abbreviation rule is `naming-convention` over a list.** No format can tell `Api` from a word,
+so the rule rejects each listed abbreviation written as a word, and a project adds its own
+vocabulary to the list. `Id` is not in it: it is written as a word. It checks declarations only —
+variables, functions, parameters, types, classes, methods — because a property's name is often a
+contract (a JSON field, a stored one) and a destructured binding repeats one; those are the
+reviewer's (see `code-conventions`).
+
+```typescript
+const ABBREVIATIONS = [
+  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "Html", "Http", "Ip", "Iso", "Json", "Jwt", "Otp", "Pdf",
+  "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
+];
+
+export default tseslint.config({
+  rules: {
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
+        format: null,
+        custom: {
+          regex: `(?:^|(?<=[a-z0-9]))(?:${ABBREVIATIONS.join("|")})(?=[A-Z0-9_]|s?$|s[A-Z0-9_])`,
+          match: false,
+        },
+      },
+      { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
+    ],
+  },
+});
+```
 
 `consistent-type-imports` skips every file with decorators on its own, so in those files the
 convention is kept by hand — `code-conventions` owns the rule and its exception.
@@ -399,7 +455,8 @@ this five seconds to diagnose instead of an afternoon.
 - [ ] The build config excludes every top-level directory outside `src/` plus specs, builders and
       doubles, and `dist/main.js` is at the top of the output.
 - [ ] The Node version in `.nvmrc`, `engines` and the Dockerfile `FROM` is the same.
-- [ ] The lint config enables every rule in the minimum table.
+- [ ] The lint config enables every rule in the minimum table, the project's own rule registered
+      from `eslint-rules/`.
 - [ ] Scripts exist for dev, build, lint, typecheck, test, integration and e2e, under the
       conventional names.
 - [ ] A pre-commit hook lints staged files and then typechecks the whole project.

@@ -22,14 +22,21 @@ policies and use cases — none of which need anything running.
 ## Shape
 
 Arrange, act, assert, with a blank line between the three — including when a section is a single
-line, and including when the act and the assert are fused into one expression. Two assertions about
-different things are two steps, not one:
+line, and including when the act and the assert are fused into one expression. Inside a section the
+same question decides: two lines stay together only when they are one step. The tool a test drives
+with and the world it runs against are two parts of arranging, preparing an action and firing it
+are two parts of acting, and assertions are grouped by what they observe — the result, a
+collaborator, the screen, the URL, the console. Two assertions about different things are two steps,
+not one:
 
+<!-- snippet-check: skip -->
 ```typescript
 // ❌ the rejection and the side effect read as one thought
 await expect(useCase.execute(aCommand())).rejects.toThrow();
 expect(eventBus.publish).not.toHaveBeenCalled();
+```
 
+```typescript
 // ✅ what was refused, then what did not happen because of it
 await expect(useCase.execute(aCommand())).rejects.toThrow();
 

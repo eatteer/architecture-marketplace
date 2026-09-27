@@ -23,8 +23,8 @@ a second copy, so there is never a question of which statement is current.
 
 | Skill | Scope |
 | --- | --- |
-| `code-conventions` | Universal TypeScript and React rules — forbidden constructs, annotations, absence via `undefined`, effects, blank lines between statements, JSX siblings and hook calls, naming. Applies to every file |
-| `project-bootstrap` | Source tree, aliases, compiler strictness, the Vite config, the lint config and the project's own lint rule, scripts, `main.tsx` and the order of its providers |
+| `code-conventions` | Universal TypeScript and React rules — forbidden constructs, annotations, absence via `undefined`, effects, blank lines between statements, JSX siblings and hook calls, naming and abbreviations. Applies to every file |
+| `project-bootstrap` | Source tree, aliases, compiler strictness, the Vite config, the lint config and the project's own lint rules, scripts, `main.tsx` and the order of its providers |
 | `adding-feature` | The folder skeleton and the ordered steps, delegating each one to the skill that owns it |
 | `api-client` | Types generated from the OpenAPI document, the one client and its middlewares, `APIError` from Problem Details, unwrapping the envelope, mappers |
 | `server-state` | The query client's defaults, query options factories and their keys, mutations and invalidation, optimistic updates |
@@ -42,7 +42,7 @@ a second copy, so there is never a question of which statement is current.
 | `configuration` | Build-time variables, validated once and never secret, the tests' own values, same-site origins |
 | `security` | What React escapes and the ways around it, URLs from data, the Content-Security-Policy, dependencies |
 | `observability` | The trace every request starts, the error-reporter port and its sources, the Web Vitals port |
-| `testing` | Which layer tests what, the console guard, the network mock, builders, determinism seams, the coverage floor, the end-to-end suite |
+| `testing` | Which layer tests what, the shape of a test, the console guard, the network mock, builders, determinism seams, the coverage floor, the end-to-end suite |
 | `deployment` | The static image on unprivileged nginx, the API's address as a build argument, the SPA fallback, cache headers, where headers are sent from |
 
 ## Requires
@@ -122,7 +122,7 @@ Beside its `SKILL.md`, a skill may carry files it points at, and each says what 
 | --- | --- | --- |
 | Examples | A complete create form and its schema file, read before writing a form | `forms` |
 | References | The naming and file-suffix tables, read before naming something | `code-conventions` |
-| Assets | Files copied into a project — the project's own lint rule for the hook calls that open a component and its type declaration; the `Dockerfile`, `nginx.conf` and `.dockerignore` | `project-bootstrap`, `deployment` |
+| Assets | Files copied into a project — the project's own lint rules, for the hook calls that open a component and for one-line statements of different kinds, with their type declarations; the `Dockerfile`, `nginx.conf` and `.dockerignore` | `project-bootstrap`, `deployment` |
 
 ## What this plugin leaves open
 
@@ -139,7 +139,7 @@ the answer:
 
 Every change to this plugin passes Claude Code's own manifest validator and a lint of every
 TypeScript and TSX snippet and example against the conventions the skills teach — with the same
-hook-spacing rule the project copies from `project-bootstrap`. Its [`evals/`](evals/) suite, run
+local lint rules the project copies from `project-bootstrap`. Its [`evals/`](evals/) suite, run
 with `claude plugin eval`, checks that each skill loads for a realistic request that does not name
 it, that unrelated requests load none, that `adopt-template` never runs on its own, and that the
 reviewer finds planted violations. How to run them is in the marketplace's contributing notes.

@@ -7,7 +7,7 @@ import { ApiBearerAuth, ApiCookieAuth, ApiOperation, ApiTags } from "@nestjs/swa
 import { actorFrom } from "@/common/presentation/actor-from";
 import { dataResponse } from "@/common/presentation/api-response";
 import type { DataResponse } from "@/common/presentation/api-response";
-import { ApiDataResponse, ApiProblemResponse } from "@/common/presentation/decorators/api-envelope.decorator";
+import { APIDataResponse, APIProblemResponse } from "@/common/presentation/decorators/api-envelope.decorator";
 import { CurrentUser } from "@/common/presentation/decorators/current-user.decorator";
 import { CreatedDTO } from "@/common/presentation/dtos/created.dto";
 import type { Principal } from "@/common/presentation/principal";
@@ -20,16 +20,16 @@ import { CreateUserDTO } from "@/features/users/presentation/dtos/create-user.dt
 @ApiTags("Users")
 @ApiBearerAuth(BEARER_SECURITY_SCHEME)
 @ApiCookieAuth(COOKIE_SECURITY_SCHEME)
-@ApiProblemResponse(HttpStatus.UNAUTHORIZED, "No valid credentials were presented")
-@ApiProblemResponse(HttpStatus.FORBIDDEN, "Missing the required permission")
+@APIProblemResponse(HttpStatus.UNAUTHORIZED, "No valid credentials were presented")
+@APIProblemResponse(HttpStatus.FORBIDDEN, "Missing the required permission")
 @Controller("users")
 export class UsersController {
   public constructor(private readonly _createUser: CreateUserUseCase) {}
 
   @ApiOperation({ summary: "Create a user", description: "Requires the `users:create` permission." })
-  @ApiDataResponse(CreatedDTO, { status: HttpStatus.CREATED, description: "User created" })
-  @ApiProblemResponse(HttpStatus.BAD_REQUEST, "The body is not valid")
-  @ApiProblemResponse(HttpStatus.CONFLICT, "The email is already registered")
+  @APIDataResponse(CreatedDTO, { status: HttpStatus.CREATED, description: "User created" })
+  @APIProblemResponse(HttpStatus.BAD_REQUEST, "The body is not valid")
+  @APIProblemResponse(HttpStatus.CONFLICT, "The email is already registered")
   @RequirePermissions("users:create")
   @Post()
   public async createUser(

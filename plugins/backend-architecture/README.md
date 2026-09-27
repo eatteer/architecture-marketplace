@@ -22,8 +22,8 @@ a second copy, so there is never a question of which statement is current.
 
 | Skill | Scope |
 | --- | --- |
-| `code-conventions` | Universal TypeScript/NestJS rules — forbidden constructs, explicit annotations, absence via `undefined`, naming. Applies to every file |
-| `project-bootstrap` | Source tree, `@/` alias, compiler strictness, scripts, `main.ts` and the order its steps must run in |
+| `code-conventions` | Universal TypeScript/NestJS rules — forbidden constructs, explicit annotations, absence via `undefined`, blank lines between statements, naming and abbreviations. Applies to every file |
+| `project-bootstrap` | Source tree, `@/` alias, compiler strictness, the lint config and the project's own lint rule, scripts, `main.ts` and the order its steps must run in |
 | `module-wiring` | Modules, DI tokens, exports discipline, `@Global()` policy, per-environment providers, breaking cycles |
 | `adding-feature` | The folder skeleton and the ordered steps, delegating each one to the skill that owns it |
 | `domain-modeling` | Entities, aggregates, value objects, events, errors, repository interfaces, `?` vs `null` |
@@ -46,7 +46,7 @@ a second copy, so there is never a question of which statement is current.
 | `authorization` | Permission catalog, roles, guards, and resource-level access |
 | `security` | Input hardening, uploads, rate limiting, CSRF, CORS, secrets, personal data |
 | `configuration` | Validated environment variables with no defaults, and operator-editable settings |
-| `testing` | Test boundaries, doubling ports, builders, determinism seams, the in-memory replica set, the e2e database, the coverage floor |
+| `testing` | Test boundaries, the shape of a test, doubling ports, builders, determinism seams, the in-memory replica set, the e2e database, the coverage floor |
 
 ## Requires
 
@@ -128,7 +128,7 @@ Beside its `SKILL.md`, a skill may carry files it points at, and each says what 
 | Examples | Complete `.ts` files for the canonical shapes — an entity and the shared base classes, a use case, a schema, a repository, a migration, a controller — read when writing one | `domain-modeling`, `application-layer`, `persistence-layer`, `presentation-layer` |
 | References | Lookup tables and recipes read on demand — the naming and suffix tables, the concurrency guard | `code-conventions`, `transactions-and-consistency` |
 | Scripts | Two programs run against a project, on its own `typescript`, that report and only write with `--write`: convert type-only imports in decorated files, and remove local annotations the compiler would infer | `code-conventions` |
-| Assets | Files copied into a project — the `Dockerfile` and `.dockerignore`, the database service of the local compose file | `deployment`, `project-bootstrap` |
+| Assets | Files copied into a project — the `Dockerfile` and `.dockerignore`, the database service of the local compose file, the project's own lint rule for one-line statements of different kinds with its type declaration | `deployment`, `project-bootstrap` |
 
 ## What this plugin leaves open
 

@@ -25,12 +25,17 @@ import stylistic from "@stylistic/eslint-plugin";
 import { Linter } from "eslint";
 import tseslint from "typescript-eslint";
 
-// The frontend's own rule, shipped as an asset of the skill that owns the lint config: the snippets
-// are checked against the very file a project copies.
+// Each template's own rules, shipped as assets of the skill that owns its lint config: the snippets
+// are checked against the very files a project copies. The rule both stacks share ships in each, and
+// the two copies must stay identical (checked below).
+import { paddingBetweenExpressionKinds as backendPaddingBetweenExpressionKinds } from "../plugins/backend-architecture/skills/project-bootstrap/assets/eslint-rules/padding-between-expression-kinds.mjs";
 import { paddingAroundHooks } from "../plugins/frontend-architecture/skills/project-bootstrap/assets/eslint-rules/padding-around-hooks.mjs";
+import { paddingBetweenExpressionKinds as frontendPaddingBetweenExpressionKinds } from "../plugins/frontend-architecture/skills/project-bootstrap/assets/eslint-rules/padding-between-expression-kinds.mjs";
 
 const REPOSITORY_ROOT = resolve(fileURLToPath(import.meta.url), "..", "..");
 const PLUGINS_ROOT = join(REPOSITORY_ROOT, "plugins");
+const SHARED_RULE_ASSETS = ["padding-between-expression-kinds.mjs", "padding-between-expression-kinds.d.mts"];
+const SHARED_RULE_PLUGINS = ["backend-architecture", "frontend-architecture"];
 const SKIP_MARKER = "<!-- snippet-check: skip -->";
 const OPENING_FENCE = /^(\s*)```(typescript|tsx)\s*$/;
 const CLOSING_FENCE = /^\s*```\s*$/;
@@ -74,6 +79,15 @@ const MULTILINE_STATEMENTS = [
   "multiline-type",
 ];
 
+// An abbreviation is one word in capitals (see code-conventions): `APIError`, `buildAPIError`, and
+// all lowercase only at the start of a camelCase name (`apiClient`). `Id` is written as a word. The
+// list is the vocabulary both templates use; a project adds its own.
+const ABBREVIATIONS = [
+  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "Html", "Http", "Ip", "Iso", "Json", "Jwt", "Otp", "Pdf",
+  "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
+];
+const ABBREVIATION_NOT_IN_CAPITALS = `(?:^|(?<=[a-z0-9]))(?:${ABBREVIATIONS.join("|")})(?=[A-Z0-9_]|s?$|s[A-Z0-9_])`;
+
 // The rules both templates share, with the options both give them.
 const SHARED_RULES = {
   "@typescript-eslint/no-explicit-any": "error",
@@ -93,6 +107,20 @@ const SHARED_RULES = {
     "error",
     { blankLine: "always", prev: MULTILINE_STATEMENTS, next: "*" },
     { blankLine: "always", prev: "*", next: MULTILINE_STATEMENTS },
+    { blankLine: "always", prev: ["const", "let"], next: "expression" },
+    { blankLine: "always", prev: "expression", next: ["const", "let"] },
+  ],
+  "local/padding-between-expression-kinds": "error",
+  // Declarations only: a property's name is often a contract — a JSON field, a stored one — and a
+  // destructured binding repeats one, so those are the reviewer's.
+  "@typescript-eslint/naming-convention": [
+    "error",
+    {
+      selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
+      format: null,
+      custom: { regex: ABBREVIATION_NOT_IN_CAPITALS, match: false },
+    },
+    { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
   ],
   "no-console": "error",
   "@typescript-eslint/consistent-type-imports": [
@@ -111,6 +139,10 @@ const SHARED_RESTRICTED_SYNTAX = [
   {
     selector: "TSEnumDeclaration",
     message: "Derive the union from an `as const` array instead of declaring an `enum`.",
+  },
+  {
+    selector: "CallExpression[optional=true]",
+    message: "Write the `if`, then the call: an optional call hides the branch at the end of the line.",
   },
 ];
 
@@ -131,7 +163,11 @@ const BACKEND_CONFIG = [
         experimentalDecorators: true,
       },
     },
-    plugins: { "@typescript-eslint": tseslint.plugin, "@stylistic": stylistic },
+    plugins: {
+      "@typescript-eslint": tseslint.plugin,
+      "@stylistic": stylistic,
+      local: { rules: { "padding-between-expression-kinds": backendPaddingBetweenExpressionKinds } },
+    },
     rules: {
       ...SHARED_RULES,
       "no-restricted-syntax": ["error", ...SHARED_RESTRICTED_SYNTAX],
@@ -152,7 +188,12 @@ const FRONTEND_CONFIG = [
     plugins: {
       "@typescript-eslint": tseslint.plugin,
       "@stylistic": stylistic,
-      local: { rules: { "padding-around-hooks": paddingAroundHooks } },
+      local: {
+        rules: {
+          "padding-around-hooks": paddingAroundHooks,
+          "padding-between-expression-kinds": frontendPaddingBetweenExpressionKinds,
+        },
+      },
     },
     rules: {
       ...SHARED_RULES,
@@ -299,6 +340,19 @@ const targets = process.argv.length > 2
   : [PLUGINS_ROOT];
 const files = targets.flatMap(filesUnder);
 const problems = [];
+
+for (const asset of SHARED_RULE_ASSETS) {
+  const [reference, ...others] = SHARED_RULE_PLUGINS.map((plugin) =>
+    join(PLUGINS_ROOT, plugin, "skills", "project-bootstrap", "assets", "eslint-rules", asset),
+  );
+
+  for (const other of others) {
+    if (readFileSync(other, "utf8") !== readFileSync(reference, "utf8")) {
+      problems.push(`${relative(REPOSITORY_ROOT, other).replaceAll("\\", "/")}: differs from its copy in ${SHARED_RULE_PLUGINS[0]}`);
+    }
+  }
+}
+
 let checkedBlocks = 0;
 let skippedBlocks = 0;
 let checkedExamples = 0;

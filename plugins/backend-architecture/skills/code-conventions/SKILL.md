@@ -1,7 +1,7 @@
 ---
 name: code-conventions
-description: "Universal TypeScript/NestJS conventions for every file in any layer — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases), type annotations, `interface` vs `type`, absence via `undefined`, no magic values, constructor injection, pure functions, no mutation of data you do not own, type-only imports, floating promises, named exports, comments and JSDoc, blank lines, braces, the naming and file-suffix tables."
-when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, choosing a file suffix, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
+description: "Universal TypeScript/NestJS conventions for every file in any layer — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases), type annotations, `interface` vs `type`, optional calls, absence via `undefined`, no magic values, constructor injection, pure functions, no mutation of data you do not own, type-only imports, floating promises, named exports, comments and JSDoc, blank lines, braces, abbreviations in names, the naming and file-suffix tables."
+when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a blank line between an assignment and a call, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
 ---
 
 # Universal code conventions
@@ -96,6 +96,15 @@ trusts it into a red build.
   The one contract without the prefix is the opaque **`Transaction`** handle: nothing implements it
   in the domain's eyes — the domain names it as a value it receives and passes along, so it reads as
   a value type, and only the infrastructure boundary that declares it knows what is inside.
+
+- **No optional call.** A call that may not happen is a branch, and a branch is an `if`.
+  `onProgress?.(done)` reads as an action that always runs, with its condition folded into two
+  characters in the middle of the line; the `if` states it, and is where a second statement goes when
+  the branch grows. Optional *access* (`user?.email`) is a read, not an action, and stays.
+
+  ```typescript
+  if (onProgress) { onProgress(done); }
+  ```
 
 - **`readonly` on anything that must not change after construction** — command fields, value-object
   internals, injected dependencies. It is the cheapest way to say a value is an input, not a slot.
@@ -236,9 +245,6 @@ return this._usersRepository.getByEmail(email);
 const isReactivation = user.isInactive && command.status === ACTIVE_STATUS_VALUE;
 ```
 
-This is the comments rule below in variable form: a name that describes *what* the next line already
-says adds a hop, not information.
-
 ### Pure functions stay pure
 
 A helper, a formatter, a mapper, a domain policy: output depends only on its arguments, with no I/O,
@@ -289,13 +295,8 @@ A `try`/`catch` and a transaction block are where the rule slips most: both feel
 caption, so they get one that restates the body.
 
 ```typescript
-// ❌ restates the code — the call already says this
+// ❌ restates the code — the call already says this; with nothing non-obvious to say, say nothing
 // Wrap the save in a transaction so both writes commit together
-await this._transactionManager.run(async (transaction: Transaction): Promise<void> => {
-  /* ... */
-});
-
-// ✅ nothing non-obvious to say, so nothing is said
 await this._transactionManager.run(async (transaction: Transaction): Promise<void> => {
   /* ... */
 });
@@ -338,16 +339,6 @@ One thing decides it: **how tall the declaration is.**
   ```
 
   ```typescript
-  // ✅ two statements, and it is obvious which is which
-  app.use(cookieParser());
-
-  app.useGlobalPipes(
-    new EmptyBodyPipe(),
-    new I18nValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
-  );
-  ```
-
-  ```typescript
   export class UserDTO {
     @ApiProperty({ example: "01890a5d-ac96-774b-bcce-b302099a8057" })
     public id!: string;
@@ -360,12 +351,27 @@ One thing decides it: **how tall the declaration is.**
   A decorator belongs to the member below it: the two are one declaration two lines tall, which is
   why a decorated member list is spaced and the same type written without decorators stays packed.
 
+- **Among one-line statements, what they do decides.** A blank line falls where the kind of work
+  changes — a declaration and a bare statement, an assignment and a call, a step that is awaited and
+  one that is not. Naming a value, changing state, telling something else to act and waiting on it
+  are different sentences, and running two kinds together hides where one stops. The linter
+  enforces these three.
+
+  ```typescript
+  user.changeEmail(command.email, command.actor, now);
+
+  await this._usersRepository.save(user, transaction);
+  ```
+
 - **Separate distinct concepts** with one blank line even when both are single-line: the dependency
   reads from the work that uses them, one derivation from an unrelated one, and before an
   `if`/`return` that follows unrelated work.
 
   The test is whether the statements do the same kind of work, not whether they mention the same
-  subject: three declarations illustrating three different rules are three concepts.
+  subject: three declarations illustrating three different rules are three concepts. Past what the
+  linter can tell apart, two lines stay together only when they read as one thought — the two sides
+  of a comparison, a value and what is derived from it. A test's paragraphs are its steps, and how
+  they fall is `testing`'s.
 
 - **No blank line at the very start or end** of a class, method, function or callback body.
 
@@ -402,10 +408,10 @@ the code's, and nothing imports it by name.
 ## Naming conventions
 
 Both naming tables — names by context (files, classes, interfaces, constants, DI tokens,
-collections, enumerable values, error codes, routes, query parameters) and file suffixes by artifact
-— are in [references/naming-tables.md](references/naming-tables.md). **Read it before naming a file,
-class, constant, token or route, or choosing a suffix**; the rules below explain the tables and
-settle what they cannot.
+collections, enumerable values, error codes, routes, query parameters) and file suffixes by artifact,
+with the rules for which file takes which suffix — are in
+[references/naming-tables.md](references/naming-tables.md). **Read it before naming a file, class,
+constant, token or route, or choosing a suffix**; the rules below settle what the tables cannot.
 
 **The accessor rule is about reads and writes of a value.** A method that *does* something is a
 method and keeps its verb, even when the verb is `get` or `set`: `getEvents()` drains the
@@ -413,34 +419,22 @@ aggregate's event buffer — calling it twice returns two different answers — 
 writes the request context. A getter that emptied a buffer would be a read with a side effect hidden
 behind property syntax.
 
-**Type suffix by artifact.** The suffix says what a file holds before it is opened, and it is what a
-glob keys on — the build and coverage exclusions, a test runner's pattern. Every suffix a file may
-take is in the suffix table; the test files' own suffixes belong to `testing`.
-
-Two kinds of file take **no suffix**, and the rule for each has no exceptions:
-
-- **What its folder already names.** Value objects in `value-objects/`, helpers in any `utils/`
-  folder — `fingerprint.ts`, `holds-exactly.ts`. A `.util` suffix inside `utils/` says the same
-  thing twice.
-- **A port's implementation**, named for its technology and the port it implements, as the
-  kebab-case of its class: `bcrypt-password-hasher.ts`, `system-clock.ts`, `s3-file-storage.ts`,
-  `nodemailer-email-service.ts`, `mongo-transaction-manager.ts`. The technology is the one thing
-  that tells it from the next implementation of the same port; a suffix such as `.adapter` or
-  `.service` on some of them and not others is how a glob or a grep misses half.
-
-Mappers take the **layer** in the suffix because a feature has two of them, and a bare
-`user.mapper.ts` in two folders gives two different classes the same name.
-
-**Plural vs singular.** Artifacts that serve the whole feature take the **feature name (plural)**:
-module, repository, controller, errors file, errors map, event handlers. Artifacts that describe or
-convert one thing take the **entity name (singular)**: entity, schema, DTO, value object, command,
-and both mappers (`user.persistence-mapper.ts`).
-
 **Names carry domain meaning.** Prefer the domain word over `data`, `result`, `item`, `info`,
 `payload`: `.map((user: User): UserDTO => …)`, not `.map((item: User): UserDTO => …)`. Grep a
 sibling file before inventing a name for an entity the codebase already names. Sanctioned generic
 names: `document`/`documents` inside a persistence mapper, `dto` inside a presentation mapper, and a
 generic helper over `unknown`.
+
+**An abbreviation is one word, written in capitals** wherever it falls — `APIPagination`,
+`CreateUserDTO`, `HTTPClient`, `buildAPIError` — **except at the start of a camelCase name, where it
+is all lowercase**: `apiURL`, `httpClient`. An abbreviation is read letter by letter, and `Api` beside
+`API` is two spellings of one word that a search for either misses; capitals at the start of a value
+would read as a class. `Id` is a word, not an abbreviation (`userId`, `findById`), spelled the way
+the stored fields and the API's already spell it. A name someone else owns keeps its casing: a
+library's (`HttpStatus`, `@ApiProperty`) and one that crosses a boundary (a JSON field, a stored
+field, a query parameter). The linter checks declarations against a list of common abbreviations
+(see `project-bootstrap`); a property's name is often a contract, so properties, and an
+abbreviation the list lacks, are the reviewer's.
 
 **No single-letter parameters.** `(error: unknown) =>`, not `(e: unknown) =>`. The exception is an
 index or mathematical convention where the letter *is* the term (`i` in a hand-written loop).
@@ -479,6 +473,7 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
 
 - [ ] No `any`, no `!`, and every `as` is one of the three sanctioned cases — each one a value
       something else already validated.
+- [ ] No optional call (`?.()`); every conditional call is an `if`.
 - [ ] No TypeScript `enum`; every enumerable concept is an `as const` array with its derived union.
 - [ ] Every parameter, return type and class property carries an explicit type, callbacks included
       — all but a decorator's thunk and what a test hands its runner and the runner's helpers.
@@ -488,7 +483,8 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
 - [ ] Every promise is awaited, returned, or explicitly handled.
 - [ ] Every literal that carries domain meaning and is not a value-union member is a named constant.
 - [ ] Every `const` either names a concept or unifies several readers.
-- [ ] No statement that wraps onto a second line touches the statement above or below it.
+- [ ] No statement that wraps onto a second line touches the statement above or below it, one-line
+      statements of different kinds are apart, and every pair left together reads as one thought.
 - [ ] Every `if` body is in braces, a bare `return;` included.
 - [ ] Every type-only import uses `import type` and stands as its own statement — except a class in
       a decorated signature, which stays a value import.
@@ -496,5 +492,6 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
 - [ ] Every default export is one a tool requires.
 - [ ] Every comment and JSDoc states a *why* the signature cannot; every use case lists its
       `@throws`.
-- [ ] Every file, class, token and route follows the naming tables, and each mapper file names its
-      layer and its entity.
+- [ ] Every file, class, token and route follows the naming tables, each mapper file names its layer
+      and its entity, and every abbreviation in a name the project owns is in capitals (lowercase at
+      the start of a camelCase name, `Id` a word).

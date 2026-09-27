@@ -1,7 +1,7 @@
 # Naming tables
 
-The two lookup tables of the `code-conventions` skill. The rules that explain them, and settle what
-they cannot, stay in that skill's `SKILL.md`.
+The two lookup tables of the `code-conventions` skill, each with the rules that read it. What the
+tables cannot settle stays in that skill's `SKILL.md`.
 
 ## Names by context
 
@@ -11,8 +11,8 @@ they cannot, stay in that skill's `SKILL.md`.
 | Classes | PascalCase | `CreateUserUseCase` |
 | Interfaces (contracts) | PascalCase, `I` prefix | `IUserRepository`, `IEventBus` |
 | Types (data shapes, unions) | PascalCase, no prefix | `UserDTO`, `DataResponse` |
-| Acronyms in classes/types | UPPERCASE | `APIPagination`, `HTTPClient` |
-| Acronyms in variables/properties | camelCase | `apiUrl`, `httpClient` |
+| Abbreviations | one word in capitals; all lowercase at the start of a camelCase name | `APIPagination`, `HTTPClient`, `buildAPIError`, `apiURL` |
+| `Id` | a word, as the stored fields spell it | `userId`, `findById()` |
 | Functions, methods, variables | camelCase | `getUserById()`, `userId` |
 | Getters / setters (reads and writes of a value) | native accessors, never `getX()`/`setX()` | `get email()` |
 | Private members | `_camelCase` | `_usersRepository`, `_assertActive()` |
@@ -28,8 +28,27 @@ they cannot, stay in that skill's `SKILL.md`.
 
 ## File suffixes by artifact
 
-A file's suffix says what it holds before it is opened, and it is what a glob keys on. Two kinds of
-file take no suffix at all — see "Naming conventions" in `SKILL.md`.
+A file's suffix says what it holds before it is opened, and it is what a glob keys on — the build
+and coverage exclusions, a test runner's pattern. The test files' own suffixes belong to `testing`.
+
+Two kinds of file take **no suffix**, and the rule for each has no exceptions:
+
+- **What its folder already names.** Value objects in `value-objects/`, helpers in any `utils/`
+  folder — `fingerprint.ts`, `holds-exactly.ts`. A `.util` suffix inside `utils/` says the same
+  thing twice.
+- **A port's implementation**, named for its technology and the port it implements, as the
+  kebab-case of its class: `bcrypt-password-hasher.ts`, `system-clock.ts`, `s3-file-storage.ts`,
+  `nodemailer-email-service.ts`, `mongo-transaction-manager.ts`. The technology is the one thing
+  that tells it from the next implementation of the same port; a suffix such as `.adapter` or
+  `.service` on some of them and not others is how a glob or a grep misses half.
+
+Mappers take the **layer** in the suffix because a feature has two of them, and a bare
+`user.mapper.ts` in two folders gives two different classes the same name.
+
+**Plural vs singular.** Artifacts that serve the whole feature take the **feature name (plural)**:
+module, repository, controller, errors file, errors map, event handlers. Artifacts that describe or
+convert one thing take the **entity name (singular)**: entity, schema, DTO, value object, command,
+and both mappers (`user.persistence-mapper.ts`).
 
 | Suffix | Holds |
 | --- | --- |

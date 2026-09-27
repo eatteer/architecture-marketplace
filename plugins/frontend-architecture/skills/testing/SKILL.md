@@ -25,6 +25,42 @@ repeat each other.
   its screens rendered through the router, one route to the next — tests the feature rather than one
   file, and sits at the feature's root (`features/users/users-list.test.tsx`).
 
+## Shape
+
+Arrange, act, assert, with a blank line between the three — including when a section is a single
+line, and including when the act and the assert are fused into one expression. Inside a section the
+same question decides: two lines stay together only when they are one step. The tool a test drives
+with and the world it runs against are two parts of arranging, preparing an action and firing it
+are two parts of acting, and assertions are grouped by what they observe — the result, a
+collaborator, the screen, the URL, the console. Two assertions about different things are two steps,
+not one:
+
+<!-- snippet-check: skip -->
+```tsx
+// ❌ what the screen shows and what reached the backend read as one thought
+expect(await screen.findByRole("heading", { name: "Ada Lovelace" })).toBeInTheDocument();
+expect(backend.createBodies).toEqual([expect.objectContaining({ preferredLanguage: "es" })]);
+```
+
+```tsx
+it("creates a user in the language chosen for it", async () => {
+  const user = userEvent.setup();
+
+  const backend = serveUsers(USERS);
+
+  renderRoute("/users/new");
+
+  await fillCreateForm(user, { name: "Ada Lovelace", email: "ada@example.com" });
+  await chooseLanguage(user, "Español");
+
+  await user.click(screen.getByRole("button", { name: "Create user" }));
+
+  expect(await screen.findByRole("heading", { name: "Ada Lovelace" })).toBeInTheDocument();
+
+  expect(backend.createBodies).toEqual([expect.objectContaining({ preferredLanguage: "es" })]);
+});
+```
+
 ## The setup
 
 The test runner's config lives in `vite.config.ts` (see `project-bootstrap`): `jsdom`, one setup

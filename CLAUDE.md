@@ -154,7 +154,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Permission catalog, roles, permission guards, resource-level access, operator endpoints behind a key | `authorization` |
 | Input hardening, regex escaping, uploads, CSRF, CORS, rate limiting, the proxy hop count, secrets, PII | `security` |
 | Environment variables, startup validation, typed settings values for the application layer, operator-editable settings | `configuration` |
-| Test boundaries, test doubles, builders, determinism seams | `testing` |
+| Test boundaries, the shape of a test, test doubles, builders, determinism seams | `testing` |
 | Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
 
 ### Ownership map — `engineering-workflow`
@@ -187,7 +187,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Build-time variables, their validation, nothing secret in the bundle | `configuration` |
 | Cross-site scripting, raw HTML, untrusted URLs rendered as links, the Content-Security-Policy, dependencies | `security` |
 | The W3C trace context the browser starts and where its id ends up, the error-reporter port, Web Vitals | `observability` |
-| Test boundaries, the console guard, the network mock, builders, the end-to-end suite, the coverage floor | `testing` |
+| Test boundaries, the shape of a test, the console guard, the network mock, builders, the end-to-end suite, the coverage floor | `testing` |
 | The static image, the SPA fallback, cache headers, where the security headers are sent from | `deployment` |
 | Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
 
@@ -319,10 +319,12 @@ more effectively than the prose prevents it.
 Markdown of a skill or an agent — `SKILL.md` and `references/` — and every `examples/**/*.ts` and
 `.tsx`, with the rules of **that plugin's** reference project's linter that need no type information:
 no `any`, explicit return types and member accessibility, braces on every guard, no `console`,
-type-only imports as their own statement, no `enum`, a blank line on each side of a multi-line
-statement. The frontend's adds its JSX spacing rule, its own rule for the hook calls that open a
-component — loaded from the asset the plugin ships, so the check and a project run the same file —
-and the ban on a second headless UI library. Each plugin with snippets has its entry in the tool's
+type-only imports as their own statement, no `enum`, no optional call, abbreviations in capitals, a
+blank line on each side of a multi-line statement and between one-line statements of different
+kinds. That last rule is the templates' own, and each stack plugin ships it as an asset the check
+loads, so the check and a project run the same file; the two copies must stay identical, and the
+check reports it when they drift. The frontend's adds its JSX spacing rule, its own rule for the
+hook calls that open a component — an asset too — and the ban on a second headless UI library. Each plugin with snippets has its entry in the tool's
 `CONFIGS`; one without is reported rather than judged by another stack's rules. Snippets are
 fragments, so they are wrapped as little as they need to parse and never compiled; an undeclared
 identifier is not an error. `npm install` wires it as the pre-commit hook. A report names the file,

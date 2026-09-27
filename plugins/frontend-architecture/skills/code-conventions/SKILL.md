@@ -1,7 +1,7 @@
 ---
 name: code-conventions
-description: "Universal TypeScript and React conventions for every `.ts` and `.tsx` file — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases), what carries a type annotation and which callbacks do not, `type` vs `interface`, `?` vs `| undefined`, absence via `undefined`, no magic values, pure functions, no mutation of data you do not own, type-only imports, floating promises and `void`, named exports, props typing, no manual memoization under the React Compiler, what an effect is for, comments, blank lines between statements, JSX siblings and hook calls, braces, the naming and file-suffix tables."
-when_to_use: "Trigger on — writing or editing ANY `.ts` or `.tsx` file or React component, declaring a type or a component's props, casting with `as`, inlining a literal, binding a `const`, mutating an array, an object or state, calling an async function from an event handler, annotating a callback or a JSX event handler, reaching for `useCallback`, `useMemo` or `React.memo`, writing a `useEffect`, copying a prop into state, naming a file, component, hook or constant, choosing a file suffix, a guard without braces, a blank line after a hook call, a lint error about hook spacing or JSX siblings, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
+description: "Universal TypeScript and React conventions for every `.ts` and `.tsx` file — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases, an optional call), what carries a type annotation and which callbacks do not, `type` vs `interface`, `?` vs `| undefined`, absence via `undefined`, no magic values, pure functions, no mutation of data you do not own, type-only imports, floating promises and `void`, named exports, props typing, no manual memoization under the React Compiler, what an effect is for, comments, blank lines between statements, JSX siblings and hook calls, braces, abbreviations in names, the naming and file-suffix tables."
+when_to_use: "Trigger on — writing or editing ANY `.ts` or `.tsx` file or React component, declaring a type or a component's props, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array, an object or state, calling an async function from an event handler, annotating a callback or a JSX event handler, reaching for `useCallback`, `useMemo` or `React.memo`, writing a `useEffect`, copying a prop into state, naming a file, component, hook or constant, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a guard without braces, a blank line after a hook call or between an assignment and a call, a lint error about hook spacing or JSX siblings, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
 ---
 
 # Universal code conventions
@@ -98,6 +98,15 @@ trusts it into a red build.
   optional prop is `onRetry?: () => void`. A record that always carries the key — a form's values,
   the filters a component receives — is `status: UserStatus | undefined`, so forgetting to pass it is
   a compile error rather than a silent `undefined`.
+- **No optional call.** A call that may not happen is a branch, and a branch is an `if`.
+  `onSelect?.(value)` reads as an action that always runs, with its condition folded into two
+  characters in the middle of the line; the `if` states it, and is where a second statement goes when
+  the branch grows. Optional *access* (`session?.user.name`) is a read, not an action, and stays.
+
+  ```typescript
+  if (onSelect) { onSelect(value); }
+  ```
+
 - **`readonly` on what must not change after construction** — an error's fields, a catalog. It says
   a value is an input, not a slot.
 - **The `as` cast is forbidden** except two cases, and both prove nothing and hide nothing:
@@ -283,9 +292,10 @@ caption. If an effect needs explaining, that is usually the signal to give it a 
 ## Blank lines and spacing
 
 A blank line marks a **change of concept** or gives a tall block room to breathe; it is not a
-separator dropped between every statement. When everything is separated, nothing is grouped. All
-three rules below are enforced by the linter, so `--fix` settles them; what is written here is the
-reason, so the code reads the same where the linter cannot reach.
+separator dropped between every statement. When everything is separated, nothing is grouped. Every
+rule below but the last is enforced by the linter, so `--fix` settles them; what is written here is
+the reason, so the code reads the same where the linter cannot reach. The last is judgment, and the
+reviewer's to hold.
 
 **Statements: how tall they are decides.** A run of single-line statements of the same kind stays
 together. Anything that spans more than one line gets a blank line on each side, even from code it
@@ -300,6 +310,18 @@ const router = createAppRouter(queryClient);
 createRoot(rootElement, { onCaughtError: handleCaughtError }).render(
   <App router={router} />,
 );
+```
+
+**One-line statements: what they do decides.** Among statements that fit on a line, a blank line
+falls where the kind of work changes — a declaration and a bare statement, an assignment and a call,
+a step that is awaited and one that is not. Naming a value, changing state, telling something else
+to act and waiting on it are different sentences, and running two kinds together hides where one
+stops.
+
+```typescript
+isSubmitting.current = true;
+
+createUser.mutate(values);
 ```
 
 **JSX siblings: the same rule, one level down.** A multi-line element gets a blank line on each side;
@@ -345,6 +367,7 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
     }
 
     isSubmitting.current = true;
+
     createUser.mutate(values);
   }
 
@@ -354,6 +377,18 @@ export function CreateUserForm({ onCreated }: CreateUserFormProps): JSX.Element 
 
 A blank line between two calls of the same hook is still allowed — before one that carries its own
 comment, for instance.
+
+**Past what the linter can tell apart, two lines stay together only when they read as one
+thought.** The linter sees kinds of statement, not purpose. Two declarations of the same kind are
+still two paragraphs when they prepare different things, and one when they are two halves of the
+same thing — the two sides of a comparison, a value and what is derived from it:
+
+```typescript
+const { pluralFormsByKey } = describeNamespace(language, fileName);
+const expectedForms = [...pluralFormsOf(language)].sort();
+```
+
+A test's paragraphs are its steps, and how they fall is `testing`'s.
 
 - **No blank line at the very start or end** of a function, callback or component body.
 - **The import block and parameter lists are the linter's alone**: its import-ordering rule decides
@@ -403,6 +438,16 @@ cannot.
   inventing a name for something the codebase already names. Sanctioned generic names: `dto` inside
   a mapper, `field` and `fieldState` from the form library, `value` and `label` on the items a select
   renders, and a generic helper over `unknown`.
+- **An abbreviation is one word, written in capitals** wherever it falls — `APIError`,
+  `CreateUserDTO`, `buildAPIError`, `idFromURL` — **except at the start of a camelCase name, where it
+  is all lowercase**: `apiClient`, `urlFor`. An abbreviation is read letter by letter, and `Api`
+  beside `API` is two spellings of one word that a search for either misses; capitals at the start
+  of a value would read as a type or a component. `Id` is a word, not an abbreviation (`userId`,
+  `roleIds`), spelled the way the backend's fields and its database already spell it. A name someone
+  else owns keeps its casing: a library's (`getRouteApi`, an option such as `baseUrl`) and one that
+  crosses a boundary (a JSON field, a query parameter). The linter checks declarations against a
+  list of common abbreviations (see `project-bootstrap`); a property's name is often a contract, so
+  properties, and an abbreviation the list lacks, are the reviewer's.
 - **No single-letter parameters.** `(event) =>`, not `(e) =>`; `(error: unknown)`, not `(e)`. An
   unused positional parameter is `_`: `Array.from({ length }, (_: unknown, row: number) …)`. The one
   exception is `t`, the translator: it is i18next's own name, and every file that shows text reads
@@ -416,6 +461,7 @@ cannot.
 - [ ] No `any`, no `!`, and every `as` is `as const` or the widening inside a type predicate.
 - [ ] No TypeScript `enum`; every enumerable concept is an `as const` array with its derived union,
       or the backend's generated array.
+- [ ] No optional call (`?.()`); every conditional call is an `if`.
 - [ ] Every parameter, return type and class property carries a type, callbacks included — all but
       an inline JSX attribute handler and what a test hands its runner and the runner's helpers.
 - [ ] Every `interface` reopens a library's declaration; every other shape is a `type`.
@@ -426,11 +472,14 @@ cannot.
       outside React.
 - [ ] Every component is a named function with a declared return type, and props with more than one
       member on an exported component are a named `<Component>Props`.
-- [ ] `lint` passes: no statement or JSX sibling that wraps touches its neighbor, hook calls are
-      paragraphs, and every `if` body is in braces.
+- [ ] `lint` passes: no statement or JSX sibling that wraps touches its neighbor, one-line
+      statements of different kinds are apart, hook calls are paragraphs, and every `if` body is in
+      braces.
+- [ ] Every pair of lines left together reads as one thought.
 - [ ] Every type-only import uses `import type` as its own statement.
 - [ ] No `console.*` outside the error reporter's default.
 - [ ] Every default export is one a tool requires.
 - [ ] Every comment states a *why* the code cannot.
-- [ ] Every file, component, hook and constant follows the naming tables, and no path contains
-      camelCase.
+- [ ] Every file, component, hook and constant follows the naming tables, every abbreviation in a
+      name the project owns is in capitals (lowercase at the start of a camelCase name, `Id` a word),
+      and no path contains camelCase.

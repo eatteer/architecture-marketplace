@@ -146,7 +146,10 @@ The core is the same set a TypeScript project needs anywhere:
 | `@typescript-eslint/no-floating-promises` | An unawaited call loses its errors silently |
 | `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) with the import plugin's `prefer-top-level` | A type reference becomes a runtime import |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards |
-| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type` | A wrapped call butts against the next statement |
+| `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement, and a declaration against the work that uses it |
+| `local/padding-between-expression-kinds` | An assignment, a call and an awaited step run together |
+| `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
+| `@typescript-eslint/naming-convention` over a list of abbreviations | `ApiError` beside `APIPagination`: one word, two spellings |
 | The import plugin's `order`, with `@/` and `@test/` as internal groups | Every file orders its imports its own way |
 
 A front end adds its own:
@@ -163,26 +166,73 @@ A front end adds its own:
 | `no-restricted-imports` of a second headless UI library | Two libraries with two APIs for the same components (see `ui-components`) |
 | `no-restricted-syntax` on `import.meta.env` outside the configuration module | A variable read raw, past its validation (see `configuration`) |
 
-**The hook-spacing rule is the project's own.** Copy
-[assets/eslint-rules/padding-around-hooks.mjs](assets/eslint-rules/padding-around-hooks.mjs) and its
-type declaration [assets/eslint-rules/padding-around-hooks.d.mts](assets/eslint-rules/padding-around-hooks.d.mts)
-into the project's `eslint-rules/`, and register it as a local plugin:
+**Two rules are the project's own.** Copy each with its type declaration into the project's
+`eslint-rules/` — the hook-spacing rule,
+[assets/eslint-rules/padding-around-hooks.mjs](assets/eslint-rules/padding-around-hooks.mjs) and
+[assets/eslint-rules/padding-around-hooks.d.mts](assets/eslint-rules/padding-around-hooks.d.mts), and
+the one that keeps one-line statements of different kinds apart,
+[assets/eslint-rules/padding-between-expression-kinds.mjs](assets/eslint-rules/padding-between-expression-kinds.mjs)
+and
+[assets/eslint-rules/padding-between-expression-kinds.d.mts](assets/eslint-rules/padding-between-expression-kinds.d.mts)
+— and register them as a local plugin:
 
 ```typescript
 import { paddingAroundHooks } from "./eslint-rules/padding-around-hooks.mjs";
+import { paddingBetweenExpressionKinds } from "./eslint-rules/padding-between-expression-kinds.mjs";
 
 export default tseslint.config({
   plugins: {
-    local: { rules: { "padding-around-hooks": paddingAroundHooks } },
+    local: {
+      rules: {
+        "padding-around-hooks": paddingAroundHooks,
+        "padding-between-expression-kinds": paddingBetweenExpressionKinds,
+      },
+    },
   },
   rules: {
     "local/padding-around-hooks": "error",
+    "local/padding-between-expression-kinds": "error",
   },
 });
 ```
 
-It has an autofix and a test of its own in the project's suite. What it enforces, and why, is
+Each has an autofix and a test of its own in the project's suite. What they enforce, and why, is
 `code-conventions`'.
+
+**The abbreviation rule is `naming-convention` over a list.** No format can tell `Api` from a word,
+so the rule rejects each listed abbreviation written as a word, and a project adds its own
+vocabulary to the list. `Id` is not in it: it is written as a word. It checks declarations only —
+variables, functions, parameters, types, classes, methods — because a property's name is often a
+contract (a JSON field, a stored one) and a destructured binding repeats one; those are the
+reviewer's (see `code-conventions`).
+
+```typescript
+const ABBREVIATIONS = [
+  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "Html", "Http", "Ip", "Iso", "Json", "Jwt", "Otp", "Pdf",
+  "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
+];
+
+export default tseslint.config({
+  rules: {
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
+        format: null,
+        custom: {
+          regex: `(?:^|(?<=[a-z0-9]))(?:${ABBREVIATIONS.join("|")})(?=[A-Z0-9_]|s?$|s[A-Z0-9_])`,
+          match: false,
+        },
+      },
+      { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
+    ],
+  },
+});
+```
+
+**A file that turns off `no-restricted-syntax` for one selector re-declares the others.** An override
+replaces the rule's whole option list, so the configuration module, which may read
+`import.meta.env`, still lists the optional-call selector.
 
 Three more decisions every config makes:
 
@@ -303,7 +353,7 @@ how a missing cleanup shows up in development instead of in production.
 - [ ] The Node version agrees in `.nvmrc`, `engines` and the Dockerfile.
 - [ ] The router's plugin runs before the React plugin, the React Compiler is off under the test
       runner, and the build keeps the modules' execution order.
-- [ ] Every rule in both lint tables is on, the hook-spacing rule is registered from
+- [ ] Every rule in both lint tables is on, both of the project's own rules are registered from
       `eslint-rules/`, and generated files are ignored.
 - [ ] Every suspended rule is suspended on one line, with its reason.
 - [ ] The scripts have the names above, and the pre-commit hook runs `lint-staged` then `typecheck`.
