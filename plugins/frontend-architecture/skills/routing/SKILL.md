@@ -229,6 +229,7 @@ export function handlePreloadError(
 
   sessionStorage.setItem(RELOAD_GUARD_STORAGE_KEY, String(now));
   event.preventDefault();
+
   reload();
 }
 ```

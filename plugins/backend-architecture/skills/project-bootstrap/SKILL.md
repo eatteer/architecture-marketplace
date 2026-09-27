@@ -135,7 +135,7 @@ At minimum:
 | The import plugin's type-specifier-style rule (`prefer-top-level`) | `import { type X }` mixes a type into a value import, which the first rule does not reject |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards, and a body that grows a second line without them |
 | `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement and the two read as one lump, and a declaration runs into the work that uses it |
-| `local/padding-between-expression-kinds` | An assignment, a call and an awaited step run together |
+| `local/padding-between-expression-kinds` | An assignment, a function call, a method call and an awaited step run together |
 | `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
 | `@typescript-eslint/naming-convention` over a list of abbreviations | `ApiError` beside `APIPagination`: one word, two spellings |
 

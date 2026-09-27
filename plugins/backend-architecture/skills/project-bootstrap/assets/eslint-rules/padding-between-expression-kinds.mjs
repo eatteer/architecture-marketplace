@@ -1,5 +1,6 @@
 // Two one-line statements that do different kinds of work are two paragraphs (see the
-// code-conventions skill): an assignment and a call, and a step that is awaited and one that is not.
+// code-conventions skill): an assignment and a call, a call to a function and a call to a method of an
+// object, and a step that is awaited and one that is not.
 // A declaration beside a bare statement is padding-line-between-statements' to separate, and a
 // statement taller than a line already has a blank line on each side.
 
@@ -7,8 +8,10 @@ const MIN_LINES_FOR_A_BLANK = 2;
 
 const KIND_NAMES = {
   assignment: "an assignment",
-  awaited: "an awaited step",
-  call: "a call",
+  function: "a function call",
+  method: "a method call",
+  "awaited function": "an awaited function call",
+  "awaited method": "an awaited method call",
 };
 
 function isSingleLine(node) {
@@ -26,7 +29,11 @@ function kindOf(statement) {
     return "assignment";
   }
 
-  return expression.type === "AwaitExpression" ? "awaited" : "call";
+  const isAwaited = expression.type === "AwaitExpression";
+  const work = isAwaited ? expression.argument : expression;
+  const target = work.type === "CallExpression" && work.callee.type === "MemberExpression" ? "method" : "function";
+
+  return isAwaited ? `awaited ${target}` : target;
 }
 
 /** @type {import("eslint").Rule.RuleModule} */

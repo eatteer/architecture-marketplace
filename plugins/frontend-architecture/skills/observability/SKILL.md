@@ -101,6 +101,7 @@ own line for the same error:
 ```typescript
 const onUnhandledRejection = (event: PromiseRejectionEvent): void => {
   event.preventDefault();
+
   reportUnexpectedError(event.reason, "unhandled-rejection");
 };
 ```

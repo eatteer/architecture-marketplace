@@ -147,7 +147,7 @@ The core is the same set a TypeScript project needs anywhere:
 | `@typescript-eslint/consistent-type-imports` (`separate-type-imports`) with the import plugin's `prefer-top-level` | A type reference becomes a runtime import |
 | `curly: ["error", "all"]` | A bare `if (x) return;` beside braced guards |
 | `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement, and a declaration against the work that uses it |
-| `local/padding-between-expression-kinds` | An assignment, a call and an awaited step run together |
+| `local/padding-between-expression-kinds` | An assignment, a function call, a method call and an awaited step run together |
 | `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
 | `@typescript-eslint/naming-convention` over a list of abbreviations | `ApiError` beside `APIPagination`: one word, two spellings |
 | The import plugin's `order`, with `@/` and `@test/` as internal groups | Every file orders its imports its own way |

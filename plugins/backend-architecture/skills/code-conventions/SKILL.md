@@ -1,7 +1,7 @@
 ---
 name: code-conventions
 description: "Universal TypeScript/NestJS conventions for every file in any layer — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases), type annotations, `interface` vs `type`, optional calls, absence via `undefined`, no magic values, constructor injection, pure functions, no mutation of data you do not own, type-only imports, floating promises, named exports, comments and JSDoc, blank lines, braces, abbreviations in names, the naming and file-suffix tables."
-when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a blank line between an assignment and a call, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
+when_to_use: "Trigger on — writing or editing ANY `.ts` file, declaring a class/type/interface or an `enum`, injecting a dependency, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array or object, calling an async function, naming a file/class/constant/token, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a blank line between two one-line statements, a guard without braces, an `import type` in a decorated signature, a request body that skips validation silently because its DTO was imported as a type, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
 ---
 
 # Universal code conventions
@@ -352,10 +352,10 @@ One thing decides it: **how tall the declaration is.**
   why a decorated member list is spaced and the same type written without decorators stays packed.
 
 - **Among one-line statements, what they do decides.** A blank line falls where the kind of work
-  changes — a declaration and a bare statement, an assignment and a call, a step that is awaited and
-  one that is not. Naming a value, changing state, telling something else to act and waiting on it
-  are different sentences, and running two kinds together hides where one stops. The linter
-  enforces these three.
+  changes — a declaration and a bare statement, an assignment and a call, a call to a function and
+  one to a method of an object, a step that is awaited and one that is not. Naming a value, changing
+  state, running a step of your own, telling an object to act and waiting on it are different
+  sentences, and running two kinds together hides where one stops. The linter enforces these four.
 
   ```typescript
   user.changeEmail(command.email, command.actor, now);

@@ -1,7 +1,7 @@
 ---
 name: code-conventions
 description: "Universal TypeScript and React conventions for every `.ts` and `.tsx` file — forbidden constructs (`any`, non-null `!`, `console.*`, `enum`, `as` outside sanctioned cases, an optional call), what carries a type annotation and which callbacks do not, `type` vs `interface`, `?` vs `| undefined`, absence via `undefined`, no magic values, pure functions, no mutation of data you do not own, type-only imports, floating promises and `void`, named exports, props typing, no manual memoization under the React Compiler, what an effect is for, comments, blank lines between statements, JSX siblings and hook calls, braces, abbreviations in names, the naming and file-suffix tables."
-when_to_use: "Trigger on — writing or editing ANY `.ts` or `.tsx` file or React component, declaring a type or a component's props, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array, an object or state, calling an async function from an event handler, annotating a callback or a JSX event handler, reaching for `useCallback`, `useMemo` or `React.memo`, writing a `useEffect`, copying a prop into state, naming a file, component, hook or constant, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a guard without braces, a blank line after a hook call or between an assignment and a call, a lint error about hook spacing or JSX siblings, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
+when_to_use: "Trigger on — writing or editing ANY `.ts` or `.tsx` file or React component, declaring a type or a component's props, casting with `as`, an optional call `?.()`, inlining a literal, binding a `const`, mutating an array, an object or state, calling an async function from an event handler, annotating a callback or a JSX event handler, reaching for `useCallback`, `useMemo` or `React.memo`, writing a `useEffect`, copying a prop into state, naming a file, component, hook or constant, an abbreviation such as API, URL or DTO in a name, choosing a file suffix, a guard without braces, a blank line after a hook call or between two one-line statements, a lint error about hook spacing or JSX siblings, a default export, adding a comment or JSDoc, a lint rule that contradicts a documented convention, or reviewing code for convention compliance."
 ---
 
 # Universal code conventions
@@ -314,14 +314,21 @@ createRoot(rootElement, { onCaughtError: handleCaughtError }).render(
 
 **One-line statements: what they do decides.** Among statements that fit on a line, a blank line
 falls where the kind of work changes — a declaration and a bare statement, an assignment and a call,
-a step that is awaited and one that is not. Naming a value, changing state, telling something else
-to act and waiting on it are different sentences, and running two kinds together hides where one
-stops.
+a call to a function and one to a method of an object, a step that is awaited and one that is not.
+Naming a value, changing state, running a step of your own, telling an object to act and waiting on
+it are different sentences, and running two kinds together hides where one stops.
 
 ```typescript
 isSubmitting.current = true;
 
 createUser.mutate(values);
+```
+
+```typescript
+setWebVitalsReporter(ignoreWebVitals);
+
+server.resetHandlers();
+toast.close();
 ```
 
 **JSX siblings: the same rule, one level down.** A multi-line element gets a blank line on each side;

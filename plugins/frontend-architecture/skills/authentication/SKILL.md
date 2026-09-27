@@ -115,6 +115,7 @@ export function createRefreshCoordinator(refresh: () => Promise<unknown>): (sent
     }
 
     localStorage.setItem(LAST_REFRESH_STORAGE_KEY, String(Date.now()));
+
     publishSessionEvent({ type: "refreshed" });
 
     return "refreshed";
