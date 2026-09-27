@@ -179,12 +179,12 @@ without an error. There is also a server-side reason: `JSON.stringify` throws on
 (`Do not know how to serialize a BigInt`), so a `bigint` that reaches a response body turns the
 endpoint into a 500. The presentation mapper is the one place it becomes a string.
 
-The request DTO is nested with `@ValidateNested()` and `@Type(() => MoneyInputDTO)`:
+The request DTO is nested with `@ValidateNested()` and `@Type(() => MoneyInputDto)`:
 
 ```typescript
 export const AMOUNT_MINOR_MAX_LENGTH: number = 20;
 
-export class MoneyInputDTO {
+export class MoneyInputDto {
   @ApiProperty({ type: String, pattern: AMOUNT_MINOR_PATTERN.source, maxLength: AMOUNT_MINOR_MAX_LENGTH, example: "12345" })
   @IsString({ message: i18nValidationMessage("common.validation.string") })
   @Matches(AMOUNT_MINOR_PATTERN, { message: i18nValidationMessage("common.validation.money.amount_minor_invalid") })

@@ -101,7 +101,7 @@ environment and of a tool's input have none: their failures are read by an opera
 translated for a client.
 
 ```typescript
-export class CreateUserDTO {
+export class CreateUserDto {
   @IsEmail({}, { message: i18nValidationMessage("users.create_user.email_invalid") })
   public email!: string;
 

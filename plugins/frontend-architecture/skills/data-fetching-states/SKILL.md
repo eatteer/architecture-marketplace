@@ -208,7 +208,7 @@ shell included.
 
 ## Not found against a real error
 
-Inside the error state there are two outcomes with different UI, split by the `APIError`'s
+Inside the error state there are two outcomes with different UI, split by the `ApiError`'s
 **`status`**, never by a feature's `code`:
 
 - **404** — the resource does not exist. A not-found view, **with no retry**: retrying cannot make it

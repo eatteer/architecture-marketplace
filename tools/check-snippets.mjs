@@ -79,14 +79,18 @@ const MULTILINE_STATEMENTS = [
   "multiline-type",
 ];
 
-// An abbreviation is one word in capitals (see code-conventions): `APIError`, `buildAPIError`, and
-// all lowercase only at the start of a camelCase name (`apiClient`). `Id` is written as a word. The
-// list is the vocabulary both templates use; a project adds its own.
+// An abbreviation is written as a word (see code-conventions): `ApiError`, `buildApiError`, and all
+// lowercase at the start of a camelCase name (`apiClient`). The rule rejects a listed abbreviation in
+// capitals, a plural `s` included, unless an uppercase letter comes before it or a lowercase one
+// after (`IPasswordHasher` is `I` + `Password`); a name in SCREAMING_SNAKE_CASE is all capitals
+// already. The list is the vocabulary both templates use; a project adds its own.
 const ABBREVIATIONS = [
-  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "Html", "Http", "Ip", "Iso", "Json", "Jwt", "Otp", "Pdf",
-  "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
+  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "E2e", "Html", "Http", "Id", "Ip", "Iso", "Json", "Jwt",
+  "Otp", "Pdf", "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
 ];
-const ABBREVIATION_NOT_IN_CAPITALS = `(?:^|(?<=[a-z0-9]))(?:${ABBREVIATIONS.join("|")})(?=[A-Z0-9_]|s?$|s[A-Z0-9_])`;
+
+const IN_CAPITALS = ABBREVIATIONS.map((word) => word.toUpperCase()).join("|");
+const ABBREVIATION_IN_CAPITALS = `^(?![A-Z0-9_]+$).*(?<![A-Z])(?:${IN_CAPITALS})s?(?![a-z])`;
 
 // The rules both templates share, with the options both give them.
 const SHARED_RULES = {
@@ -118,7 +122,7 @@ const SHARED_RULES = {
     {
       selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
       format: null,
-      custom: { regex: ABBREVIATION_NOT_IN_CAPITALS, match: false },
+      custom: { regex: ABBREVIATION_IN_CAPITALS, match: false },
     },
     { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
   ],

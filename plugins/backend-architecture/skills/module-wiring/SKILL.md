@@ -86,7 +86,7 @@ Whether a provider gets a simulator at all, and how one must behave, belongs to 
   inject: [ConfigService],
   useFactory: (config: ConfigService<EnvironmentVariables, true>): IPaymentGateway => {
     if (config.get("NODE_ENV", { infer: true }) === "production") {
-      return new HTTPPaymentGateway(config);
+      return new HttpPaymentGateway(config);
     }
 
     return new MockPaymentGateway();

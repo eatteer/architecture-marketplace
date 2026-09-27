@@ -1,6 +1,6 @@
 ---
 name: server-state
-description: "Server state with TanStack Query — the query client's defaults (stale time, retry that skips every 4xx), registering `APIError` and the `meta` types, query options factories with hierarchical keys, the type a factory declares, per-query cache policy, reading from a component and from a route, mutation hooks and what each invalidates, returning the invalidation, cache work in the hook and screen work in `mutate`'s callbacks, optimistic updates with a rollback, and `setQueryData` without mutating."
+description: "Server state with TanStack Query — the query client's defaults (stale time, retry that skips every 4xx), registering `ApiError` and the `meta` types, query options factories with hierarchical keys, the type a factory declares, per-query cache policy, reading from a component and from a route, mutation hooks and what each invalidates, returning the invalidation, cache work in the hook and screen work in `mutate`'s callbacks, optimistic updates with a rollback, and `setQueryData` without mutating."
 when_to_use: "Trigger on — writing `useQuery`, `useMutation`, `queryOptions`, a query key, a `*-queries.ts` or `*-mutations.ts` file, invalidating after a write, a list that still shows a deleted row, a screen that shows stale data after a save, a key string duplicated across files, a query key missing a variable, choosing `staleTime`, a 404 that takes seconds to appear because it is retried, `retry`, declaring the `meta` types, `mutate` vs `mutateAsync`, a callback that runs after the component unmounted, an optimistic update, `onMutate`, `setQueryData` or `getQueryData`, `ensureQueryData` vs `fetchQuery`, a `Register` declaration, or copying query data into `useState`."
 ---
 
@@ -15,7 +15,7 @@ stale the moment the next refetch lands.
 ```typescript
 declare module "@tanstack/react-query" {
   interface Register {
-    defaultError: APIError;
+    defaultError: ApiError;
     queryMeta: QueryMeta;
     mutationMeta: MutationMeta;
   }
@@ -35,7 +35,7 @@ export function createQueryClient(): QueryClient {
 }
 ```
 
-- **`defaultError: APIError`**, because that is what the client throws (see `api-client`). Every
+- **`defaultError: ApiError`**, because that is what the client throws (see `api-client`). Every
   `error` a query or mutation hands back is typed without a cast. Something else can still arrive — a
   mapper reading a field the response lacks throws a `TypeError` — and that is a bug the caches
   report (see `observability`).
@@ -64,7 +64,7 @@ export function createQueryClient(): QueryClient {
 
   ```typescript
   export function shouldRetryQuery(failureCount: number, error: unknown): boolean {
-    if (error instanceof APIError && error.isClientError) {
+    if (error instanceof ApiError && error.isClientError) {
       return false;
     }
 
@@ -139,7 +139,7 @@ Each write is a hook in the feature's `-mutations.ts`, returning `useMutation`'s
 types spelled out:
 
 ```typescript
-export function useCreateUser(): UseMutationResult<string, APIError, CreateUserValues> {
+export function useCreateUser(): UseMutationResult<string, ApiError, CreateUserValues> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -212,7 +212,7 @@ onMutate: async (language: Language): Promise<LanguageRollback> => {
 
   return { previous };
 },
-onError: async (_error: APIError, _language: Language, rollback: LanguageRollback | undefined): Promise<void> => {
+onError: async (_error: ApiError, _language: Language, rollback: LanguageRollback | undefined): Promise<void> => {
   if (rollback?.previous === undefined) {
     return;
   }
@@ -242,14 +242,14 @@ queryClient.setQueryData(
 
 ## Checklist
 
-- [ ] The query client registers `APIError` and the `meta` types, keeps `staleTime` at `0` by
+- [ ] The query client registers `ApiError` and the `meta` types, keeps `staleTime` at `0` by
       default, and retries no 4xx.
 - [ ] Every read goes through its feature's options factory — or its one constant, for a read that
       exists once — and no key is written anywhere else.
 - [ ] Every key nests from the feature down and holds every value its function reads.
 - [ ] Every factory declares `AppQueryOptions<TData, TKey>` as its return type.
 - [ ] Every non-default `staleTime` or `placeholderData` sits on the query it applies to.
-- [ ] Every mutation hook spells out `UseMutationResult<TData, APIError, TVariables>`.
+- [ ] Every mutation hook spells out `UseMutationResult<TData, ApiError, TVariables>`.
 - [ ] Every mutation's `onSuccess` returns or awaits its invalidations, through the factory, at the
       narrowest level that covers the change.
 - [ ] Navigation, form errors and latches live in `mutate`'s callbacks; cache work lives in the hook.

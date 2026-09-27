@@ -45,7 +45,7 @@ async function fetchUsers(search: UsersSearch, signal: AbortSignal): Promise<Pag
 What the backend's list envelope becomes once unwrapped (the mechanism is `api-client`'s):
 
 ```typescript
-export type Pagination = APIPagination;
+export type Pagination = ApiPagination;
 
 export type Paginated<T> = {
   items: T[];

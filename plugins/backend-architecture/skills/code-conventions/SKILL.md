@@ -75,7 +75,7 @@ trusts it into a red build.
   tell the informative ones from the redundant ones, and it forbids the derived-type idiom outright.
 
   A callback is a function like any other: every arrow parameter and its return type are annotated
-  (`.map((user: User): UserDTO => ...)`), except where nobody reads the signature — a decorator's
+  (`.map((user: User): UserDto => ...)`), except where nobody reads the signature — a decorator's
   thunk (`@Type(() => Number)`), a test runner's callbacks (`describe`, `it`) and the thunks a test
   hands the runner's helpers (`expect(() => …)`, `mockImplementation`). A test's own helpers are not.
 
@@ -157,7 +157,7 @@ trusts it into a red build.
   fails at boot.
 
   The exception is **a class in a decorated signature** — a constructor parameter of a decorated
-  class, a parameter of a decorated method (`@Body() dto: CreateUserDTO`), a decorated property.
+  class, a parameter of a decorated method (`@Body() dto: CreateUserDto`), a decorated property.
   With decorator metadata on, the framework reads that class at runtime, so it is a value use even
   though it appears only in a type position. `import type` there hands the reader `Object`: the
   injector fails to resolve the provider at boot, and — worse, because nothing fails — the
@@ -339,7 +339,7 @@ One thing decides it: **how tall the declaration is.**
   ```
 
   ```typescript
-  export class UserDTO {
+  export class UserDto {
     @ApiProperty({ example: "01890a5d-ac96-774b-bcce-b302099a8057" })
     public id!: string;
 
@@ -420,21 +420,22 @@ writes the request context. A getter that emptied a buffer would be a read with 
 behind property syntax.
 
 **Names carry domain meaning.** Prefer the domain word over `data`, `result`, `item`, `info`,
-`payload`: `.map((user: User): UserDTO => …)`, not `.map((item: User): UserDTO => …)`. Grep a
+`payload`: `.map((user: User): UserDto => …)`, not `.map((item: User): UserDto => …)`. Grep a
 sibling file before inventing a name for an entity the codebase already names. Sanctioned generic
 names: `document`/`documents` inside a persistence mapper, `dto` inside a presentation mapper, and a
 generic helper over `unknown`.
 
-**An abbreviation is one word, written in capitals** wherever it falls — `APIPagination`,
-`CreateUserDTO`, `HTTPClient`, `buildAPIError` — **except at the start of a camelCase name, where it
-is all lowercase**: `apiURL`, `httpClient`. An abbreviation is read letter by letter, and `Api` beside
-`API` is two spellings of one word that a search for either misses; capitals at the start of a value
-would read as a class. `Id` is a word, not an abbreviation (`userId`, `findById`), spelled the way
+**An abbreviation is written as a word** wherever it falls — `ApiPagination`, `CreateUserDto`,
+`HttpClient`, `buildApiError`, `apiUrl` — capital first letter inside a name, all lowercase at the
+start of a camelCase one. A name is read word by word: a run of capitals hides where one word ends
+and the next begins (`HTTPAPIClient`), and `APIPagination` beside `ApiProperty` is two spellings of
+one word that a search for either misses. `Id` is a word too (`userId`, `findById`), spelled the way
 the stored fields and the API's already spell it. A name someone else owns keeps its casing: a
-library's (`HttpStatus`, `@ApiProperty`) and one that crosses a boundary (a JSON field, a stored
-field, a query parameter). The linter checks declarations against a list of common abbreviations
-(see `project-bootstrap`); a property's name is often a contract, so properties, and an
-abbreviation the list lacks, are the reviewer's.
+library's (`@IsUUID`, `@IsISO4217CurrencyCode`) and one that crosses a boundary (a JSON field, a
+stored field, a query parameter). A constant in SCREAMING_SNAKE_CASE is all capitals already
+(`API_URL`). The linter checks declarations against a list of common abbreviations (see
+`project-bootstrap`); a property's name is often a contract, so properties, and an abbreviation the
+list lacks, are the reviewer's.
 
 **No single-letter parameters.** `(error: unknown) =>`, not `(e: unknown) =>`. The exception is an
 index or mathematical convention where the letter *is* the term (`i` in a hand-written loop).
@@ -493,5 +494,5 @@ node ${CLAUDE_SKILL_DIR}/scripts/redundant-local-annotations.cjs [--write]
 - [ ] Every comment and JSDoc states a *why* the signature cannot; every use case lists its
       `@throws`.
 - [ ] Every file, class, token and route follows the naming tables, each mapper file names its layer
-      and its entity, and every abbreviation in a name the project owns is in capitals (lowercase at
-      the start of a camelCase name, `Id` a word).
+      and its entity, and every abbreviation in a name the project owns is written as a word
+      (`ApiError`, `apiUrl`, `userId`).

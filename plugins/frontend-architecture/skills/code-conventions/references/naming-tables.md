@@ -13,7 +13,7 @@ tables cannot settle stays in that skill's `SKILL.md`.
 | A companion skeleton | `<Component>Skeleton`, in the component's file | `UsersTableSkeleton` |
 | Hooks | `use` + PascalCase; the file is its kebab-case | `useDebouncedFilter` in `use-debounced-filter.ts` |
 | Types | PascalCase, no prefix | `User`, `Paginated<T>`, `Session` |
-| Abbreviations | one word in capitals; all lowercase at the start of a camelCase name | `UserDTO`, `APIError`, `buildAPIError`, `apiClient` |
+| Abbreviations | a word: capital first letter inside a name, all lowercase at the start of a camelCase one | `UserDto`, `ApiError`, `buildApiError`, `apiClient` |
 | `Id` | a word, as the backend's fields spell it | `userId`, `roleIds` |
 | Functions, variables | camelCase | `resolveRedirect()`, `sessionKey` |
 | Module-level constants | SCREAMING_SNAKE_CASE | `FILTER_DEBOUNCE_MS` |

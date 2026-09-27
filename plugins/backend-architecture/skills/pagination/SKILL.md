@@ -1,7 +1,7 @@
 ---
 name: pagination
-description: "Paged list endpoints — the shared `ListQuery` and `ListQueryDTO`, the `Paginated<T>` result and its metadata, paging in the database rather than in memory, optional filters, the sortable-field whitelist and the stable tiebreaker, the cost of a total count, offset versus cursor paging, and denormalizing a field so a filter or aggregation can use an index."
-when_to_use: "Trigger on — adding a list endpoint, adding a filter or a sort option to a query, extending `ListQuery` or `ListQueryDTO`, building a `Paginated<T>`, a page whose items repeat or vanish when you page through it, a list endpoint that gets slower the deeper you page, an aggregation over a field stored inside a related document, a filter the API documents and the query ignores."
+description: "Paged list endpoints — the shared `ListQuery` and `ListQueryDto`, the `Paginated<T>` result and its metadata, paging in the database rather than in memory, optional filters, the sortable-field whitelist and the stable tiebreaker, the cost of a total count, offset versus cursor paging, and denormalizing a field so a filter or aggregation can use an index."
+when_to_use: "Trigger on — adding a list endpoint, adding a filter or a sort option to a query, extending `ListQuery` or `ListQueryDto`, building a `Paginated<T>`, a page whose items repeat or vanish when you page through it, a list endpoint that gets slower the deeper you page, an aggregation over a field stored inside a related document, a filter the API documents and the query ignores."
 ---
 
 # Pagination
@@ -27,7 +27,7 @@ export type ListQuery = {
 ```
 
 A feature extends it with its own filters in the repository interface (see `domain-modeling`), and
-the query DTO extends the shared `ListQueryDTO` with the matching validators (see
+the query DTO extends the shared `ListQueryDto` with the matching validators (see
 `presentation-layer`).
 
 **The command extends a shared base too, and the controller maps the shared fields through one
@@ -92,7 +92,7 @@ export class Paginated<T> {
 }
 ```
 
-`map` is what lets the controller turn `Paginated<User>` into `Paginated<UserDTO>` without
+`map` is what lets the controller turn `Paginated<User>` into `Paginated<UserDto>` without
 recomputing the metadata — recomputing it is where a page count drifts from the data it describes.
 The controller hands the mapped page to the shared paginated response builder, which puts the items
 under `data` and the metadata under `pagination` (see the `presentation-layer` skill).

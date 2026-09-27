@@ -123,7 +123,7 @@ trusts it into a red build.
 
   To narrow `unknown` — a `catch` binding, a message from another tab, a JSON body — use a type
   guard or a schema, never `as`. To check that a value fits a type without widening it, use
-  `satisfies`: `z.object({ … }) satisfies z.ZodType<ProblemDetailsDTO>` fails the build when the
+  `satisfies`: `z.object({ … }) satisfies z.ZodType<ProblemDetailsDto>` fails the build when the
   backend's shape changes, and a cast would have hidden it.
 - **A type-only import says so**: `import type { X } from "…"`, as its own statement rather than
   mixed into a value import. With `verbatimModuleSyntax` the bundler keeps every import it is not
@@ -445,16 +445,18 @@ cannot.
   inventing a name for something the codebase already names. Sanctioned generic names: `dto` inside
   a mapper, `field` and `fieldState` from the form library, `value` and `label` on the items a select
   renders, and a generic helper over `unknown`.
-- **An abbreviation is one word, written in capitals** wherever it falls — `APIError`,
-  `CreateUserDTO`, `buildAPIError`, `idFromURL` — **except at the start of a camelCase name, where it
-  is all lowercase**: `apiClient`, `urlFor`. An abbreviation is read letter by letter, and `Api`
-  beside `API` is two spellings of one word that a search for either misses; capitals at the start
-  of a value would read as a type or a component. `Id` is a word, not an abbreviation (`userId`,
-  `roleIds`), spelled the way the backend's fields and its database already spell it. A name someone
-  else owns keeps its casing: a library's (`getRouteApi`, an option such as `baseUrl`) and one that
-  crosses a boundary (a JSON field, a query parameter). The linter checks declarations against a
-  list of common abbreviations (see `project-bootstrap`); a property's name is often a contract, so
-  properties, and an abbreviation the list lacks, are the reviewer's.
+- **An abbreviation is written as a word** wherever it falls — `ApiError`, `CreateUserDto`,
+  `buildApiError`, `idFromUrl` — capital first letter inside a name, all lowercase at the start of a
+  camelCase one: `apiClient`, `urlFor`. A name is read word by word: a run of capitals hides where
+  one word ends and the next begins (`HTMLURLInput`), and `APIError` beside `getRouteApi` is two
+  spellings of one word that a search for either misses. `Id` is a word too (`userId`, `roleIds`),
+  spelled the way the backend's fields and its database already spell it. A name someone else owns
+  keeps its casing: a library's (`CSSProperties`, `HTMLElement`, `toHaveURL`), the component
+  catalog's, which keeps the registry's names (see `ui-components`), and one that crosses a boundary
+  (a JSON field, a query parameter). A constant in SCREAMING_SNAKE_CASE is all capitals already
+  (`VITE_API_URL`). The linter checks declarations against a list of common abbreviations (see
+  `project-bootstrap`); a property's name is often a contract, so properties, and an abbreviation the
+  list lacks, are the reviewer's.
 - **No single-letter parameters.** `(event) =>`, not `(e) =>`; `(error: unknown)`, not `(e)`. An
   unused positional parameter is `_`: `Array.from({ length }, (_: unknown, row: number) …)`. The one
   exception is `t`, the translator: it is i18next's own name, and every file that shows text reads
@@ -488,5 +490,5 @@ cannot.
 - [ ] Every default export is one a tool requires.
 - [ ] Every comment states a *why* the code cannot.
 - [ ] Every file, component, hook and constant follows the naming tables, every abbreviation in a
-      name the project owns is in capitals (lowercase at the start of a camelCase name, `Id` a word),
-      and no path contains camelCase.
+      name the project owns is written as a word (`ApiError`, `apiClient`, `userId`), and no path
+      contains camelCase.

@@ -16,7 +16,7 @@ showing the reader what they cannot use** — and never believes that protects a
 typed again:
 
 ```typescript
-export type Permission = SessionDTO["permissions"][number];
+export type Permission = SessionDto["permissions"][number];
 ```
 
 A permission the backend renames or drops is then a compile error at every check that names it,
@@ -100,7 +100,7 @@ const canCreateUsers = useHasPermissions(["users:create"]);
 **A route the reader may not open shows the forbidden screen in its place, and the URL stays.** It is
 not a redirect home and not a not-found page in disguise: the backend answers the same request `403`,
 and a reader who knows they lack a permission knows whom to ask for it. The route's error component
-renders it for a `ForbiddenError` and for an `APIError` with status `403` alike, with no retry — asking
+renders it for a `ForbiddenError` and for an `ApiError` with status `403` alike, with no retry — asking
 again changes nothing (see `error-handling`).
 
 `ForbiddenError` lives in `common/`, because the error component that shows it is shared, and it is

@@ -171,7 +171,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Universal TypeScript and TSX style, naming and file suffixes, forbidden constructs, blank lines between statements, JSX siblings and hook calls, props typing, memoization under the compiler, effects | `code-conventions` |
 | Repo layout, `main.tsx` and the order of its providers, the aliases, compiler strictness, the bundler and test runner config, the lint config and the project's own lint rules, scripts, the hook | `project-bootstrap` |
 | Ordered steps to build a feature, its folder skeleton, and its checklist | `adding-feature` |
-| The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `APIError` built from Problem Details | `api-client` |
+| The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `ApiError` built from Problem Details | `api-client` |
 | Query options factories, hierarchical keys, mutations and what they invalidate, cache policy, retry, the registered error type and `meta`, optimistic updates | `server-state` |
 | The four states of a read, skeletons, the altitude a state resolves at, a route loader with a suspense query as the alternative to a skeleton in place, disabled queries, the page on screen while the next one loads | `data-fetching-states` |
 | Classifying a failure, which failures toast and how the toast behaves, the copyable error report, error screens and a route's error component, the fullscreen loader for writes, what a `catch` may end in | `error-handling` |
@@ -298,7 +298,7 @@ project goes stale the moment that project changes.
   of something that already exists. Document the *procedure* for finding out instead.
 - **No business vocabulary.** Use neutral illustrative entities — `User`, `Order`, `Product`,
   `Account` — even when the pattern was found in a domain-specific file. Names the pattern itself
-  defines (`AggregateRoot`, `Paginated`, `APIResponseBuilder`) are conventions, not contamination.
+  defines (`AggregateRoot`, `Paginated`, `ApiResponseBuilder`) are conventions, not contamination.
   This is easiest to miss right after building a real feature, when the domain words are still the
   ones in your head.
 - **Current state only, never decision history.** No "deliberately not using X", "X was removed",
@@ -319,7 +319,7 @@ more effectively than the prose prevents it.
 Markdown of a skill or an agent — `SKILL.md` and `references/` — and every `examples/**/*.ts` and
 `.tsx`, with the rules of **that plugin's** reference project's linter that need no type information:
 no `any`, explicit return types and member accessibility, braces on every guard, no `console`,
-type-only imports as their own statement, no `enum`, no optional call, abbreviations in capitals, a
+type-only imports as their own statement, no `enum`, no optional call, abbreviations written as words, a
 blank line on each side of a multi-line statement and between one-line statements of different
 kinds. That last rule is the templates' own, and each stack plugin ships it as an asset the check
 loads, so the check and a project run the same file; the two copies must stay identical, and the

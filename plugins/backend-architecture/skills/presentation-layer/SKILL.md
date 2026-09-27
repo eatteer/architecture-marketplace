@@ -132,7 +132,7 @@ Three kinds, and they do not share a class.
 **Request DTO** — validated at the boundary, one per operation:
 
 ```typescript
-export class CreateUserDTO {
+export class CreateUserDto {
   @IsEmail({}, { message: i18nValidationMessage("users.create_user.email_invalid") })
   public email!: string;
 
@@ -164,7 +164,7 @@ export class CreateUserDTO {
 **Query DTO** — the list parameters, extending the shared one:
 
 ```typescript
-export class GetUsersQueryDTO extends ListQueryDTO {
+export class GetUsersQueryDto extends ListQueryDto {
   @IsOptional()
   @IsString({ message: i18nValidationMessage("common.validation.string") })
   @MaxLength(SEARCH_MAX_LENGTH, { message: i18nValidationMessage("common.validation.search.too_long") })
@@ -186,7 +186,7 @@ a `type` alias: TypeScript types are erased, so the decorators are the only thin
 generator can see, and an endpoint whose response is a type alias documents no body at all.
 
 ```typescript
-export class UserDTO {
+export class UserDto {
   @ApiProperty({ example: "01890a5d-ac96-774b-bcce-b302099a8057" })
   public id!: string;
 
@@ -216,7 +216,7 @@ fields nobody decided to publish.
 
 ```typescript
 export class UserPresentationMapper {
-  public static toDTO(user: User): UserDTO {
+  public static toDto(user: User): UserDto {
     return {
       id: user.id,
       email: user.email,
@@ -261,7 +261,7 @@ export type DataResponse<T> = {
 
 export type PaginatedResponse<T> = {
   data: T[];
-  pagination: APIPagination;
+  pagination: ApiPagination;
 };
 
 export function dataResponse<T>(data: T): DataResponse<T> {
@@ -313,7 +313,7 @@ GET /api/v1/orders?include=customer,items
 The route takes the whole payload and answers with one entry per item, in request order:
 
 ```typescript
-export class BatchItemResultDTO {
+export class BatchItemResultDto {
   @ApiProperty({ example: 0 })
   public index!: number;
 

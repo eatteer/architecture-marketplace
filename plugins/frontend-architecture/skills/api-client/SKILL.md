@@ -1,6 +1,6 @@
 ---
 name: api-client
-description: "Talking to the backend — the API's types generated from its OpenAPI document and committed, the one `openapi-fetch` client with credentials and its middlewares, the order they run in, the request headers they attach, every failure turned into one `APIError` built from RFC 9457 Problem Details (or from a response that is not one, or from no response at all), unwrapping the `{ data }` envelope and a paginated list, the backend's catalogs taken from the generated types, and the mapper from a DTO to the feature's model."
+description: "Talking to the backend — the API's types generated from its OpenAPI document and committed, the one `openapi-fetch` client with credentials and its middlewares, the order they run in, the request headers they attach, every failure turned into one `ApiError` built from RFC 9457 Problem Details (or from a response that is not one, or from no response at all), unwrapping the `{ data }` envelope and a paginated list, the backend's catalogs taken from the generated types, and the mapper from a DTO to the feature's model."
 when_to_use: "Trigger on — calling an endpoint, writing a query or mutation function, running or changing `api:types`, a type error after the backend changed, editing `schema.gen.ts` by hand, a raw `fetch` or a second HTTP client, adding a request or response middleware, a header the backend expects, a DTO leaking into a component, writing a mapper, a status or permission list typed out by hand, `unwrap` or `unwrapPage`, a `data` that is `undefined` after a successful call, a failure that is not an `Error`, reading `error.status` or `error.code`, a proxy's HTML error page, an offline request, a cookie the browser does not send, or a 400 for a query parameter the backend does not declare."
 ---
 
@@ -8,13 +8,13 @@ when_to_use: "Trigger on — calling an endpoint, writing a query or mutation fu
 
 The backend's contract reaches the browser once, as generated types, and every request goes through
 one client that turns the transport's two shapes — data or a failure — into a value or a thrown
-`APIError`. Nothing past this layer knows about HTTP bodies, envelopes or Problem Details.
+`ApiError`. Nothing past this layer knows about HTTP bodies, envelopes or Problem Details.
 
 ## The generated types
 
 `npm run api:types` reads the backend's OpenAPI document and writes the whole contract into one
 generated file: `openapi-typescript` with `--export-type`, `--root-types` (so every schema is also a
-named export — `UserDTO`, `ProblemDetailsDTO`), `--root-types-no-schema-prefix` and
+named export — `UserDto`, `ProblemDetailsDto`), `--root-types-no-schema-prefix` and
 `--root-types-keep-casing` (so the names match the backend's), and `--enum-values` (so every enum
 the backend declares is also an exported array of its values).
 
@@ -29,13 +29,13 @@ the backend declares is also an exported array of its values).
 
   ```typescript
   import { pathsApiV1UsersGetParametersQueryStatusValues } from "@/common/api/schema.gen";
-  import type { SessionDTO, UserDTO } from "@/common/api/schema.gen";
+  import type { SessionDto, UserDto } from "@/common/api/schema.gen";
 
   export const USER_STATUS_VALUES = pathsApiV1UsersGetParametersQueryStatusValues;
 
-  export type UserStatus = UserDTO["status"];
+  export type UserStatus = UserDto["status"];
 
-  export type Permission = SessionDTO["permissions"][number];
+  export type Permission = SessionDto["permissions"][number];
   ```
 
   A permission the backend renames is then a compile error at every check that names it, instead of
@@ -86,7 +86,7 @@ That is what the order above encodes:
 1. **The request context** attaches `x-lang` with the language on screen and a W3C `traceparent`
    unless one is already set. Which language that is belongs to `i18n`; what the trace is for and
    where its id ends up belongs to `observability`.
-2. **Problem Details → `APIError`** throws on every response that is not `ok`, and on a request that
+2. **Problem Details → `ApiError`** throws on every response that is not `ok`, and on a request that
    got no response at all.
 3. **The session refresh**, registered last so its response hook runs first: it sees a raw 401
    before the second middleware turns it into an error, and can answer with the request sent again
@@ -95,15 +95,15 @@ That is what the order above encodes:
 A middleware mutates the `Request` it is handed — `request.headers.set(…)` — and returns it; that is
 the library's contract, and cloning instead would drop what the client set.
 
-## `APIError`
+## `ApiError`
 
-Every failed request becomes one `APIError`, a real `Error` subclass, so it keeps its stack and its
+Every failed request becomes one `ApiError`, a real `Error` subclass, so it keeps its stack and its
 `cause`, and one type is all the query layer and the screens have to understand. The query client
 registers it as the default error type (see `server-state`), so no caller casts.
 
 ```typescript
-export class APIError extends Error {
-  public override readonly name = "APIError";
+export class ApiError extends Error {
+  public override readonly name = "ApiError";
   public readonly method: string;
   public readonly url: string;
   public readonly status: number;
@@ -121,7 +121,7 @@ export class APIError extends Error {
 }
 ```
 
-It is built from one of three things, and the reader of an `APIError` never needs to know which:
+It is built from one of three things, and the reader of an `ApiError` never needs to know which:
 
 | What arrived | `status` | `code` | `title` and `detail` |
 | --- | --- | --- | --- |
@@ -130,7 +130,7 @@ It is built from one of three things, and the reader of an `APIError` never need
 | No response — offline, DNS, CORS refused | `0`, what `fetch` itself reports | `client.network_error` | the front's own; the original failure is the `cause` |
 
 - **A Problem Details body is validated before it is trusted**, with a Zod schema checked against the
-  generated type — `z.object({ … }) satisfies z.ZodType<ProblemDetailsDTO>` — so a change to the
+  generated type — `z.object({ … }) satisfies z.ZodType<ProblemDetailsDto>` — so a change to the
   backend's error body fails the build here instead of at the first error a user sees. A body that
   fails the schema is treated as not Problem Details.
 - **The front's own codes carry a `client.` prefix**, the same `<area>.snake_case` shape as the
@@ -203,7 +203,7 @@ async function fetchUser(id: string, signal: AbortSignal): Promise<User> {
       generated types.
 - [ ] Every request goes through the one client; there is no raw `fetch` and no second client.
 - [ ] The refresh middleware is registered after the one that converts failures.
-- [ ] Every failure a caller can see is an `APIError`, and every `client.` code is a named constant.
+- [ ] Every failure a caller can see is an `ApiError`, and every `client.` code is a named constant.
 - [ ] Every call lives in a feature's `api/` function, passes the query's `signal` when it reads, and
       returns the model through a mapper.
 - [ ] No component imports the generated schema; only the client's own folder, a feature's `api/`

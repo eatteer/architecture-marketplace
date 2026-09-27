@@ -121,13 +121,13 @@ export const handlers: RequestHandler[] = [signedIn()];
   screen while it is in flight:
 
   ```typescript
-  const backend = usersBackend(buildUserDTOs(25), { holdCreate: release });
+  const backend = usersBackend(buildUserDtos(25), { holdCreate: release });
   ```
 
 ## Builders
 
 **A builder returns a valid DTO of the generated type with every field filled**, and takes overrides
-for what the test is about: `buildUserDTO({ status: "suspended" })`. A test states only what matters
+for what the test is about: `buildUserDto({ status: "suspended" })`. A test states only what matters
 to it, and a DTO that gains a field is updated in one place. A builder for a list numbers its items
 and spaces their dates, so an order is predictable.
 

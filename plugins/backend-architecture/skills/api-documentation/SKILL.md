@@ -1,6 +1,6 @@
 ---
 name: api-documentation
-description: "The generated OpenAPI document — `@Api*` decorators on DTOs and controllers, documenting the success envelope and the Problem Details body with `APIDataResponse`, `APIPaginatedResponse` and `APIProblemResponse`, declaring both security schemes by named constant, an operator API-key header, tag groups, operation ids and their factory, documenting a restriction a guard enforces, and controlling who can reach the docs endpoint."
+description: "The generated OpenAPI document — `@Api*` decorators on DTOs and controllers, documenting the success envelope and the Problem Details body with `ApiDataResponse`, `ApiPaginatedResponse` and `ApiProblemResponse`, declaring both security schemes by named constant, an operator API-key header, tag groups, operation ids and their factory, documenting a restriction a guard enforces, and controlling who can reach the docs endpoint."
 when_to_use: "Trigger on — adding `@ApiProperty`, `@ApiPropertyOptional`, `@ApiOperation`, `@ApiResponse`, `@ApiTags`, `@ApiBearerAuth`, `@ApiCookieAuth` or `@ApiHeader`, setting `operationIdFactory`, documenting what an endpoint returns or how it fails, editing the docs setup, a field missing from the generated schema, a documented response that is not what the endpoint sends, a generated client reading fields one level too shallow, a nullable field a generated client types as an empty object, an endpoint appearing without a tag or in no group, a generated client with colliding method names, or exposing the documentation endpoint in an environment."
 ---
 
@@ -16,7 +16,7 @@ Every property on a request or response DTO is annotated, or it does not appear 
 schema at all — the decorators are the only source, since TypeScript types are erased:
 
 ```typescript
-export class CreateUserDTO {
+export class CreateUserDto {
   @ApiProperty({ example: "jane@example.com" })
   @IsEmail({}, { message: i18nValidationMessage("users.create_user.email_invalid") })
   public email!: string;
@@ -48,20 +48,20 @@ export class CreateUserDTO {
 @ApiTags("Users")
 @ApiBearerAuth(BEARER_SECURITY_SCHEME)
 @ApiCookieAuth(COOKIE_SECURITY_SCHEME)
-@APIProblemResponse(HttpStatus.UNAUTHORIZED, "No valid credentials were presented")
-@APIProblemResponse(HttpStatus.FORBIDDEN, "Missing the required permission")
+@ApiProblemResponse(HttpStatus.UNAUTHORIZED, "No valid credentials were presented")
+@ApiProblemResponse(HttpStatus.FORBIDDEN, "Missing the required permission")
 @Controller("users")
 export class UsersController {
   @ApiOperation({ summary: "Create a user", description: "Requires the `users:create` permission." })
-  @APIDataResponse(CreatedDTO, { status: HttpStatus.CREATED, description: "User created" })
-  @APIProblemResponse(HttpStatus.BAD_REQUEST, "The body is not valid")
-  @APIProblemResponse(HttpStatus.CONFLICT, "The email is already registered")
+  @ApiDataResponse(CreatedDto, { status: HttpStatus.CREATED, description: "User created" })
+  @ApiProblemResponse(HttpStatus.BAD_REQUEST, "The body is not valid")
+  @ApiProblemResponse(HttpStatus.CONFLICT, "The email is already registered")
   @Post()
-  public async createUser(/* ... */): Promise<DataResponse<CreatedDTO>> { /* ... */ }
+  public async createUser(/* ... */): Promise<DataResponse<CreatedDto>> { /* ... */ }
 
   @ApiOperation({ summary: "Delete a user", description: "Requires the `users:delete` permission." })
   @ApiResponse({ status: HttpStatus.NO_CONTENT, description: "User deleted" })
-  @APIProblemResponse(HttpStatus.NOT_FOUND, "No user matches the id")
+  @ApiProblemResponse(HttpStatus.NOT_FOUND, "No user matches the id")
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   public async deleteUser(/* ... */): Promise<void> { /* ... */ }
@@ -97,7 +97,7 @@ export class UsersController {
     description: "Requires the operator key; no role grants it.",
   })
   @ApiHeader({ name: ADMIN_API_KEY_HEADER, required: true, description: "Operator key" })
-  @APIProblemResponse(HttpStatus.UNAUTHORIZED, "The operator key is missing or wrong")
+  @ApiProblemResponse(HttpStatus.UNAUTHORIZED, "The operator key is missing or wrong")
   ```
 
 - **Document the failures that are part of the contract** — the conflict, the not-found, the
@@ -113,12 +113,12 @@ export class UsersController {
 ## What an endpoint returns
 
 The document describes the body the endpoint sends, which is the DTO **inside** the envelope. An
-`@ApiResponse({ type: UserDTO })` documents a body no endpoint returns, and every client generated
+`@ApiResponse({ type: UserDto })` documents a body no endpoint returns, and every client generated
 from it reads the user's fields off the envelope — one level too shallow, on every call. Three
 decorators, applied through `applyDecorators`, are the only way a response is documented:
 
 ```typescript
-export function APIDataResponse(model: Type<unknown>, options: EnvelopeOptions): MethodDecorator & ClassDecorator {
+export function ApiDataResponse(model: Type<unknown>, options: EnvelopeOptions): MethodDecorator & ClassDecorator {
   return applyDecorators(
     ApiExtraModels(model),
     ApiResponse({
@@ -130,10 +130,10 @@ export function APIDataResponse(model: Type<unknown>, options: EnvelopeOptions):
 }
 ```
 
-- **`APIDataResponse(dto, …)`** — `{ data }`, the DTO referenced with `getSchemaPath`.
-- **`APIPaginatedResponse(dto, …)`** — `{ data: dto[], pagination }`, with the pagination schema
+- **`ApiDataResponse(dto, …)`** — `{ data }`, the DTO referenced with `getSchemaPath`.
+- **`ApiPaginatedResponse(dto, …)`** — `{ data: dto[], pagination }`, with the pagination schema
   referenced the same way.
-- **`APIProblemResponse(status, description)`** — the Problem Details schema under
+- **`ApiProblemResponse(status, description)`** — the Problem Details schema under
   `application/problem+json`, which is the media type the filter sends. Documented under
   `application/json`, it is a content type the endpoint never answers with.
 - **A 204 is a plain `@ApiResponse` with a status and no schema** — there is no body to describe.
@@ -204,9 +204,9 @@ A request that is not allowed gets **404, not 403** — the same rule as any hid
 - [ ] Every controller has exactly one tag; if tags are grouped, every tag is in exactly one group.
 - [ ] Every authenticated route declares both security schemes, by their named constants.
 - [ ] Every operator endpoint behind an API-key header declares it with `@ApiHeader`.
-- [ ] Every success is documented with `APIDataResponse` or `APIPaginatedResponse`, and every 204
+- [ ] Every success is documented with `ApiDataResponse` or `ApiPaginatedResponse`, and every 204
       and every health 200 with a plain `@ApiResponse`; no response is documented as a bare DTO.
-- [ ] Every failure that is part of the contract has an `APIProblemResponse`, and the ones shared by
+- [ ] Every failure that is part of the contract has an `ApiProblemResponse`, and the ones shared by
       the whole controller are declared on the class rather than per route.
 - [ ] Every controller method name is unique across the application, and the docs setup's
       `operationIdFactory` returns the method name.

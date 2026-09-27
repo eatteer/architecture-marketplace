@@ -10,8 +10,8 @@ tables cannot settle stays in that skill's `SKILL.md`.
 | Files, folders | kebab-case + type suffix | `create-user.usecase.ts`, `users-mongo.repository.ts` |
 | Classes | PascalCase | `CreateUserUseCase` |
 | Interfaces (contracts) | PascalCase, `I` prefix | `IUserRepository`, `IEventBus` |
-| Types (data shapes, unions) | PascalCase, no prefix | `UserDTO`, `DataResponse` |
-| Abbreviations | one word in capitals; all lowercase at the start of a camelCase name | `APIPagination`, `HTTPClient`, `buildAPIError`, `apiURL` |
+| Types (data shapes, unions) | PascalCase, no prefix | `UserDto`, `DataResponse` |
+| Abbreviations | a word: capital first letter inside a name, all lowercase at the start of a camelCase one | `ApiPagination`, `HttpClient`, `buildApiError`, `apiUrl` |
 | `Id` | a word, as the stored fields spell it | `userId`, `findById()` |
 | Functions, methods, variables | camelCase | `getUserById()`, `userId` |
 | Getters / setters (reads and writes of a value) | native accessors, never `getX()`/`setX()` | `get email()` |

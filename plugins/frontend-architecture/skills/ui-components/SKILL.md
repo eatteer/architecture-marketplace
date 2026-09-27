@@ -21,14 +21,17 @@ them; nothing a primitive already does is built again.
 - **Unused components cost nothing in the bundle.** Only what a screen imports is shipped, so the
   whole catalog stays, and the next screen finds what it needs already styled and lint-clean.
 - **The catalog is library code that obeys the project's rules.** Nothing in `common/ui/` is excluded
-  from the linter or the typecheck; the tests load every module so an update that breaks one fails
+  from the typecheck, and the linter turns off one rule there, the abbreviation rule, because of the
+  names below; the tests load every module so an update that breaks one fails
   even where no screen uses it, and coverage leaves the folder out (see `testing`).
 - **A change to a catalog file is rare and says why beside it**, because the next update overwrites
   it. The project makes two kinds: what the library cannot be told from outside — the toaster's
   close button, which takes a translated `closeLabel` — and what the Content-Security-Policy refuses
   (the chart, below).
-- **The catalog keeps the registry's names**, so an update lands on the same files: its hook
-  `useIsMobile` stays in `use-mobile.ts`, which the sidebar imports by that path.
+- **The catalog keeps the registry's names**, so an update lands on the same files without a rename:
+  its hook `useIsMobile` stays in `use-mobile.ts`, which the sidebar imports by that path, and a
+  component keeps the registry's spelling of an abbreviation (`InputOTP`), which the rest of the
+  code imports as it is.
 
 ### Adding or updating a component
 

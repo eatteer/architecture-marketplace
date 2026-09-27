@@ -35,7 +35,7 @@ async function fetchSession(signal: AbortSignal): Promise<Session | null> {
 
     return session;
   } catch (error: unknown) {
-    if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
+    if (error instanceof ApiError && error.status === UNAUTHORIZED_STATUS) {
       return null;
     }
 
@@ -68,7 +68,7 @@ signing out empties the session a moment before the page is left.
 ## Refresh on a 401
 
 An expired access token answers `401`, the same as no token. The client's last middleware catches
-that 401 before it becomes an `APIError`, refreshes, and sends the request again (the order of the
+that 401 before it becomes an `ApiError`, refreshes, and sends the request again (the order of the
 middlewares is `api-client`'s):
 
 - **It keeps a clone of each request as it leaves**, with the time it was sent: `fetch` consumes the
@@ -105,7 +105,7 @@ export function createRefreshCoordinator(refresh: () => Promise<unknown>): (sent
     try {
       await refresh();
     } catch (error: unknown) {
-      if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
+      if (error instanceof ApiError && error.status === UNAUTHORIZED_STATUS) {
         publishSessionEvent({ type: "signed-out", reason: "expired" });
 
         return "ended";

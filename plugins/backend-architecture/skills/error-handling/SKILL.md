@@ -170,7 +170,7 @@ bodies are the `presentation-layer` skill's.
 
 ```typescript
 @Catch()
-export class HTTPExceptionFilter implements ExceptionFilter {
+export class HttpExceptionFilter implements ExceptionFilter {
   public constructor(private readonly _statuses: DomainErrorStatusRegistry) {}
 
   public catch(exception: unknown, host: ArgumentsHost): void {

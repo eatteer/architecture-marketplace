@@ -215,7 +215,7 @@ export function applyFieldErrors<T extends FieldValues>(
   setError: UseFormSetError<T>,
   fields: readonly Path<T>[],
 ): boolean {
-  if (!(error instanceof APIError)) {
+  if (!(error instanceof ApiError)) {
     return false;
   }
 
@@ -235,7 +235,7 @@ export function applyFieldErrors<T extends FieldValues>(
 
 The fields it may place errors on are the schema file's list, `as const satisfies readonly (keyof
 <Form>FormInput)[]`, so a field the form does not have is never targeted. It takes `unknown` because
-not every failure is an `APIError` — a bug in the mutation function (a mapper that reads a field
+not every failure is an `ApiError` — a bug in the mutation function (a mapper that reads a field
 the response lacks) reaches the form as whatever it threw. When it returns
 `false`, the form shows the rest itself, which is why its mutation sets `meta.errorToast: false`;
 whether that is a toast or an alert inside the form is `error-handling`'s.

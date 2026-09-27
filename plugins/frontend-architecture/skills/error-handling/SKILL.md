@@ -14,7 +14,7 @@ for developers.
 
 | Failure | Type |
 | --- | --- |
-| The backend answered with an error, or did not answer | `APIError` (see `api-client`) |
+| The backend answered with an error, or did not answer | `ApiError` (see `api-client`) |
 | A route the session's permissions do not open | `ForbiddenError`, thrown by the route's guard (see `authorization`) |
 | Anything else — a mapper reading a missing field, a render that throws | a bug |
 
@@ -38,7 +38,7 @@ That table is implemented once, in the query client's caches, so no screen decid
 
 ```typescript
 queryCache: new QueryCache({
-  onError: (error: APIError, query: Query<unknown, unknown>): void => {
+  onError: (error: ApiError, query: Query<unknown, unknown>): void => {
     reportUnexpectedError(error, "query");
 
     if (query.state.data !== undefined && query.meta?.errorToast !== false) {
@@ -72,7 +72,7 @@ already registered, the connection dropped — goes to one of two places:
 
 ```typescript
 export function showErrorToast(error: unknown): void {
-  if (error instanceof APIError && error.status === UNAUTHORIZED_STATUS) {
+  if (error instanceof ApiError && error.status === UNAUTHORIZED_STATUS) {
     return;
   }
 
@@ -140,7 +140,7 @@ copies either sends the same thing:
 }
 ```
 
-An `APIError` builds it with `toReport()`. A bug has no server answer to report, so its report is its
+An `ApiError` builds it with `toReport()`. A bug has no server answer to report, so its report is its
 `name`, its `message` and the time — never its stack, which says nothing to the person it is pasted
 to and may say too much about the code.
 
@@ -168,7 +168,7 @@ export function RouteError({ error }: ErrorComponentProps): JSX.Element {
     return <Forbidden />;
   }
 
-  if (error instanceof APIError && error.status === NOT_FOUND_STATUS) {
+  if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
     return <NotFound />;
   }
 

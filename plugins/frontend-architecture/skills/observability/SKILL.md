@@ -40,7 +40,7 @@ export type ErrorSource = "boundary" | "query" | "uncaught" | "unhandled-rejecti
 export type ErrorReporter = (error: unknown, source: ErrorSource) => void;
 
 export function isExpectedError(error: unknown): boolean {
-  return error instanceof APIError || error instanceof ForbiddenError;
+  return error instanceof ApiError || error instanceof ForbiddenError;
 }
 
 const reportedErrors = new WeakSet<object>();
@@ -63,7 +63,7 @@ export function reportUnexpectedError(error: unknown, source: ErrorSource): void
 ```
 
 - **`reportUnexpectedError` is the one entry point.** It drops what the screen already shows and is
-  not a bug — the server's answer (`APIError`) and a route the reader's permissions do not open
+  not a bug — the server's answer (`ApiError`) and a route the reader's permissions do not open
   (`ForbiddenError`) — and hands everything else to the installed reporter. Which failures are
   expected is `error-handling`'s classification; this is where it is applied.
 - **`source` says where the error surfaced**, so a provider can group by it:
@@ -149,7 +149,7 @@ export function reportWebVitals(listeners: readonly MetricListener[] = METRIC_LI
 
 - [ ] Every request carries a `traceparent`, and the error report's trace id falls back to it.
 - [ ] Every unexpected error reaches the port through `reportUnexpectedError`, once, under the first
-      source it surfaced from, and no `APIError` or `ForbiddenError` is reported.
+      source it surfaced from, and no `ApiError` or `ForbiddenError` is reported.
 - [ ] The query and mutation caches report through the port before deciding a toast.
 - [ ] The window's listeners call `preventDefault` and are installed before the first render.
 - [ ] Any provider is installed with `setErrorReporter` or `setWebVitalsReporter` before the first

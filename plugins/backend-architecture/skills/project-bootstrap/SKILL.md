@@ -137,7 +137,7 @@ At minimum:
 | `@stylistic/padding-line-between-statements`, `"always"` before and after `multiline-` `const`, `let`, `expression`, `block-like`, `return`, `export` and `type`, and between `const`/`let` and `expression` | A wrapped call butts against the next statement and the two read as one lump, and a declaration runs into the work that uses it |
 | `local/padding-between-expression-kinds` | An assignment, a function call, a method call and an awaited step run together |
 | `no-restricted-syntax` on `CallExpression[optional=true]` | A conditional call hides its branch in `?.()` |
-| `@typescript-eslint/naming-convention` over a list of abbreviations | `ApiError` beside `APIPagination`: one word, two spellings |
+| `@typescript-eslint/naming-convention` over a list of abbreviations | `APIError` beside `ApiPagination`: one word, two spellings |
 
 **One rule is the project's own.** Copy
 [assets/eslint-rules/padding-between-expression-kinds.mjs](assets/eslint-rules/padding-between-expression-kinds.mjs)
@@ -161,35 +161,38 @@ export default tseslint.config({
 It has an autofix and a test of its own in the project's suite. What it enforces, and why, is
 `code-conventions`'.
 
-**The abbreviation rule is `naming-convention` over a list.** No format can tell `Api` from a word,
-so the rule rejects each listed abbreviation written as a word, and a project adds its own
-vocabulary to the list. `Id` is not in it: it is written as a word. It checks declarations only —
-variables, functions, parameters, types, classes, methods — because a property's name is often a
-contract (a JSON field, a stored one) and a destructured binding repeats one; those are the
+**The abbreviation rule is `naming-convention` over a list.** No format can tell `API` from the
+start of a word, so the rule rejects each listed abbreviation written in capitals — a plural `s`
+included, unless an uppercase letter comes before it or a lowercase one after, so `IPasswordHasher`
+(`I` + `Password`) passes — and skips a name in SCREAMING_SNAKE_CASE. A project adds its own
+vocabulary to the list. `Id` is in it, so `userID` fails beside `userId`. It checks declarations
+only — variables, functions, parameters, types, classes, methods — because a property's name is
+often a contract (a JSON field, a stored one) and a destructured binding repeats one; those are the
 reviewer's (see `code-conventions`).
 
 ```typescript
 const ABBREVIATIONS = [
-  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "Html", "Http", "Ip", "Iso", "Json", "Jwt", "Otp", "Pdf",
-  "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
+  "Ai", "Api", "Cors", "Csp", "Css", "Csv", "Dto", "E2e", "Html", "Http", "Id", "Ip", "Iso", "Json", "Jwt",
+  "Otp", "Pdf", "Seo", "Sms", "Sql", "Svg", "Ui", "Uri", "Url", "Utc", "Uuid", "Xml",
 ];
 
-export default tseslint.config({
-  rules: {
-    "@typescript-eslint/naming-convention": [
-      "error",
-      {
-        selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
-        format: null,
-        custom: {
-          regex: `(?:^|(?<=[a-z0-9]))(?:${ABBREVIATIONS.join("|")})(?=[A-Z0-9_]|s?$|s[A-Z0-9_])`,
-          match: false,
+const IN_CAPITALS = ABBREVIATIONS.map((word: string): string => word.toUpperCase()).join("|");
+
+export default tseslint.config(
+  {
+    rules: {
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          selector: ["variableLike", "typeLike", "classMethod", "typeMethod"],
+          format: null,
+          custom: { regex: `^(?![A-Z0-9_]+$).*(?<![A-Z])(?:${IN_CAPITALS})s?(?![a-z])`, match: false },
         },
-      },
-      { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
-    ],
+        { selector: ["variable", "parameter"], modifiers: ["destructured"], format: null },
+      ],
+    },
   },
-});
+);
 ```
 
 `consistent-type-imports` skips every file with decorators on its own, so in those files the

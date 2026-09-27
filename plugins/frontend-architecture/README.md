@@ -26,7 +26,7 @@ a second copy, so there is never a question of which statement is current.
 | `code-conventions` | Universal TypeScript and React rules — forbidden constructs, annotations, absence via `undefined`, effects, blank lines between statements, JSX siblings and hook calls, naming and abbreviations. Applies to every file |
 | `project-bootstrap` | Source tree, aliases, compiler strictness, the Vite config, the lint config and the project's own lint rules, scripts, `main.tsx` and the order of its providers |
 | `adding-feature` | The folder skeleton and the ordered steps, delegating each one to the skill that owns it |
-| `api-client` | Types generated from the OpenAPI document, the one client and its middlewares, `APIError` from Problem Details, unwrapping the envelope, mappers |
+| `api-client` | Types generated from the OpenAPI document, the one client and its middlewares, `ApiError` from Problem Details, unwrapping the envelope, mappers |
 | `server-state` | The query client's defaults, query options factories and their keys, mutations and invalidation, optimistic updates |
 | `data-fetching-states` | Pending, error, empty and ready, resolved in order; the altitude a state resolves at; loaders against skeletons in place; skeletons that keep the ready UI's height |
 | `error-handling` | Expected failures against bugs, where each surfaces, the error toast and the copyable report, error screens, the fullscreen loader for writes, what a `catch` may end in |
@@ -113,7 +113,7 @@ its tests — the common case — needs all of them, not the first one that matc
 ## No runtime code
 
 This plugin ships no library to depend on. Every artifact the skills describe — the client and its
-middlewares, `APIError`, the query options type, the error toast, the field-error helper — is written
+middlewares, `ApiError`, the query options type, the error toast, the field-error helper — is written
 in the project that installs it. The skills say what shape those take and why.
 
 Beside its `SKILL.md`, a skill may carry files it points at, and each says what it is for:

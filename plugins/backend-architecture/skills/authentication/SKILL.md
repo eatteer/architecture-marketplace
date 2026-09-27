@@ -56,7 +56,7 @@ Two tokens, with different jobs and different lifetimes:
 - **Refresh token** — long-lived, sent only to the refresh endpoint, carries almost nothing.
 
 ```typescript
-export type JWTPayload = {
+export type JwtPayload = {
   sub: string;
   type: ActorTypeValue;
   permissions: PermissionValue[];
@@ -70,7 +70,7 @@ converted once from `exp` inside the adapter, so nothing past the verifier handl
 unit:
 
 ```typescript
-export type VerifiedAccessToken = JWTPayload & {
+export type VerifiedAccessToken = JwtPayload & {
   expiresAt: Date;
 };
 ```
@@ -348,8 +348,8 @@ skill owns how a route says it needs no permission). The client reads it on load
 every refresh.
 
 ```typescript
-export class SessionDTO {
-  public user!: SessionUserDTO;
+export class SessionDto {
+  public user!: SessionUserDto;
   public permissions!: string[];
   public accessTokenExpiresAt!: string;
 }
