@@ -97,11 +97,13 @@ real, in its `plugin.json`:
 "dependencies": ["engineering-workflow"]
 ```
 
-Installing the stack plugin then pulls the shared one in automatically, and disabling the shared one
-is refused while a plugin that depends on it is enabled — which is what makes a pointer into it
-safe. The entry is a **bare name on purpose**: a version range resolves against git tags
-(`engineering-workflow--v1.0.0`), so adding one without tagging every release fails the dependent
-plugin with `no-matching-tag`.
+Installing the stack plugin with `claude plugin install` then pulls the shared one in, and disabling
+the shared one is refused while a plugin that depends on it is enabled — which is what makes a
+pointer into it safe. Enabling it from a project's `enabledPlugins` does not pull anything in: the
+stack plugin fails to load (`Dependency … is not installed`) and no skill reaches the session, so
+the settings snippet in a stack plugin's README lists the shared plugin beside it. The entry is a
+**bare name on purpose**: a version range resolves against git tags (`engineering-workflow--v1.0.0`),
+so adding one without tagging every release fails the dependent plugin with `no-matching-tag`.
 
 - **References point along the dependency, never against it.** A stack plugin names the shared
   plugin's skills as much as it needs; the shared plugin never names a skill, file or concept that

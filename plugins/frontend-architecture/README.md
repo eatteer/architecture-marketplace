@@ -70,7 +70,8 @@ cookies with a refresh that rotates, and wraps a resource in `{ data }` and a li
 
 **So every contributor gets the plugin**, commit this as `.claude/settings.json`. Claude Code offers
 the marketplace and enables the plugin when someone trusts the folder, with nothing to install by
-hand:
+hand. `engineering-workflow` is listed too: a plugin enabled from settings does not enable the plugin
+it depends on, and without it this one fails to load and no skill reaches the session:
 
 ```json
 {
@@ -80,7 +81,8 @@ hand:
     }
   },
   "enabledPlugins": {
-    "frontend-architecture@architecture-marketplace": true
+    "frontend-architecture@architecture-marketplace": true,
+    "engineering-workflow@architecture-marketplace": true
   }
 }
 ```

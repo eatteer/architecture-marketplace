@@ -75,7 +75,8 @@ trail uses, and whether a revoked permission takes effect immediately or at the 
 
 **So every contributor gets the plugin**, commit this as `.claude/settings.json`. Claude Code offers
 the marketplace and enables the plugin when someone trusts the folder, with nothing to install by
-hand:
+hand. `engineering-workflow` is listed too: a plugin enabled from settings does not enable the plugin
+it depends on, and without it this one fails to load and no skill reaches the session:
 
 ```json
 {
@@ -85,7 +86,8 @@ hand:
     }
   },
   "enabledPlugins": {
-    "backend-architecture@architecture-marketplace": true
+    "backend-architecture@architecture-marketplace": true,
+    "engineering-workflow@architecture-marketplace": true
   }
 }
 ```
