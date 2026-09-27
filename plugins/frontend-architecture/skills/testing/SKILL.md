@@ -64,8 +64,10 @@ it("creates a user in the language chosen for it", async () => {
 ## The setup
 
 The test runner's config lives in `vite.config.ts` (see `project-bootstrap`): `jsdom`, one setup
-file, the configuration the tests run with (a fake API origin — see `configuration`), and the
-coverage floor. The setup file does four things around every test:
+file, the configuration the tests run with (a fake API origin — see `configuration`), the coverage
+floor, and **half the cores as workers** (`maxWorkers: "50%"`) — the suite takes as long as with all
+of them, and a test that renders routes, no longer competing for the CPU, runs about twice as fast
+and far from its timeout. The setup file does four things around every test:
 
 - **Starts MSW with `onUnhandledRequest: "error"`**, so a request no handler answers fails the test
   instead of reaching the network.
@@ -74,7 +76,7 @@ coverage floor. The setup file does four things around every test:
   `server.use`, open toasts, `localStorage` and `sessionStorage`, the theme class, the language, and
   any replaced reporter.
 - **Raises Testing Library's async timeout**: a route renders only after its guard read the session
-  and its chunk loaded, and the first route a file renders transforms those chunks cold.
+  and its chunk loaded, and with every file running at once that takes seconds.
 
 ### The console guard
 
@@ -138,6 +140,10 @@ and spaces their dates, so an order is predictable.
 - **`renderRoute(path)`** mounts the whole application at a path, with the real router over an
   in-memory history, and returns the router so a test can assert on the URL. A screen is tested this
   way whenever its route matters — its guard, its search params, its loader.
+- **A file that renders routes calls `beforeAll(warmUpRoutes)`**, which loads every route's chunk
+  through a throwaway router. The test runner transforms a module the first time it is imported, so
+  otherwise the file's first test pays for the whole route tree inside its own timeout and its
+  `findBy*` waits — and fails on a loaded machine while the tests after it pass.
 
 **Find elements by role and accessible name**: `getByRole("button", { name: "Next" })`,
 `findByRole("table", { name: "Users" })`. That is how a reader finds them, and a control a test cannot
