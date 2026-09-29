@@ -189,8 +189,8 @@ short of reading the source.
 ## Reaching the documentation
 
 Docs exposure is decided by an explicit allowlist, not by the environment: a staging deployment
-usually needs them and production sometimes does. The allowlist variable is required like any other,
-and an **empty** value disables the endpoint entirely — a declared "off", not a missing setting (see
+usually needs them and production sometimes does. The allowlist variable is optional: **absent**, the
+endpoint is not mounted at all; present, it is validated like any other and cannot be empty (see
 `configuration`).
 
 A request that is not allowed gets **404, not 403** — the same rule as any hidden route (see the

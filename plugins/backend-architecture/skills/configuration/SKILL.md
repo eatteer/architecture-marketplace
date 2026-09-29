@@ -1,7 +1,7 @@
 ---
 name: configuration
-description: "Environment variables and operator-editable settings — the validated `EnvironmentVariables` class and what stays out of it, required variables with no default or fallback, an empty value declared as off, coercion, the typed `ConfigService` with `infer`, configuration handed to use cases as a typed value, `.env.example` as the contract, environment or database, the settings aggregate."
-when_to_use: "Trigger on — adding or reading an environment variable, a variable only a command or the instrumentation reads, editing the env validation class, `.env` or `.env.example`, injecting `ConfigService`, a `get` that returns `any`, a typed settings value injected into a use case, a number or boolean arriving as a string, a price or quota in the environment, branching on `NODE_ENV`, an app that started with a missing variable, moving a value into the database, a seed that never updates what exists, a variable declared but empty, two settings each valid and wrong together, or a value written twice for the app and the local stack."
+description: "Environment variables and operator-editable settings — the validated `EnvironmentVariables` class and what stays out of it, required variables with no default or fallback, an optional variable that is absent or valid, credentials required only for the selected provider, coercion, the typed `ConfigService` with `infer`, configuration handed to use cases as a typed value, `.env.example` as the contract, environment or database, the settings aggregate."
+when_to_use: "Trigger on — adding or reading an environment variable, a variable only a command or the instrumentation reads, editing the env validation class, `.env` or `.env.example`, injecting `ConfigService`, a `get` that returns `any`, a typed settings value injected into a use case, a number or boolean arriving as a string, a price or quota in the environment, branching on `NODE_ENV`, an app that started with a missing variable, moving a value into the database, a seed that never updates what exists, a variable declared but empty, an optional capability left unconfigured, a placeholder key for a provider that is not selected, two settings each valid and wrong together, or a value written twice for the app and the local stack."
 ---
 
 # Configuration
@@ -52,9 +52,9 @@ comparison silently takes the string path and a validator passes the wrong type 
 
 **Required is not the same as present.** `@IsString()` accepts `""`, so a variable that was declared
 and left blank passes startup and fails later, far from its cause — `JWT_SECRET=""` boots happily
-and breaks every login. Anything whose empty value means nothing carries `@IsNotEmpty()` too, and a
-secret carries a minimum length: the placeholder somebody types to get the process started is always
-short.
+and breaks every login. Every string variable carries `@IsNotEmpty()` too, optional ones included,
+and a secret carries a minimum length: the placeholder somebody types to get the process started is
+always short.
 
 ## Rules about a pair of values
 
@@ -109,9 +109,10 @@ list the tool's variables for local use, in a section that says which command re
 deployment sets them for the run of that command and nowhere else.
 
 The tracing instrumentation is the same case: it runs before the application, reads the service name
-and the collector's endpoint, and validates them in a class of its own — required once it is loaded,
-irrelevant when it is not (see the `observability` skill). A library that would default them is the
-reason to validate them, not a reason to skip it.
+and the collector's endpoint, and validates them in a class of its own. They are optional together,
+in the sense below: absent, tracing is off; present, both are required and validated (see the
+`observability` skill). A library that would default them is the reason to validate them, not a
+reason to skip it.
 
 **A command that reads a few of the application's own variables validates just those, by the
 application's rule.** The migration command needs the connection string and nothing else; requiring
@@ -125,8 +126,9 @@ const { MONGO_URI } = validateVariables(process.env, ["MONGO_URI"]);
 
 ## No defaults, and no fallback in the reader
 
-**Every variable is required.** None carries a default value in the validation class, and no reader
-writes `?? somethingElse`.
+**Every variable is required**, except the optional ones described below, whose absence switches a
+capability off. None carries a default value in the validation class, and no reader writes
+`?? somethingElse`.
 
 A default is a second place the value can come from, and the reader has no way to tell which one it
 got. The failure it produces is the worst kind: the application starts, reports healthy, and runs
@@ -168,25 +170,73 @@ place. `infer` is what makes `get` return the validated type for that name: the 
 returns `any`, so the result is unchecked, and an annotation on the receiving variable then hides
 the `any` behind a type nothing verified.
 
-## An empty value that is a declared "off"
+## An optional variable is absent, or valid
 
-Required does not always mean non-empty. A variable whose **empty value is a declared "off"** — an
-allowlist left empty disables the feature it guards; SMTP credentials left empty mean an
-unauthenticated relay — is sanctioned when three things hold:
+Required is the rule. A variable is **optional** only when its absence switches a capability off —
+the documentation is not published, no traces are exported, the mail relay is reached without
+credentials — and a deployment that forgets it fails closed or visibly. Absence never stands for a
+value: a variable whose absence would mean "wait ten seconds" or "trust no proxy" is a default under
+another name, and it stays required.
 
-- it is still required: the variable must be present, so forgetting it fails the boot;
-- it is validated: `@IsString()` without `@IsNotEmpty()`, and a non-empty value is still checked;
-- the meaning of empty is written next to it in `.env.example`, where the next operator reads it.
+An optional variable has two states, and `""` is neither of them:
 
-That is not a fallback: nothing is substituted, and the operator stated the value by writing
-nothing.
+- **absent** — the capability is off, and the reader gets `undefined`;
+- **present** — and then validated in full, like any required variable, emptiness included.
 
-A **secure-cookie flag** is the other exception. It exists so local development over plain HTTP
-works — a browser drops a `Secure` cookie on `http://localhost` — and it is configuration a
-deployment must set to `true`. It is required like every other variable, so no deployment can omit
-it, and it is never derived from `NODE_ENV`: validation cannot tell a local stack from a deployment,
-so the `true` is each deployment's own statement, and one that leaves it `false` sends its session
-cookies over plain HTTP.
+```typescript
+// Absent: the documentation is not published. Present: a list of addresses, never "".
+@IsOptional()
+@IsString()
+@IsNotEmpty()
+public DOCS_ALLOWED_IPS?: string;
+```
+
+`@IsOptional()` skips only `undefined` and `null`, so a variable declared and left blank still
+reaches `@IsNotEmpty()` and fails the boot. That is the point: `VAR=""` is a line somebody meant to
+fill in, and reading it as "off" switches a capability off without anybody having decided it. No
+transform turns `""` into `undefined`.
+
+- The reader treats `undefined` as the off state, in the one place that turns the capability on — a
+  factory, a bootstrap line — and substitutes nothing.
+- **Variables that only work together are optional together.** A user without a password, or a
+  collector's endpoint without a service name, is rejected by the cross-validation step: all of them
+  or none.
+- `.env.example` lists an optional variable **commented out**, with what its absence means written
+  next to it. Uncommented and empty, it would fail the boot of everyone who copies the file.
+
+A **secure-cookie flag** is required, never optional. It exists so local development over plain HTTP
+works — a browser drops a `Secure` cookie on `http://localhost` — and its absence would have to mean
+one of two values, which is a default. It is never derived from `NODE_ENV` either: validation cannot
+tell a local stack from a deployment, so the `true` is each deployment's own statement, and one that
+leaves it `false` sends its session cookies over plain HTTP.
+
+## Credentials belong to the selected provider
+
+Where a variable chooses among the adapters of one port (see the `module-wiring` skill), each
+adapter's own settings are required **when that adapter is selected**, and not otherwise:
+
+```typescript
+@IsIn(PAYMENT_PROVIDER_VALUES)
+public PAYMENT_PROVIDER!: PaymentProviderValue;
+
+@ValidateIf((variables: EnvironmentVariables): boolean => variables.PAYMENT_PROVIDER === "gateway")
+@IsString()
+@IsNotEmpty()
+public GATEWAY_API_KEY?: string;
+```
+
+Requiring them unconditionally makes an environment that runs the simulator carry a placeholder key
+for a service it never calls — a value that describes no environment, and that somebody eventually
+copies into one that does. The selected provider's settings keep every other rule: required, no
+default, so switching the selector without supplying them is a boot failure naming each one.
+
+The simulator reads none of them. What it needs of its own — the secret it signs its simulated
+events with — is a constant beside it, which a test imports, not a borrowed credential of the
+provider it stands in for.
+
+The factory that binds the real adapter narrows each setting with an explicit guard that throws
+naming the variable. Validation makes the guard unreachable; the guard is what lets the type say what
+validation guaranteed, with no `!` and no fallback (see `code-conventions`).
 
 ## Configuration reaches the application layer as a value
 
@@ -236,8 +286,9 @@ wrong database — everything succeeds, and the only clue is data appearing some
 
 ## The env file holds the application's contract, and nothing else
 
-`.env.example` lists every variable the application reads, with an illustrative value or an empty
-placeholder, and it is updated in the same change as the validation class. A variable added to one
+`.env.example` lists every variable the application reads — a required one with an illustrative
+value or an empty placeholder, an optional one commented out — and it is updated in the same change
+as the validation class. A variable added to one
 and not the other means the next person's environment fails to boot with no indication of what to
 add.
 
@@ -338,14 +389,18 @@ has actually tested.
 
 - [ ] Every variable the application reads is declared in the validation class, and nothing only a
       tool reads is.
-- [ ] Anything whose empty value is meaningless rejects `""`; secrets have a minimum length.
+- [ ] No variable accepts `""`; secrets have a minimum length.
 - [ ] Combinations that are only wrong together are checked in one step that reports them all.
 - [ ] No variable has a default value, and no reader has a fallback.
+- [ ] Every optional variable is one whose absence switches a capability off, is validated in full
+      when present, rejects `""`, and is listed commented out in `.env.example` with the meaning of
+      its absence.
+- [ ] Optional variables that only work together are checked as all or none.
+- [ ] A provider's settings are required only when that provider is selected, and the simulator
+      reads none of them.
 - [ ] Numeric and boolean variables carry a transform.
 - [ ] `ConfigService` is injected with the validated-variables type argument and `true`, and every
       `get` passes `{ infer: true }`.
-- [ ] Every variable whose empty value is a declared "off" is required, validated, and has the
-      meaning of empty written next to it in `.env.example`.
 - [ ] No use case injects `ConfigService` or names an environment variable; configuration it needs
       arrives as a typed value behind a token, built in the module's factory.
 - [ ] `NODE_ENV` is validated with `@IsIn` over an `as const` array, not a TypeScript `enum`.

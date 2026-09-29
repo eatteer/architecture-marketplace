@@ -1,7 +1,7 @@
 ---
 name: module-wiring
 description: "NestJS module composition — the feature module's shape, DI tokens as `unique symbol`, binding an interface to an implementation, what a module may export, the policy for `@Global()` modules, selecting an implementation per environment with `useFactory`, provider scope and why request-scoped is contagious, lifecycle hooks, and breaking a dependency cycle between features."
-when_to_use: "Trigger on — writing or editing a `*.module.ts`, registering a provider or a token, exporting something from a module, importing another feature's module, choosing between `useClass`/`useFactory`/`useValue`, a `Nest can't resolve dependencies` error, a circular import that only fails at boot, reaching for `forwardRef`, deciding whether something belongs in a global module, a shared port in `common/` with one consumer, code that must run at startup or shutdown, or binding a different implementation per environment."
+when_to_use: "Trigger on — writing or editing a `*.module.ts`, registering a provider or a token, exporting something from a module, importing another feature's module, choosing between `useClass`/`useFactory`/`useValue`, a `Nest can't resolve dependencies` error, a circular import that only fails at boot, reaching for `forwardRef`, deciding whether something belongs in a global module, a shared port in `common/` with one consumer, code that must run at startup or shutdown, binding a different implementation per environment, or a variable that selects a provider's adapter."
 ---
 
 # Module wiring
@@ -94,9 +94,22 @@ Whether a provider gets a simulator at all, and how one must behave, belongs to 
 }
 ```
 
-The switch is on `NODE_ENV`, not on a dedicated flag. A flag whose only purpose is to choose a
-simulator is also a way to enable the simulator in production by mistake; the environment is already
-the thing that decides, and it cannot be set to the wrong value without much louder consequences.
+The switch is on `NODE_ENV` by default, not on a dedicated flag. A flag whose only purpose is to
+choose a simulator is also a way to enable the simulator in production by mistake; the environment is
+already the thing that decides, and it cannot be set to the wrong value without much louder
+consequences.
+
+**A selector variable is sanctioned when an environment other than production needs the real
+provider** — a development or staging stack that pays through the provider's sandbox. Then which
+adapter answers is a fact about that environment, and a variable naming it (`gateway` or
+`simulator`) is configuration like any other, on three conditions:
+
+- **Startup refuses the simulator in production**, in the cross-validation step, so the mistake the
+  `NODE_ENV` switch guards against is a boot failure instead;
+- **the real provider's settings are required only when it is selected**, and the simulator reads
+  none of them (see the `configuration` skill);
+- **the factory switches on the selector alone**, never on the selector and `NODE_ENV` together — two
+  inputs to one decision is two places to look when it is wrong.
 
 **Write the factory as a named function, not a closure inside the module.** The module stays a
 wiring file, and the decision becomes something a test can call — which matters, because a provider
@@ -163,7 +176,8 @@ sometimes, and the error names the container rather than the two features that a
 - [ ] Every feature module provides its own domain-error status list.
 - [ ] No feature module imports a global module, and every `@Global()` module is universal
       infrastructure or a shared port declared in `common/`.
-- [ ] Every environment-dependent provider switches on `NODE_ENV` inside `useFactory`, written as
-      a named function.
+- [ ] Every environment-dependent provider switches inside `useFactory`, written as a named
+      function, on `NODE_ENV` — or on a selector variable only where a non-production environment
+      needs the real provider, with the simulator refused in production at startup.
 - [ ] No provider is request-scoped.
 - [ ] No module pair depends on each other in both directions.

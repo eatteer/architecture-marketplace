@@ -158,18 +158,21 @@ the one piece of caller-controlled text that ends up everywhere:
 OpenTelemetry, exported over OTLP to a collector. Where the collector sends the data — which backend
 stores traces, which one draws the dashboards — is the deployment's decision, not the application's.
 
-**The instrumentation is loaded before the application, by the start command:**
+**The instrumentation is loaded before the application, by the start command, always:**
 `node --import ./dist/instrumentation.js dist/main`. An instrumentation patches a library when the
 library is first loaded; imported from the application's own entry point it arrives after http, the
-web framework and the driver already are, and patches nothing — silently. The same fact makes it
-optional without a flag: a process started without the import runs untraced, and the application's
-code has no branch for either case.
+web framework and the driver already are, and patches nothing — silently. The application's code has
+no branch for tracing either way.
 
-- **Once loaded, it validates its own variables and refuses to start without them** — the service
-  name and the collector's endpoint, required, no default. The SDK would otherwise fill both in, a
-  collector on localhost and a service called `unknown_service`, and the process would report
-  healthy while its telemetry went nowhere under a name nobody searches for. The application does
-  not read them, so they are not in its contract (see the `configuration` skill).
+- **Its own variables are the switch** — the service name and the collector's endpoint, optional
+  together (see the `configuration` skill). Neither set: it registers nothing and the process runs
+  untraced, which is what an environment with no collector yet is. Both set: it traces. One of them,
+  or either one empty: it refuses to start. The SDK would otherwise fill the missing one in, a
+  collector on localhost or a service called `unknown_service`, and the process would report healthy
+  while its telemetry went nowhere under a name nobody searches for. The application does not read
+  them, so they are not in its contract.
+- **It says which it did**, in one line at startup — tracing to which collector under which name, or
+  off — so an environment that expected traces and has none finds out from its first log line.
 - **Instrumentations are listed, not discovered.** One per library the service actually uses — HTTP,
   the web framework, the framework's own layer, the database driver. A meta-package that enables
   everything it can find is a few dozen instrumentations for libraries the process never loads, and
@@ -356,8 +359,9 @@ lines explaining why the process was shutting down.
       `x-trace-id` header — exposed through CORS — resolved through one helper that prefers the
       active span's id and continues a valid incoming `traceparent`.
 - [ ] Every outbound call forwards the trace id as a `traceparent`.
-- [ ] The tracing instrumentation is loaded by the start command, before the application; it lists
-      its instrumentations, refuses to start without its own variables, and is flushed at shutdown.
+- [ ] The tracing instrumentation is always loaded by the start command, before the application; its
+      own variables switch it on, all or none, never empty; it lists its instrumentations, states at
+      startup whether it traces, and is flushed at shutdown.
 - [ ] Deep code reads the ambient context; nothing injects the request.
 - [ ] Background work establishes its own context and id, and an event that leaves the process
       carries the trace id in its metadata.

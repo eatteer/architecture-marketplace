@@ -1,6 +1,6 @@
 ---
 name: deployment
-description: "The deployable image and the steps a deploy runs from it — the multi-stage Dockerfile, production dependencies installed without lifecycle scripts, the non-root user, what never goes into the image, the container healthcheck, the process that receives the termination signal, one image for the server and every deploy command, migrations as a deploy step and their order against the rollout, loading instrumentation from the start command, and watching the image's size."
+description: "The deployable image and the steps a deploy runs from it — the multi-stage Dockerfile, production dependencies installed without lifecycle scripts, the non-root user, what never goes into the image, the container healthcheck, the process that receives the termination signal, one image for the server and every deploy command, migrations as a deploy step and their order against the rollout, the start command that always loads the instrumentation, and watching the image's size."
 when_to_use: "Trigger on — writing or editing a `Dockerfile` or `.dockerignore`, `docker build` failing on `npm ci`, an install exiting 127 because a dev tool is missing, a container running as root, adding a `HEALTHCHECK`, a container restarted when the database blinks, a server that never receives SIGTERM because a parent process holds it, `CMD npm start`, running migrations or the seed as deploy steps, the order of a migration against the rollout, a `.env` or a secret baked into an image, or an image that grew after a dependency change."
 ---
 
@@ -45,8 +45,8 @@ rules below are what they encode.
   itself, because the image may carry neither `curl` nor `wget`, and the port variable, because that
   is where the application listens. Readiness is the orchestrator's probe, and the `observability`
   skill owns both routes.
-- **The server is the process that receives the signal.** `CMD ["node", "dist/main"]`, in exec form,
-  makes it PID 1 and hands it the platform's SIGTERM directly. `npm start` or a shell form puts a
+- **The server is the process that receives the signal.** `CMD ["node", "--import",
+  "./dist/instrumentation.js", "dist/main"]`, in exec form, makes it PID 1 and hands it the platform's SIGTERM directly. `npm start` or a shell form puts a
   parent in between that does not forward the signal, so the drain window never opens and every
   deploy ends with a kill (see the `observability` skill for what the process does with the signal).
 
@@ -74,9 +74,10 @@ contain (see the `project-bootstrap` skill for the tree).
 - Two deploys starting at once both run the step. The migration command takes a lock, so the second
   one refuses instead of applying the same migration twice.
 
-**Instrumentation is a start-command choice.** Tracing is switched on by loading it before the
-application, `CMD ["node", "--import", "./dist/instrumentation.js", "dist/main"]`, and its variables
-are then required (see the `observability` skill). The image is the same either way.
+**The start command always loads the instrumentation**, before the application, and the deployment's
+variables decide whether it traces (see the `observability` skill). The image and its command are
+the same in an environment with a collector and one without; turning tracing on is setting two
+variables, not building or starting anything differently.
 
 ## Size
 
@@ -96,7 +97,8 @@ accept it; it is never to find out a year later.
       them.
 - [ ] The container runs as a non-root user.
 - [ ] The healthcheck points at liveness, with the runtime's own HTTP client and the port variable.
-- [ ] `CMD` runs the server directly in exec form, so it receives the termination signal.
+- [ ] `CMD` runs the server directly in exec form, so it receives the termination signal, with the
+      instrumentation loaded ahead of it.
 - [ ] Every command a deploy runs — migrations, the seed — runs from the same image.
 - [ ] Migrations run as a gated deploy step, locked against a concurrent run, before or after the
       rollout as each one states.

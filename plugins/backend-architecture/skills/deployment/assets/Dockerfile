@@ -39,6 +39,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["node", "-e", "fetch('http://127.0.0.1:' + process.env.PORT + '/health/live').then((response) => process.exit(response.ok ? 0 : 1), () => process.exit(1))"]
 
-# node itself, not npm: the process that receives SIGTERM is the server. The deploy's other commands —
-# migrations, the seed — run from this same image with their own command.
-CMD ["node", "dist/main"]
+# node itself, not npm: the process that receives SIGTERM is the server. The instrumentation is always
+# loaded ahead of it, and traces only when the deployment sets its variables. The deploy's other
+# commands — migrations, the seed — run from this same image with their own command.
+CMD ["node", "--import", "./dist/instrumentation.js", "dist/main"]
