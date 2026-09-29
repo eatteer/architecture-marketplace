@@ -1,7 +1,7 @@
 ---
 name: configuration
-description: "Build-time configuration — `VITE_*` variables compiled into the bundle and readable by anyone who loads the page, validated with Zod once when the bundle loads, read only through the configuration module, `.env.example` as the list of what exists, one build per environment, the values the test runner uses, and the same-site origins the cookie session requires."
-when_to_use: "Trigger on — `import.meta.env`, `process.env` in browser code, adding a `VITE_` variable, `.env` or `.env.example`, `env.ts`, an API key, token or secret in the frontend, a request to `undefined/api/v1`, a variable that works in dev and is missing from the build, pointing the application at another backend, `VITE_API_URL`, `--build-arg`, a runtime config file or `window.__CONFIG__`, or the frontend and the API on different domains."
+description: "Build-time configuration — `VITE_*` variables compiled into the bundle and readable by anyone who loads the page, validated with Zod once when the bundle loads, required with no default or optional when absence switches a capability off, read only through the configuration module, `.env.example` as the list of what exists, one build per environment, the values the test runner uses, and the same-site origins the cookie session requires."
+when_to_use: "Trigger on — `import.meta.env`, `process.env` in browser code, adding a `VITE_` variable, `.env` or `.env.example`, `env.ts`, an API key, token or secret in the frontend, a request to `undefined/api/v1`, a variable that works in dev and is missing from the build, a default or an empty value for a variable, pointing the application at another backend, `VITE_API_URL`, `--build-arg`, a runtime config file or `window.__CONFIG__`, or the frontend and the API on different domains."
 ---
 
 # Configuration
@@ -43,15 +43,27 @@ export const env = parseEnv(import.meta.env);
 
 - **Validated when the bundle loads**, so a missing or malformed variable stops the application with
   a message naming it, rather than showing up later as a request to `undefined/api/v1/…`.
-- **Every variable is required unless it has a real default**, and typed by its schema — a URL is
-  `z.url()`, a number is coerced once here and never parsed again by its readers.
+- **Every variable is required, and none has a default**, typed by its schema — a URL is `z.url()`,
+  a number is coerced once here and never parsed again by its readers. A default is a second place
+  the value can come from, and a build that forgot the variable ships quietly pointing at it.
 - **`import.meta.env` is read in this module and nowhere else.** The lint config refuses it elsewhere
   (see `project-bootstrap`), so no reader gets a raw, unvalidated string. `process.env` is not in
   browser code at all: the application's compiler config has no Node types.
 - **`parseEnv` takes its source as an argument**, so the tests exercise it with a literal.
 
-**`.env.example` lists every variable**, with a comment saying what it is and an example value. A
-variable added to the schema is added there in the same change. `.env` itself is git-ignored.
+## An optional variable is absent, or valid
+
+A variable is **optional** only when its absence switches a capability off — an analytics or error
+reporting endpoint an environment does not have yet — and never when its absence would stand for a
+value. It is `.optional()` in the schema, and it has two states: absent, the reader gets `undefined`
+and turns nothing on; present, it is validated in full. `""` is neither: `VITE_X=""` fails the schema,
+because `.optional()` accepts only `undefined` and a blank line is one somebody meant to fill in.
+Variables that only work together are optional together, checked as all or none with a refinement on
+the schema.
+
+**`.env.example` lists every variable**, with a comment saying what it is and an example value — an
+optional one commented out, with what its absence means. A variable added to the schema is added
+there in the same change. `.env` itself is git-ignored.
 
 ## One build per environment
 
@@ -81,6 +93,8 @@ it — asking for the cookies at all — is `api-client`'s.
 - [ ] No secret in any `VITE_*` variable, and nothing in the bundle that must not be public.
 - [ ] Every variable is declared in the schema, validated when the bundle loads, and listed in
       `.env.example`.
+- [ ] No variable has a default; an optional one switches a capability off when absent, rejects
+      `""`, and is listed commented out.
 - [ ] `import.meta.env` appears only in the configuration module, and `process.env` not in browser
       code.
 - [ ] The tests set their own configuration.
