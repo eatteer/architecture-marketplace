@@ -3,7 +3,7 @@
   "name": "backend-architecture",
   "displayName": "Backend Architecture",
   "description": "Architecture, patterns and code conventions for the NestJS/TypeScript backend stack (MongoDB with Mongoose, class-validator, OpenAPI, i18n). Auto-invoking skills that guide universal code conventions, project bootstrap and module wiring, the steps to add a feature, the four layers of a feature slice, API documentation, monetary amounts, transactions and consistency under concurrency, event-driven side effects, pagination, error handling, observability, the deployable image and deploy steps, authentication and authorization, security hardening, configuration, i18n, audit logging, background jobs, external integrations and testing; a read-only agent that reviews code against them rule by rule; and a skill that turns a clone of the reference template into a project. This is the core backend plugin. It requires the engineering-workflow plugin, which owns the git workflow and architecture decision records, and ships no runtime library.",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "dependencies": [
     "engineering-workflow"
   ],

@@ -111,6 +111,13 @@ adapter answers is a fact about that environment, and a variable naming it (`gat
 - **the factory switches on the selector alone**, never on the selector and `NODE_ENV` together — two
   inputs to one decision is two places to look when it is wrong.
 
+One exception, and it is a refusal, not a second input: a provider that **exposes the simulator's own
+surface** — a route that settles a simulated payment, grants a simulated credit — also refuses it
+when `NODE_ENV` is `production`, in its factory, beside the check that binds it. Startup already
+refuses the simulator there, so the repetition changes nothing in a correct deployment; it is there
+because such a route turns a configuration mistake into money, and a reader of that factory should
+not have to know that another file makes it safe.
+
 **Write the factory as a named function, not a closure inside the module.** The module stays a
 wiring file, and the decision becomes something a test can call — which matters, because a provider
 bound to one implementation unconditionally is invisible: everything works, in every environment,
