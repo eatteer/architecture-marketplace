@@ -1,7 +1,7 @@
 ---
 name: testing
-description: "Tests of the single-page application — which layer tests what (a pure function with a literal, a component or a whole route rendered with the network mocked, the flow that crosses the backend end to end), the test runner's setup and what it resets, the console guard that fails a test on any warning, the network mock that starts signed in and overrides that win by their order, builders of DTOs, an in-memory backend for a feature, rendering the application at a path, finding elements by role and name, determinism seams instead of module mocks, the coverage floor and what it leaves out, and the Playwright suite against the build and a real backend."
-when_to_use: "Trigger on — writing a `*.test.ts` or `*.test.tsx` or an `e2e/*.spec.ts`, `renderWithProviders` or `renderRoute`, `server.use`, an MSW handler, a request no handler answers, a builder in `test/builders/`, a test failing with 'The test wrote to the console', a router `console.warn` in a test, a `findBy` that times out, `vi.useFakeTimers`, `vi.mock`, a flaky test, coverage below the floor, `playwright.config.ts`, `page.route`, `storageState`, the backend's login limit in the end-to-end run, 'Failed to load resource' failing the end-to-end suite, or testing another tab."
+description: "Tests of the single-page application — which layer tests what (a pure function with a literal, a component or a whole route rendered with the network mocked), the test runner's setup and what it resets, the console guard that fails a test on any warning, the network mock that starts signed in and overrides that win by their order, builders of DTOs, an in-memory backend for a feature, rendering the application at a path, finding elements by role and name, determinism seams instead of module mocks, and the coverage floor and what it leaves out."
+when_to_use: "Trigger on — writing a `*.test.ts` or `*.test.tsx`, `renderWithProviders` or `renderRoute`, `server.use`, an MSW handler, a request no handler answers, a builder in `test/builders/`, a test failing with 'The test wrote to the console', a router `console.warn` in a test, a `findBy` that times out, `vi.useFakeTimers`, `vi.mock`, a flaky test, coverage below the floor, or testing another tab."
 ---
 
 # Testing
@@ -13,7 +13,6 @@ repeat each other.
 | --- | --- | --- |
 | A pure function — a mapper, a formatter, a schema, a guard's decision | its output for a literal input | Vitest, nothing rendered |
 | A component, a screen, a route | what a reader sees and does: states, errors, navigation, what reaches the backend | Testing Library in jsdom, the network mocked by MSW |
-| A flow that crosses the backend | that the application and the real backend agree: the session, the refresh, the envelope, the errors | Playwright, against the production build and a running backend |
 
 - **A screen is tested through what a reader perceives**, not through its implementation: no test
   reaches into a component's state, a hook's return value on its own, or a query's cache when the
@@ -174,36 +173,8 @@ component catalog (library code, tested through how the screens use it), the gen
 `main.tsx`, and the tests. The catalog still gets one test: every module in it is imported, so an
 update that breaks a dependency fails even where no screen uses the component.
 
-The React Compiler is off under the test runner (see `project-bootstrap`); the compiled output is
-what the end-to-end suite exercises.
-
-## The end-to-end suite
-
-`npm run test:e2e` runs Playwright against **the production build** — its config builds it and
-serves it with `vite preview` — and **a real backend** running with its seed. The build because that is what ships — the compiler included — and because the
-router's development warnings would fail the console guard.
-
-- **One worker, in file order**: every spec signs in as the same account against a backend whose login
-  is rate-limited per account and whose refresh tokens are single-use.
-- **One sign-in per run, through the real form**, in a setup project that saves the cookies as
-  `storageState` for the specs that follow. A spec that rotates tokens — forcing a refresh — signs in
-  with its own session instead, so it does not spend the shared one.
-- **The console guard applies here too**, on the browser context: any error, warning or uncaught
-  exception fails the test, **except** the line the browser writes for every response with a `4xx`
-  status (`Failed to load resource: … status of 4xx`), since the flows provoke 400, 401 and 409 on
-  purpose and the page shows each one. A `5xx` or a failed connection still fails. **So does any
-  refusal of the Content-Security-Policy**: the page reports its `securitypolicyviolation` events to
-  the guard through a binding, because the browser does not write to the console a refusal the
-  library that caused it catches (see `security`).
-- **A request is held with `page.route`** to look at the screen while it is in flight — the skeleton,
-  the fullscreen loader — and released to see what follows.
-- **Data a spec creates carries a tag unique to the run**, in the names and emails it writes, so a
-  search for the tag finds exactly those rows whatever else the database holds; the spec deletes them
-  in its `afterAll`, and a delete helper that tolerated a `404` would hide a spec that deleted the
-  wrong thing.
-- **An already-served application can be the target** (`E2E_BASE_URL`), which is how the suite runs
-  against the deployable image and its real Content-Security-Policy (see `deployment` and `security`).
-- Its variables are its own, never compiled into the bundle (see `configuration`).
+The React Compiler is off under the test runner (see `project-bootstrap`), so no test runs the
+compiled output: the served build does, checked by hand before a release (see `deployment`).
 
 ## Checklist
 
@@ -218,5 +189,3 @@ router's development warnings would fail the console guard.
 - [ ] Elements are found by role and name.
 - [ ] Every timer-dependent test uses fake timers or a seam, and restores them.
 - [ ] Coverage stays above the floor with the catalog, generated files and the entry point excluded.
-- [ ] Every flow that crosses the backend has an end-to-end spec that tags and deletes what it
-      creates.

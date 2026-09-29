@@ -27,7 +27,6 @@ src/
 ├── router.ts
 └── styles.css
 test/                   the test runner's setup, the network mock's handlers, builders
-e2e/                    the end-to-end suite
 eslint-rules/           the project's own lint rules
 docs/adr/               decision records
 ```
@@ -46,8 +45,7 @@ What goes inside a feature folder, and how features depend on each other, is `ad
 ## The aliases
 
 Every import in `src/` and `test/` is absolute: `@/` is `src/`, and `@test/` is the test support
-under `test/`. The two folders outside them import relatively: the end-to-end suite, which has no
-aliases because it never imports the application, and `eslint-rules/`, which the linter loads
+under `test/`. The one folder outside them imports relatively: `eslint-rules/`, which the linter loads
 before any alias exists.
 
 ```typescript
@@ -79,7 +77,6 @@ The root `tsconfig.json` has no files of its own; it references one config per e
 | `tsconfig.app.json` | `src/`, without the tests | the bundler's client types only |
 | `tsconfig.test.json` | the tests in `src/` and `test/` | the app's, plus Node |
 | `tsconfig.node.json` | `vite.config.ts` | Node |
-| `tsconfig.e2e.json` | `e2e/` and the end-to-end runner's config | Node and the DOM, no aliases |
 
 The split is what keeps a Node API out of browser code: the application's config has no Node types,
 so `process.env` or `node:fs` in a component is a compile error rather than a runtime one.
@@ -118,8 +115,8 @@ export default defineConfig({
 - **The React Compiler runs in the build and not under the test runner.** It adds a cache branch to
   every component, taken only on a re-render with the same props, and coverage counts those as
   branches of the application's own code — the same tests measure several points lower with it on.
-  The compiled output is what the end-to-end suite exercises, because it runs against the build (see
-  `testing`).
+  The compiled output is what the served build runs, checked by hand before a release (see
+  `deployment`).
 - **Modules run in the order they are imported**, whichever chunk the bundler puts them in
   (`strictExecutionOrder`). Without it, a chunk that several routes share runs before the entry's
   first import, and a module imported first for its side effect — configuring Zod before any schema
@@ -273,17 +270,16 @@ Scripts every project has, under these names:
   "dev": "vite",
   "build": "vite build",
   "preview": "vite preview",
-  "lint": "eslint \"{src,test,e2e}/**/*.{ts,tsx}\" \"*.config.ts\" --fix",
+  "lint": "eslint \"{src,test}/**/*.{ts,tsx}\" \"*.config.ts\" --fix",
   "typecheck": "tsc -b",
   "test": "vitest run --coverage",
-  "test:e2e": "playwright test",
   "api:types": "openapi-typescript <the backend's OpenAPI URL> --output <the schema file> …"
 }
 ```
 
 `build` does not typecheck: the bundler strips types without reading them, exactly as the tests do,
 which is why the typecheck is its own script and its own step in the hook. What `api:types` passes is
-`api-client`'s; what each test script runs is `testing`'s.
+`api-client`'s; what `test` runs is `testing`'s.
 
 A pre-commit hook runs the linter on the staged files, then `typecheck` over the whole project. The
 second is there because nothing else before a push catches a cross-file type error — a component
@@ -359,8 +355,8 @@ how a missing cleanup shows up in development instead of in production.
 - [ ] Nothing under `common/` imports from `features/`.
 - [ ] The aliases are declared once in the application's compiler config and resolved everywhere
       through it.
-- [ ] `tsc -b` covers the application, the tests, the tooling config and the end-to-end suite, and
-      only the tests and the tooling get Node's types.
+- [ ] `tsc -b` covers the application, the tests and the tooling config, and only the tests and the
+      tooling get Node's types.
 - [ ] The Node version agrees in `.nvmrc`, `engines` and the Dockerfile.
 - [ ] The router's plugin runs before the React plugin, the React Compiler is off under the test
       runner, and the build keeps the modules' execution order.

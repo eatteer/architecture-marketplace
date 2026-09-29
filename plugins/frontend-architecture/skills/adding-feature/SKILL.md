@@ -8,7 +8,7 @@ when_to_use: "Trigger on — adding a feature or a screen, building a list, deta
 
 A feature is a vertical slice of the application: it owns its reads and writes, its model, its
 screens and its forms, and what changes outside its folder is short and known — its route files, a
-translation file per locale, the navigation entry that leads to it, and its end-to-end spec.
+translation file per locale, and the navigation entry that leads to it.
 
 ```text
 src/features/<feature>/
@@ -45,7 +45,7 @@ against a shape that has not been decided.
 | 10 | The route files: guards, loaders, search validation | `routing`, `authorization` |
 | 11 | The navigation entry, shown only to who may open it | `authorization` |
 | 12 | Its namespace, in every locale, registered with the translation types | `i18n` |
-| 13 | Component tests with the network mocked, beside each artifact; an end-to-end spec for the flow that crosses the backend | `testing` |
+| 13 | Component tests with the network mocked, beside each artifact | `testing` |
 
 Steps 2 to 5 render nothing. That is the point of the order: the model and the cache are decided and
 tested before a screen makes them expensive to change.
@@ -81,6 +81,6 @@ Verified against the code in front of you, not recalled.
 - [ ] The feature's namespace exists in every locale, with the same keys, and is registered.
 - [ ] Nothing in the feature imports another feature's components or pages, and nothing in `common/`
       imports the feature.
-- [ ] Every screen has component tests, and the flow that crosses the backend has an end-to-end spec.
+- [ ] Every screen has component tests.
 - [ ] A decision the feature made that the next person would have to reconstruct has a record (see
       `engineering-workflow:decision-records`).

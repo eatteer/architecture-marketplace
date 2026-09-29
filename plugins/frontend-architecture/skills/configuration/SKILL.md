@@ -1,6 +1,6 @@
 ---
 name: configuration
-description: "Build-time configuration — `VITE_*` variables compiled into the bundle and readable by anyone who loads the page, validated with Zod once when the bundle loads, read only through the configuration module, `.env.example` as the list of what exists, one build per environment, the values the test runner uses, the variables the end-to-end suite reads that never reach the bundle, and the same-site origins the cookie session requires."
+description: "Build-time configuration — `VITE_*` variables compiled into the bundle and readable by anyone who loads the page, validated with Zod once when the bundle loads, read only through the configuration module, `.env.example` as the list of what exists, one build per environment, the values the test runner uses, and the same-site origins the cookie session requires."
 when_to_use: "Trigger on — `import.meta.env`, `process.env` in browser code, adding a `VITE_` variable, `.env` or `.env.example`, `env.ts`, an API key, token or secret in the frontend, a request to `undefined/api/v1`, a variable that works in dev and is missing from the build, pointing the application at another backend, `VITE_API_URL`, `--build-arg`, a runtime config file or `window.__CONFIG__`, or the frontend and the API on different domains."
 ---
 
@@ -67,10 +67,6 @@ before the first render.
 suite never depends on whoever's `.env` is on disk — `VITE_API_URL` points at a host that exists only
 in the network mock (see `testing`).
 
-**The end-to-end suite reads variables the bundle never sees** — the account it signs in as, an
-already-served application to point at. They carry an `E2E_` prefix, which Vite does not expose; they
-sit at the end of `.env.example`, and the suite validates them with its own schema.
-
 ## Same-site origins
 
 The session cookies are `SameSite=strict`, and a browser does not send them on a request from another
@@ -87,7 +83,6 @@ it — asking for the cookies at all — is `api-client`'s.
       `.env.example`.
 - [ ] `import.meta.env` appears only in the configuration module, and `process.env` not in browser
       code.
-- [ ] The tests set their own configuration; the end-to-end variables are `E2E_`-prefixed and never
-      read by the application.
+- [ ] The tests set their own configuration.
 - [ ] The API's address is a build argument, and the deployed origins are same-site and allowed by
       the API's CORS.

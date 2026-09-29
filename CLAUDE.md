@@ -187,8 +187,8 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Build-time variables, their validation, nothing secret in the bundle | `configuration` |
 | Cross-site scripting, raw HTML, untrusted URLs rendered as links, the Content-Security-Policy, dependencies | `security` |
 | The W3C trace context the browser starts and where its id ends up, the error-reporter port, Web Vitals | `observability` |
-| Test boundaries, the shape of a test, the console guard, the network mock, builders, the end-to-end suite, the coverage floor | `testing` |
-| The static image, the SPA fallback, cache headers, where the security headers are sent from | `deployment` |
+| Test boundaries, the shape of a test, the console guard, the network mock, builders, the coverage floor | `testing` |
+| The static image, the SPA fallback, cache headers, where the security headers are sent from, checking the served image before a release | `deployment` |
 | Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
 
 ## A skill's `description` and `when_to_use` are its trigger

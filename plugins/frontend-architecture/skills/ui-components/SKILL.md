@@ -157,9 +157,8 @@ that hides a scrollbar. The Content-Security-Policy refuses inline styles (see `
 }
 ```
 
-A Base UI update that injects another element shows up as a CSP violation in the end-to-end run
-against the served image, which sends the real policy (see `testing`); its rule is added here the
-same way.
+A Base UI update that injects another element shows up as a CSP violation in the check of the
+served image, which sends the real policy (see `deployment`); its rule is added here the same way.
 
 The chart's registry file renders its color variables in an inline `<style>` through
 `dangerouslySetInnerHTML`, which the policy blocks, so in production a chart would lose its colors.

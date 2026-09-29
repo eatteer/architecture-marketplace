@@ -92,13 +92,13 @@ import { z } from "zod";
 z.config({ jitless: true });
 ```
 
-A refusal a library catches never reaches the console, so the end-to-end suite listens for the
-page's `securitypolicyviolation` events and fails on any (see `testing`).
+A refusal a library catches never reaches the console, so the check of the served image reads the
+browser's Issues panel too, which lists every violation (see `deployment`).
 
 **Adding a provider that talks to another origin** — an error reporter, a Web Vitals collector (see
 `observability`) — adds exactly that origin to `connect-src`, and to `script-src` only if its script
-cannot be bundled. A policy that fails in production and passes locally is caught by running the
-end-to-end suite against the served image, which sends the real policy (see `testing`).
+cannot be bundled. A policy that fails in production and passes locally is caught by the check of
+the served image, which sends the real policy (see `deployment`).
 
 The policy is the last layer, not the first: every rule above still applies with it in place.
 

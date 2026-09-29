@@ -28,8 +28,7 @@ make it concrete. Something with the shape of:
 > its paginated lists. It already ships sign-in, a users screen gated by permissions, English and
 > Spanish, a light and a dark theme, and the whole shadcn catalog on Base UI — all of it working, with
 > `users` as the reference feature to copy or delete. `npm run dev` starts it against the backend in
-> `.env`; `npm run test:e2e` drives
-> the build against a real backend.
+> `.env`.
 >
 > The architecture rules live in the `frontend-architecture` skills, which load themselves when you
 > work here, so you can start building features and they will follow the same patterns.

@@ -1,7 +1,7 @@
 ---
 name: deployment
-description: "Shipping the application — the multi-stage `Dockerfile` that builds the bundle with Node and serves it from unprivileged nginx, the API's address as a required build argument written into the bundle and the policy, the nginx config as the whole server (the SPA fallback, assets that fail as 404, caching a year only for a hashed asset that was found, `index.html` revalidated on every load, compression), every header sent from the server block and never a location, the healthcheck, `.dockerignore`, and the image's size."
-when_to_use: "Trigger on — writing or editing a `Dockerfile`, `nginx.conf` or `.dockerignore`, `docker build` or `docker run`, a deep link that 404s on reload, a page that keeps loading an old deployment after a release, `Cache-Control`, a CDN caching a 404, a chunk served as HTML, `add_header` headers missing on some paths, `try_files`, a container running as root, port 80 against 8080, `HEALTHCHECK`, `EXPOSE`, `server_tokens`, gzip, HSTS, or serving the build from a bucket or another host."
+description: "Shipping the application — the multi-stage `Dockerfile` that builds the bundle with Node and serves it from unprivileged nginx, the API's address as a required build argument written into the bundle and the policy, the nginx config as the whole server (the SPA fallback, assets that fail as 404, caching a year only for a hashed asset that was found, `index.html` revalidated on every load, compression), every header sent from the server block and never a location, the healthcheck, `.dockerignore`, the image's size, and the check of the served image before a release."
+when_to_use: "Trigger on — writing or editing a `Dockerfile`, `nginx.conf` or `.dockerignore`, `docker build` or `docker run`, a deep link that 404s on reload, a page that keeps loading an old deployment after a release, `Cache-Control`, a CDN caching a 404, a chunk served as HTML, `add_header` headers missing on some paths, `try_files`, a container running as root, port 80 against 8080, `HEALTHCHECK`, `EXPOSE`, `server_tokens`, gzip, HSTS, serving the build from a bucket or another host, checking a release before it ships, or the built application behaving differently from `npm run dev`."
 ---
 
 # Deployment
@@ -42,7 +42,7 @@ Two stages: one with Node to build, one with nginx and the built files only.
   the API's health is the API's to report.
 - **The Node version of the build stage agrees with the project's** (see `project-bootstrap`).
 - **`.dockerignore` keeps the build context to the source**: no `node_modules`, no local build or
-  coverage, no end-to-end output, no `.git`, and no `.env` — the build argument is the only way a
+  coverage, no `.git`, and no `.env` — the build argument is the only way a
   value reaches the bundle, so a developer's local file never does.
 
 **Measure the image when the base image changes** and write the size down where the project documents
@@ -112,6 +112,20 @@ add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
 Serving the build from somewhere else — a bucket, a CDN — means reproducing all of the above there:
 the fallback, the `404` for assets, the two cache policies and the headers.
 
+## Checking the image before a release
+
+No test runs what ships: the tests render the source in jsdom, without the React Compiler (see
+`project-bootstrap`) and without the Content-Security-Policy. So before a release the image is built
+with the environment's API address, run, and used in a browser with the developer tools open — sign
+in, the screens the release touches, a reload on a deep link:
+
+- **The console stays empty** of errors and warnings, apart from the line the browser writes for each
+  `4xx` a flow provokes on purpose.
+- **The Issues panel lists no Content-Security-Policy violation.** It lists every refusal, including
+  one the library that caused it catches and never reports to the console (see `security`).
+- **The screens behave as they do under `npm run dev`**, which is where a bug the compiler introduces
+  shows.
+
 ## Checklist
 
 - [ ] The image builds with `npm ci` and `npm run build` in a Node stage, and runs unprivileged nginx
@@ -122,3 +136,4 @@ the fallback, the `404` for assets, the two cache policies and the headers.
 - [ ] Only a `200` under `/assets/` is cached immutably; everything else is `no-cache`.
 - [ ] Every header is added in the `server` block with `always`, and `server_tokens` is off.
 - [ ] The image's size is measured and written down.
+- [ ] Before a release, the image was run and used with an empty console and no policy violation.
