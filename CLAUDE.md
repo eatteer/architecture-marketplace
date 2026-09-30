@@ -178,7 +178,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Form libraries and schemas, the form as the boundary of controlled values, the backend's field errors placed on fields, the submit latch, confirmation before an irreversible write, wiring a field's label, description and error | `forms` |
 | File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load, page transitions and the type every view transition declares | `routing` |
 | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, text filters debounced into the URL | `pagination` |
-| The shadcn catalog on Base UI and how a component is added or updated, semantic tokens, variants, class merging, overlays, the theme | `ui-components` |
+| The shadcn catalog on Base UI and how a component is added or updated, semantic tokens, variants, class merging, overlays, the theme, the scrollbar's gutter | `ui-components` |
 | Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |
 | Translation namespaces and files, typed keys, key casing, locale parity, plurals per locale, the language the backend is asked for, the document's `lang` | `i18n` |
 | Dates, numbers and money on screen | `formatting` |

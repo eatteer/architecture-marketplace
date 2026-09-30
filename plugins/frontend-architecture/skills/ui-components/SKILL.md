@@ -1,7 +1,7 @@
 ---
 name: ui-components
-description: "The component catalog and the theme — shadcn's components in their Base UI variant, copied whole into `common/ui/` and kept lint-clean, how a component is added or updated, the repository as the inventory, Base UI's composition (`render` instead of `asChild`, `onOpenChange` with its reason, `nativeButton`), a link styled as a button, semantic color tokens under `@theme`, variants with CVA, merging classes with `cn`, icons, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, and Base UI's inline style element turned off."
-when_to_use: "Trigger on — `npx shadcn add`, editing a file in `common/ui/`, `components.json`, building a dialog, select, popover, menu, tabs or tooltip by hand, `asChild`, `render=`, `nativeButton`, `onInteractOutside` or `onPointerDownOutside`, `onOpenChange`, a Radix import, a hard-coded color like `bg-white` or `text-gray-500`, `dark:` color classes, a new color or radius token, `@theme`, `cva` or `VariantProps`, `buttonVariants`, `cn`, `clsx` or `tailwind-merge`, a class the linter says the theme does not define, a lucide icon, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, a toast's close button in English, a link announced as a button, `CSPProvider`, or `.base-ui-disable-scrollbar`."
+description: "The component catalog and the theme — shadcn's components in their Base UI variant, copied whole into `common/ui/` and kept lint-clean, how a component is added or updated, the repository as the inventory, Base UI's composition (`render` instead of `asChild`, `onOpenChange` with its reason, `nativeButton`), a link styled as a button, semantic color tokens under `@theme`, variants with CVA, merging classes with `cn`, icons, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style element turned off."
+when_to_use: "Trigger on — `npx shadcn add`, editing a file in `common/ui/`, `components.json`, building a dialog, select, popover, menu, tabs or tooltip by hand, `asChild`, `render=`, `nativeButton`, `onInteractOutside` or `onPointerDownOutside`, `onOpenChange`, a Radix import, a hard-coded color like `bg-white` or `text-gray-500`, `dark:` color classes, a new color or radius token, `@theme`, `cva` or `VariantProps`, `buttonVariants`, `cn`, `clsx` or `tailwind-merge`, a class the linter says the theme does not define, a lucide icon, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, a toast's close button in English, a link announced as a button, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, or content that shifts sideways when a page gets a scrollbar."
 ---
 
 # UI components
@@ -145,6 +145,24 @@ a theme that differs from the system's.
 The toaster is mounted once with its translated close label; what an error toast shows is
 `error-handling`'s.
 
+## The scrollbar's gutter
+
+The document keeps the scrollbar's gutter whether the page scrolls or not, so going from a short
+page to a long one does not shift the content sideways:
+
+```css
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+}
+```
+
+It is set on `<html>` because the document is what scrolls. Base UI's scroll lock reads the value
+there when an overlay opens and keeps it, so a dialog does not shift the page either. Where the
+scrollbar is drawn over the content, as with macOS's overlay scrollbars, there is no gutter to keep
+and the rule changes nothing.
+
 ## Base UI and the Content-Security-Policy
 
 A few Base UI components — a select's list, a scroll area — inject a `<style>` element with one rule
@@ -185,4 +203,5 @@ the change an update of the chart has to carry forward.
 - [ ] Every decorative icon has `aria-hidden="true"`.
 - [ ] The theme is a class on `<html>`, applied before the first render, following the system through
       `useSyncExternalStore`, and the reveal respects reduced motion.
+- [ ] `<html>` has `scrollbar-gutter: stable`.
 - [ ] Base UI's style elements are off, and the rule they carried is in the stylesheet.
