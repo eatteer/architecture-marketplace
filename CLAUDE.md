@@ -176,7 +176,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | The four states of a read, skeletons, the altitude a state resolves at, a route loader with a suspense query as the alternative to a skeleton in place, disabled queries, the page on screen while the next one loads | `data-fetching-states` |
 | Classifying a failure, which failures toast and how the toast behaves, the copyable error report, error screens and a route's error component, the fullscreen loader for writes, what a `catch` may end in | `error-handling` |
 | Form libraries and schemas, the form as the boundary of controlled values, the backend's field errors placed on fields, the submit latch, confirmation before an irreversible write, wiring a field's label, description and error | `forms` |
-| File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load | `routing` |
+| File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load, page transitions and the type every view transition declares | `routing` |
 | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, text filters debounced into the URL | `pagination` |
 | The shadcn catalog on Base UI and how a component is added or updated, semantic tokens, variants, class merging, overlays, the theme | `ui-components` |
 | Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |

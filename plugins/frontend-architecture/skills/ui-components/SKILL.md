@@ -135,6 +135,11 @@ a theme that differs from the system's.
   The transition snapshots the page when the callback returns, so the new theme is rendered
   synchronously and its class applied inside it. Without view transitions, without an origin, or for
   a reader who asked for reduced motion, the theme simply changes.
+- **The reveal is a view transition of type `theme`** —
+  `document.startViewTransition({ update, types: ["theme"] })` — and its rules in the stylesheet are
+  scoped to that type (see `routing` for why every view transition declares one). A browser that
+  cannot type a transition (`"types" in ViewTransition.prototype` is false) changes the theme at
+  once.
 
 **The toaster and every overlay follow the theme with no wiring**: they paint with the same tokens.
 The toaster is mounted once with its translated close label; what an error toast shows is
