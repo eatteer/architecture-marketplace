@@ -100,12 +100,14 @@ export function pageTransitionTypes({ pathChanged }: { pathChanged: boolean }): 
 ```
 
 ```tsx
-<main className="flex-1 [view-transition-name:page]">
+<main className="flex-1 page-transition:[view-transition-name:page]">
   <Outlet />
 </main>
 ```
 
 ```css
+@custom-variant page-transition (html:active-view-transition-type(page) &);
+
 html:active-view-transition-type(page)::view-transition-old(page) {
   animation: page-exit 120ms ease-in both;
 }
@@ -125,8 +127,11 @@ html:active-view-transition-type(page)::view-transition-new(page) {
 
 - **Only a change of path animates.** A filter, a sort or a page of results changes the search alone
   and answers at once; a list that fades on every change of a filter reads as a reload.
-- **The shell's content is named `page`**, so only it animates and the navigation around it stays
-  put. A page outside the shell — the sign-in pages — crossfades as the root, the browser's default.
+- **The shell's content is named `page` only during a change of page**, so only it animates and the
+  navigation around it stays put. Named always, it would be captured apart from the root by every
+  other view transition too, and would crossfade through the theme's reveal instead of being revealed
+  with the rest. A page outside the shell — the sign-in pages — crossfades as the root, the browser's
+  default.
 - **Every view transition declares a type, and every rule for its pseudo-elements is scoped to it**
   with `:active-view-transition-type()`. A rule on `::view-transition-new(root)` alone applies to
   every transition the page runs, so another feature's animation would play on each navigation.
@@ -308,5 +313,7 @@ export function handlePreloadError(
 - [ ] No route uses `React.lazy` or a `.lazy.tsx` file.
 - [ ] `vite:preloadError` reloads once, guarded by a window in `sessionStorage`.
 - [ ] The router's view transition is typed `page` and returns `false` when the path did not change.
+- [ ] The shell's content carries `view-transition-name: page` only under the `page-transition`
+      variant.
 - [ ] Every `::view-transition-*` rule in the stylesheet is scoped to a type, and one reduced-motion
       query turns every view-transition animation off.
