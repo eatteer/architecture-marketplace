@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
-    "check:snippets": "node tools/check-snippets.mjs"
+    "check:snippets": "node tools/check-snippets.mjs",
+    "sync:shadcn": "node tools/sync-shadcn-skill.mjs"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.10.0",

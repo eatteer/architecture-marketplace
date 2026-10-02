@@ -13,7 +13,9 @@
 // CONFIGS is reported, rather than checked against another stack's rules.
 //
 // A block that must break a convention to make its point is excluded by writing
-// `<!-- snippet-check: skip -->` on the line before its opening fence (see CLAUDE.md).
+// `<!-- snippet-check: skip -->` on the line before its opening fence (see CLAUDE.md). A skill
+// shipped as its publisher wrote it is left out whole: its snippets follow its publisher's
+// conventions, and an edit to pass this check would be undone by the next sync.
 //
 // Usage: node tools/check-snippets.mjs [path ...]   (defaults to every plugin)
 
@@ -37,6 +39,7 @@ const PLUGINS_ROOT = join(REPOSITORY_ROOT, "plugins");
 const SHARED_RULE_ASSETS = ["padding-between-expression-kinds.mjs", "padding-between-expression-kinds.d.mts"];
 const SHARED_RULE_PLUGINS = ["backend-architecture", "frontend-architecture"];
 const SKIP_MARKER = "<!-- snippet-check: skip -->";
+const VENDORED_SKILLS = [join(PLUGINS_ROOT, "frontend-architecture", "skills", "shadcn")];
 const OPENING_FENCE = /^(\s*)```(typescript|tsx)\s*$/;
 const CLOSING_FENCE = /^\s*```\s*$/;
 const EXAMPLE_EXTENSION = /\.tsx?$/;
@@ -342,7 +345,9 @@ function checkBlock(block, config) {
 const targets = process.argv.length > 2
   ? process.argv.slice(2).map((path) => resolve(path))
   : [PLUGINS_ROOT];
-const files = targets.flatMap(filesUnder);
+const files = targets
+  .flatMap(filesUnder)
+  .filter((file) => !VENDORED_SKILLS.some((skill) => file.startsWith(skill + sep)));
 const problems = [];
 
 for (const asset of SHARED_RULE_ASSETS) {
