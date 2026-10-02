@@ -27,7 +27,7 @@ make it concrete. Something with the shape of:
 > contract: its Problem Details errors, its cookie session with a refresh that works across tabs, and
 > its paginated lists. It already ships sign-in, a users screen gated by permissions, English and
 > Spanish, a light and a dark theme, and the whole shadcn catalog on Base UI — all of it working, with
-> `users` as the reference feature to copy or delete. `npm run dev` starts it against the backend in
+> `users` as the reference feature to copy or delete. `pnpm dev` starts it against the backend in
 > `.env`.
 >
 > The architecture rules live in the `frontend-architecture` skills, which load themselves when you
@@ -67,7 +67,6 @@ expect:
 | `index.html` | the `<title>`, written as "Frontend template", so a hyphenated search misses it |
 | `src/locales/*/common.json` | `app_name` in every language — translated, not copied: the Spanish file says "Plantilla de frontend" |
 | `src/**` and `test/**` | any test that uses the display name as a fixture, such as the link to the home page found by its name |
-| `package-lock.json` | the two `name` fields, regenerated with `npm install --package-lock-only` rather than edited |
 
 Search for the old name when you are done — `frontend-template`, `frontend template` and each
 language's display name, case-insensitive — and report anything you deliberately left.
@@ -75,18 +74,18 @@ language's display name, case-insensitive — and report anything you deliberate
 Do not touch: every mention of `backend-template` (it names the backend this project talks to until
 the user points it elsewhere, and its links are legitimate), the marketplace reference in
 `.claude/settings.json`, the plugin name anywhere, the decision records under `docs/adr/` (they say
-"the template" on purpose: that is where the decisions were taken), or `package-lock.json` beyond
-what `npm install --package-lock-only` regenerates.
+"the template" on purpose: that is where the decisions were taken), or `pnpm-lock.yaml`, which does
+not carry the name.
 
 ## 5. Verify, then hand it over
 
-Run `npm run typecheck` and `npm test`. The locale parity test confirms `app_name` still exists in
+Run `pnpm typecheck` and `pnpm test`. The locale parity test confirms `app_name` still exists in
 every language, and the test that finds the home link by the application's name confirms the display
 name reached the screen.
 
 Finish with what to do next, in three lines at most: fill `.env` from `.env.example` if they have not
-— `VITE_API_URL` is their backend — regenerate the API's types with `npm run api:types` once that
-backend runs, and `npm run dev`. Then tell them they can ask for their first feature in plain language
+— `VITE_API_URL` is their backend — regenerate the API's types with `pnpm api:types` once that
+backend runs, and `pnpm dev`. Then tell them they can ask for their first feature in plain language
 and the skills will shape it.
 
 Never commit. The user decides when to commit and what the message says.

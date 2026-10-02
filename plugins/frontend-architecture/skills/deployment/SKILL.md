@@ -1,7 +1,7 @@
 ---
 name: deployment
 description: "Shipping the application — the multi-stage `Dockerfile` that builds the bundle with Node and serves it from unprivileged nginx, the API's address as a required build argument written into the bundle and the policy, the nginx config as the whole server (the SPA fallback, assets that fail as 404, caching a year only for a hashed asset that was found, `index.html` revalidated on every load, compression), every header sent from the server block and never a location, the healthcheck, `.dockerignore`, the image's size, and the check of the served image before a release."
-when_to_use: "Trigger on — writing or editing a `Dockerfile`, `nginx.conf` or `.dockerignore`, `docker build` or `docker run`, a deep link that 404s on reload, a page that keeps loading an old deployment after a release, `Cache-Control`, a CDN caching a 404, a chunk served as HTML, `add_header` headers missing on some paths, `try_files`, a container running as root, port 80 against 8080, `HEALTHCHECK`, `EXPOSE`, `server_tokens`, gzip, HSTS, serving the build from a bucket or another host, checking a release before it ships, or the built application behaving differently from `npm run dev`."
+when_to_use: "Trigger on — writing or editing a `Dockerfile`, `nginx.conf` or `.dockerignore`, `docker build` or `docker run`, a deep link that 404s on reload, a page that keeps loading an old deployment after a release, `Cache-Control`, a CDN caching a 404, a chunk served as HTML, `add_header` headers missing on some paths, `try_files`, a container running as root, port 80 against 8080, `HEALTHCHECK`, `EXPOSE`, `server_tokens`, gzip, HSTS, serving the build from a bucket or another host, checking a release before it ships, or the built application behaving differently from `pnpm dev`."
 ---
 
 # Deployment
@@ -18,7 +18,8 @@ yet; when it has one, hold it against them. The rules below are what they encode
 
 Two stages: one with Node to build, one with nginx and the built files only.
 
-- **The build stage installs from the lockfile** (`npm ci`) and runs `npm run build`. It is the only
+- **The build stage installs from the frozen lockfile** with the pnpm `packageManager` pins, through
+  `corepack enable` (see `project-bootstrap`), and runs `pnpm build`. It is the only
   stage with Node, the dependencies or the source.
 - **The API's address is a build argument, and required.** Vite compiles it into the bundle, so it is
   fixed when the image is built and each environment gets its own image (see `configuration`). A
@@ -123,12 +124,12 @@ in, the screens the release touches, a reload on a deep link:
   `4xx` a flow provokes on purpose.
 - **The Issues panel lists no Content-Security-Policy violation.** It lists every refusal, including
   one the library that caused it catches and never reports to the console (see `security`).
-- **The screens behave as they do under `npm run dev`**, which is where a bug the compiler introduces
+- **The screens behave as they do under `pnpm dev`**, which is where a bug the compiler introduces
   shows.
 
 ## Checklist
 
-- [ ] The image builds with `npm ci` and `npm run build` in a Node stage, and runs unprivileged nginx
+- [ ] The image builds with `pnpm install --frozen-lockfile` and `pnpm build` in a Node stage, and runs unprivileged nginx
       on 8080 with only the built files.
 - [ ] The API's address is a required build argument, and the same value is written into the policy.
 - [ ] `.dockerignore` keeps `.env`, `node_modules`, build and test output and `.git` out.

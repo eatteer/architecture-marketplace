@@ -7,4 +7,4 @@ allowed_tools: [Skill, Read, Glob, Grep]
 append_system_prompt: "Answer in a few paragraphs at most. Do not create or edit files."
 ---
 
-Write the Dockerfile for this NestJS app. Right now `npm ci --omit=dev` fails with exit code 127 because husky is not installed.
+Write the Dockerfile for this NestJS app. Right now `pnpm install --prod --frozen-lockfile` fails with exit code 127 because husky is not installed.

@@ -1,7 +1,7 @@
 ---
 name: project-bootstrap
-description: "Standing a new backend up and the files every project needs before any feature exists — the source tree and `common/`, the `@/` and `@test/` aliases, compiler strictness, the Node version, lint setup, package scripts, the pre-commit hook, `main.ts` and the order of its steps, global pipes and filters, the root module, the modules that configure the framework, and the local stack."
-when_to_use: "Trigger on — starting a project, choosing lint rules, a rule in `eslint-rules/`, editing `main.ts`, `app.module.ts`, `tsconfig.json`, the lint config, `package.json` scripts, `.nvmrc` or the pre-commit hook, a `forRootAsync` factory, the order global pipes, filters and guards are registered in, a pipe that trims every string in the body, where a cross-cutting file goes, an import that resolves in the editor but not at runtime, a type error in a file nobody staged, editing the compose file or pinning an image, a local replica set that never elects a primary, a build that emits `dist/src/main.js`, or a container that cannot bind its port because another project holds it."
+description: "Standing a new backend up and the files every project needs before any feature exists — the source tree and `common/`, the `@/` and `@test/` aliases, compiler strictness, the Node version and the package manager, lint setup, package scripts, the pre-commit hook, `main.ts` and the order of its steps, global pipes and filters, the root module, the modules that configure the framework, and the local stack."
+when_to_use: "Trigger on — starting a project, choosing lint rules, a rule in `eslint-rules/`, editing `main.ts`, `app.module.ts`, `tsconfig.json`, the lint config, `package.json` scripts, `.nvmrc`, `packageManager`, `pnpm-workspace.yaml` or the pre-commit hook, an install that fails on an ignored build script (`ERR_PNPM_IGNORED_BUILDS`), a `forRootAsync` factory, the order global pipes, filters and guards are registered in, a pipe that trims every string in the body, where a cross-cutting file goes, an import that resolves in the editor but not at runtime, a type error in a file nobody staged, editing the compose file or pinning an image, a local replica set that never elects a primary, a build that emits `dist/src/main.js`, or a container that cannot bind its port because another project holds it."
 ---
 
 # Project bootstrap
@@ -75,7 +75,20 @@ nothing; a project that turns it on at ten thousand lines pays for every shortcu
 `experimentalDecorators` and `emitDecoratorMetadata` are required by the framework's injection and
 by validation.
 
-## Runtime version and editor settings
+## Runtime version, package manager and editor settings
+
+**The package manager is pnpm**, pinned in the `packageManager` field of `package.json` and installed
+with `corepack enable`, so every contributor and the image run the same version. A module sees only
+the packages its own `package.json` declares, so an undeclared import fails here rather than after
+the project moves into a workspace. The skills write each command for pnpm; a project on another
+package manager runs its equivalent.
+
+- **Install settings live in `pnpm-workspace.yaml`**, even in a repository with one package.
+- **`allowBuilds` names every dependency whose install script may run**, `true` or `false`, each with
+  its reason in a comment. pnpm runs none by default and fails an install that meets one it was not
+  told about, so a new dependency with an install script is decided when it is added: allowed when
+  the script compiles or fetches something the project uses, refused when it only reports
+  analytics or serves a feature the project does not use.
 
 The Node version is stated once and kept in step wherever it is written: the version manager's file
 (`.nvmrc`), the `engines` field of `package.json`, and the Dockerfile's `FROM` line. Moving it is
@@ -106,7 +119,7 @@ Everything downstream then breaks at once, and none of it mentions the build:
 - assets copied to `dist/<name>/` are no longer beside the code that resolves them from `__dirname`,
   so translations and templates fail at runtime with a path nobody wrote
 
-`npm run start:dev` keeps working throughout, because it runs from a different path. The failure
+`pnpm start:dev` keeps working throughout, because it runs from a different path. The failure
 appears only in the production start and in the image — which is the worst place to find it.
 
 **Check the output layout once, when the project is set up**: build, and confirm `dist/main.js`
@@ -459,6 +472,7 @@ this five seconds to diagnose instead of an afternoon.
 - [ ] The build config excludes every top-level directory outside `src/` plus specs, builders and
       doubles, and `dist/main.js` is at the top of the output.
 - [ ] The Node version in `.nvmrc`, `engines` and the Dockerfile `FROM` is the same.
+- [ ] `packageManager` pins pnpm, and every `allowBuilds` entry carries its reason.
 - [ ] The lint config enables every rule in the minimum table, the project's own rule registered
       from `eslint-rules/`.
 - [ ] Scripts exist for dev, build, lint, typecheck, test, integration and e2e, under the

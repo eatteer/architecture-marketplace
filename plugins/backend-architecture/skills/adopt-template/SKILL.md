@@ -25,9 +25,9 @@ make it concrete. Something with the shape of:
 
 > This is a NestJS + TypeScript + MongoDB backend built on Clean Architecture and DDD. It already
 > ships sign-in with rotating refresh tokens, users, roles and permissions, transactional email and
-> S3-compatible file storage — all of it working, none of it example code. `npm run infra:up` starts
-> the database, a mail catcher and object storage; `npm run migrate` brings the database schema up to
-> date; `npm run seed` creates the first administrator.
+> S3-compatible file storage — all of it working, none of it example code. `pnpm infra:up` starts
+> the database, a mail catcher and object storage; `pnpm migrate` brings the database schema up to
+> date; `pnpm seed` creates the first administrator.
 >
 > The architecture rules live in the `backend-architecture` skills, which load themselves when you
 > work here, so you can start building features and they will follow the same patterns.
@@ -66,7 +66,6 @@ with theirs. Find them rather than trusting this list — the repository changes
 | `.env` | whichever of the three it has, if the file exists — it is git-ignored, so it may not |
 | `src/**` and `test/**` | any spec that uses the name as a fixture |
 | the API documentation | wherever it is built, usually `setup-docs.ts`: `setTitle` — written as "Backend template", so a hyphenated search misses it — becomes the project's name, and `setDescription` the one-line description |
-| `package-lock.json` | the two `name` fields, regenerated with `npm install --package-lock-only` rather than edited |
 
 Search for the old name when you are done — both `backend-template` and `backend template`,
 case-insensitive, since the description and the documentation title spell it with a space — and
@@ -75,18 +74,18 @@ leftover; the project's own name is not.
 
 Do not touch: the marketplace reference in `.claude/settings.json`, the plugin name anywhere, the
 decision records under `docs/adr/` (they say "the template" on purpose: that is where the decisions
-were taken), or `package-lock.json` beyond what `npm install --package-lock-only` regenerates.
+were taken), or `pnpm-lock.yaml`, which does not carry the name.
 
 ## 5. Verify, then hand it over
 
-Run `npm run typecheck` and `npm test`. If the database name changed and containers are already
+Run `pnpm typecheck` and `pnpm test`. If the database name changed and containers are already
 running, tell them their existing local data lives under the old database name and that
-`npm run infra:down && npm run infra:up && npm run migrate && npm run seed` gives them a clean one.
+`pnpm infra:down && pnpm infra:up && pnpm migrate && pnpm seed` gives them a clean one.
 The compose volumes are named after the directory the repository was cloned into, not after the
 project, so renaming the project does not orphan them.
 
 Finish with what to do next, in three lines at most: fill `.env` from `.env.example` if they have
-not, `npm run infra:up`, `npm run migrate`, `npm run seed`, `npm run start:dev`. Then tell them they
+not, `pnpm infra:up`, `pnpm migrate`, `pnpm seed`, `pnpm start:dev`. Then tell them they
 can ask for their first feature in plain language and the skills will shape it.
 
 Never commit. The user decides when to commit and what the message says.

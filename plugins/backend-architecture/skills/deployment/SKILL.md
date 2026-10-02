@@ -1,7 +1,7 @@
 ---
 name: deployment
 description: "The deployable image and the steps a deploy runs from it — the multi-stage Dockerfile, production dependencies installed without lifecycle scripts, the non-root user, what never goes into the image, the container healthcheck, the process that receives the termination signal, one image for the server and every deploy command, migrations as a deploy step and their order against the rollout, the start command that always loads the instrumentation, and watching the image's size."
-when_to_use: "Trigger on — writing or editing a `Dockerfile` or `.dockerignore`, `docker build` failing on `npm ci`, an install exiting 127 because a dev tool is missing, a container running as root, adding a `HEALTHCHECK`, a container restarted when the database blinks, a server that never receives SIGTERM because a parent process holds it, `CMD npm start`, running migrations or the seed as deploy steps, the order of a migration against the rollout, a `.env` or a secret baked into an image, or an image that grew after a dependency change."
+when_to_use: "Trigger on — writing or editing a `Dockerfile` or `.dockerignore`, `docker build` failing on the lockfile install, an install exiting 127 because a dev tool is missing, a container running as root, adding a `HEALTHCHECK`, a container restarted when the database blinks, a server that never receives SIGTERM because a parent process holds it, `CMD pnpm start`, running migrations or the seed as deploy steps, the order of a migration against the rollout, a `.env` or a secret baked into an image, or an image that grew after a dependency change."
 ---
 
 # Deployment
@@ -18,6 +18,9 @@ Two stages: one that has everything needed to build, one that has only what is n
 the repository root** when the project has no image yet; when it has one, hold it against them. The
 rules below are what they encode.
 
+- **Both stages install with the pnpm `packageManager` pins**, through `corepack enable`, from the
+  frozen lockfile (see `project-bootstrap`). The runtime stage removes pnpm's store once
+  `node_modules` is linked: nothing at runtime calls pnpm.
 - **The runtime installs from the lockfile, production dependencies only, with `--ignore-scripts`.**
   Lifecycle scripts belong to the build stage. The project's own `prepare` usually calls a dev tool
   — the git hook installer — that is not installed here, so without the flag the install exits 127
@@ -46,7 +49,7 @@ rules below are what they encode.
   is where the application listens. Readiness is the orchestrator's probe, and the `observability`
   skill owns both routes.
 - **The server is the process that receives the signal.** `CMD ["node", "--import",
-  "./dist/instrumentation.js", "dist/main"]`, in exec form, makes it PID 1 and hands it the platform's SIGTERM directly. `npm start` or a shell form puts a
+  "./dist/instrumentation.js", "dist/main"]`, in exec form, makes it PID 1 and hands it the platform's SIGTERM directly. `pnpm start` or a shell form puts a
   parent in between that does not forward the signal, so the drain window never opens and every
   deploy ends with a kill (see the `observability` skill for what the process does with the signal).
 

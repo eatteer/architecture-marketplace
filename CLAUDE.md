@@ -130,7 +130,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Concept | Owner |
 | --- | --- |
 | Universal code style, naming and file suffixes, forbidden constructs | `code-conventions` |
-| Repo layout, `main.ts`, the shared request pipeline, build output, tooling config, the local stack | `project-bootstrap` |
+| Repo layout, `main.ts`, the shared request pipeline, build output, tooling config, the package manager and its install settings, the local stack | `project-bootstrap` |
 | Module graph, DI tokens, `providers`/`exports`, cycles, binding a different implementation per environment | `module-wiring` |
 | Ordered steps to build a feature, and its checklist | `adding-feature` |
 | Entities, value objects, domain events, domain errors, repository interfaces, `?` vs `null` | `domain-modeling` |
@@ -169,7 +169,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Concept | Owner |
 | --- | --- |
 | Universal TypeScript and TSX style, naming and file suffixes, forbidden constructs, blank lines between statements, JSX siblings and hook calls, props typing, memoization under the compiler, effects | `code-conventions` |
-| Repo layout, `main.tsx` and the order of its providers, the aliases, compiler strictness, the bundler and test runner config, the lint config and the project's own lint rules, scripts, the hook | `project-bootstrap` |
+| Repo layout, `main.tsx` and the order of its providers, the aliases, compiler strictness, the package manager and its install settings, the bundler and test runner config, the lint config and the project's own lint rules, scripts, the hook | `project-bootstrap` |
 | Ordered steps to build a feature, its folder skeleton, and its checklist | `adding-feature` |
 | The API's generated types, the one HTTP client and the headers its middlewares attach, unwrapping the envelope and a page, `ApiError` built from Problem Details | `api-client` |
 | Query options factories, hierarchical keys, mutations and what they invalidate, cache policy, retry, the registered error type and `meta`, optimistic updates | `server-state` |

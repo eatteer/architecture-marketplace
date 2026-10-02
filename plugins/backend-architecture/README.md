@@ -60,10 +60,10 @@ be disabled while this one is enabled.
 
 ## Assumed stack
 
-NestJS, TypeScript, MongoDB with Mongoose, class-validator and class-transformer, `@nestjs/config`,
-`@nestjs/swagger`, `@nestjs/throttler`, `@nestjs/terminus`, a translation library, `migrate-mongo`
-for migrations, and OpenTelemetry for tracing and metrics. Tests with Jest, the integration suite
-against `mongodb-memory-server`.
+Node with pnpm, NestJS, TypeScript, MongoDB with Mongoose, class-validator and class-transformer,
+`@nestjs/config`, `@nestjs/swagger`, `@nestjs/throttler`, `@nestjs/terminus`, a translation library,
+`migrate-mongo` for migrations, and OpenTelemetry for tracing and metrics. Tests with Jest, the
+integration suite against `mongodb-memory-server`.
 
 Transactions assume MongoDB running as a replica set — a standalone instance rejects them, which the
 `project-bootstrap` skill covers for local development.

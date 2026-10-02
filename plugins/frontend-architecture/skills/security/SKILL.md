@@ -1,7 +1,7 @@
 ---
 name: security
 description: "Browser security — what React escapes and the few ways around it (raw HTML, `javascript:` URLs, code built from strings), a URL from data rendered as a link or opened, the Content-Security-Policy the server sends and what each directive allows, inline styles and scripts it refuses and the one library element turned off for it, adding an origin a provider needs, framing, tokens out of every script's reach, and dependencies as code that runs with the page's privileges."
-when_to_use: "Trigger on — `dangerouslySetInnerHTML`, rendering HTML or Markdown that came from the API or a user, `innerHTML`, `eval`, `new Function` or a string passed to `setTimeout`, a link whose `href` comes from data, a `javascript:` URL, `window.open` or `target=\"_blank\"`, editing the `Content-Security-Policy`, a CSP violation in the console, 'Refused to apply inline style' or 'Refused to load the script', adding a third-party script or loading one from a CDN, an `<iframe>` or embedding the application in another site, `npm audit`, or adding a dependency."
+when_to_use: "Trigger on — `dangerouslySetInnerHTML`, rendering HTML or Markdown that came from the API or a user, `innerHTML`, `eval`, `new Function` or a string passed to `setTimeout`, a link whose `href` comes from data, a `javascript:` URL, `window.open` or `target=\"_blank\"`, editing the `Content-Security-Policy`, a CSP violation in the console, 'Refused to apply inline style' or 'Refused to load the script', adding a third-party script or loading one from a CDN, an `<iframe>` or embedding the application in another site, `pnpm audit`, an install script a dependency wants to run, or adding a dependency."
 ---
 
 # Security
@@ -106,10 +106,13 @@ The policy is the last layer, not the first: every rule above still applies with
 
 Every package runs with the page's privileges, so adding one is a decision:
 
-- **The lockfile is committed and installs are reproducible** (`npm ci` in the image).
+- **The lockfile is committed and installs are reproducible** (`pnpm install --frozen-lockfile` in the image).
 - **Before adding a package**, check it is maintained, what it pulls in, and what it adds to the bundle
   — the build reports each chunk's size. A few lines the project owns beat a package for them.
-- **`npm audit` findings are read, not silenced**: one that reaches code the page runs is fixed by
+- **A dependency's install script runs only when `allowBuilds` says so**, with the reason beside it
+  (see `project-bootstrap`): the script runs on every machine that installs, with the developer's
+  privileges.
+- **`pnpm audit` findings are read, not silenced**: one that reaches code the page runs is fixed by
   upgrading; one confined to development tooling is judged as such. A dependency kept past its
   declared peer range is kept with its reason (see `project-bootstrap`).
 

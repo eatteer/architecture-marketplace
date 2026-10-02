@@ -3,8 +3,11 @@ FROM node:24-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# pnpm, at the version package.json pins in `packageManager`.
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
@@ -15,7 +18,7 @@ ARG VITE_API_URL
 RUN test -n "$VITE_API_URL" || { echo "Build with --build-arg VITE_API_URL=<the API's origin>" >&2; exit 1; }
 ENV VITE_API_URL=$VITE_API_URL
 
-RUN npm run build
+RUN pnpm build
 
 # The same value goes into the Content-Security-Policy's connect-src, so the page may call that API
 # and nothing else.

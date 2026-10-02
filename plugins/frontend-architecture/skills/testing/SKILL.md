@@ -167,7 +167,7 @@ runtime's channels deliver between instances in the same process.
 
 ## Coverage
 
-`npm test` runs with coverage and fails under the floor — **90 % statements and lines, 85 % branches
+`pnpm test` runs with coverage and fails under the floor — **90 % statements and lines, 85 % branches
 and functions**. It measures `src/` and leaves out what is not the application's own logic: the
 component catalog (library code, tested through how the screens use it), the generated files,
 `main.tsx`, and the tests. The catalog still gets one test: every module in it is imported, so an

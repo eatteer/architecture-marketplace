@@ -12,7 +12,7 @@ one client that turns the transport's two shapes — data or a failure — into 
 
 ## The generated types
 
-`npm run api:types` reads the backend's OpenAPI document and writes the whole contract into one
+`pnpm api:types` reads the backend's OpenAPI document and writes the whole contract into one
 generated file: `openapi-typescript` with `--export-type`, `--root-types` (so every schema is also a
 named export — `UserDto`, `ProblemDetailsDto`), `--root-types-no-schema-prefix` and
 `--root-types-keep-casing` (so the names match the backend's), and `--enum-values` (so every enum

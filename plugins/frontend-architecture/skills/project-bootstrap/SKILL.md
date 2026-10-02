@@ -1,7 +1,7 @@
 ---
 name: project-bootstrap
-description: "Standing a new single-page application up and the files every project needs before any feature exists — the source tree and what `common/` may hold, the `@/` and `@test/` aliases declared once, compiler strictness and the project references, the Node version, the Vite config and the order of its plugins, the React Compiler outside the test runner, the lint config and the project's own lint rule, package scripts, the pre-commit hook, and `main.tsx`: what runs before the first render and the order of the providers."
-when_to_use: "Trigger on — starting a project, editing `vite.config.ts`, `tsconfig*.json`, `eslint.config.mjs`, `package.json` scripts, `.nvmrc` or the pre-commit hook, choosing lint rules or adding an ESLint plugin, a rule in `eslint-rules/`, editing `main.tsx` or adding a provider, where a cross-cutting file goes, `common/` importing from a feature, an import that resolves in the editor but not in the bundle or the tests, a Node API reaching browser code, the React Compiler and coverage, a dark theme that flashes light on load, a type error in a file nobody staged, or a plugin that only works in one order."
+description: "Standing a new single-page application up and the files every project needs before any feature exists — the source tree and what `common/` may hold, the `@/` and `@test/` aliases declared once, compiler strictness and the project references, the Node version and the package manager, the Vite config and the order of its plugins, the React Compiler outside the test runner, the lint config and the project's own lint rule, package scripts, the pre-commit hook, and `main.tsx`: what runs before the first render and the order of the providers."
+when_to_use: "Trigger on — starting a project, editing `vite.config.ts`, `tsconfig*.json`, `eslint.config.mjs`, `package.json` scripts, `.nvmrc`, `packageManager`, `pnpm-workspace.yaml` or the pre-commit hook, an install that fails on an ignored build script (`ERR_PNPM_IGNORED_BUILDS`), choosing lint rules or adding an ESLint plugin, a rule in `eslint-rules/`, editing `main.tsx` or adding a provider, where a cross-cutting file goes, `common/` importing from a feature, an import that resolves in the editor but not in the bundle or the tests, a Node API reaching browser code, the React Compiler and coverage, a dark theme that flashes light on load, a type error in a file nobody staged, or a plugin that only works in one order."
 ---
 
 # Project bootstrap
@@ -81,7 +81,20 @@ The root `tsconfig.json` has no files of its own; it references one config per e
 The split is what keeps a Node API out of browser code: the application's config has no Node types,
 so `process.env` or `node:fs` in a component is a compile error rather than a runtime one.
 
-## Runtime version and editor settings
+## Runtime version, package manager and editor settings
+
+**The package manager is pnpm**, pinned in the `packageManager` field of `package.json` and installed
+with `corepack enable`, so every contributor and the image run the same version. A module sees only
+the packages its own `package.json` declares, so an undeclared import fails here rather than after
+the project moves into a workspace. The skills write each command for pnpm; a project on another
+package manager runs its equivalent.
+
+- **Install settings live in `pnpm-workspace.yaml`**, even in a repository with one package.
+- **`allowBuilds` names every dependency whose install script may run**, `true` or `false`, each with
+  its reason in a comment. pnpm runs none by default and fails an install that meets one it was not
+  told about, so a new dependency with an install script is decided when it is added: allowed when
+  the script compiles or fetches something the project uses, refused when it only reports
+  analytics or serves a feature the project does not use.
 
 The Node version is stated once and kept in step wherever it is written: `.nvmrc`, the `engines`
 field of `package.json`, and the Dockerfile's build stage. Editor settings (`.editorconfig`,
@@ -249,8 +262,8 @@ Three more decisions every config makes:
 - **`react-refresh` lists names instead of switching off.** Route files export `Route`, and a
   component library ships its variants and hooks beside the component; the rule's
   `allowExportNames` names each, so a new non-component export still has to be looked at.
-- **A plugin that declares too old a peer range is kept with an `overrides` entry and the reason
-  beside it**, in the `"//"` key of `package.json` that npm ignores — not by pinning the linter back.
+- **A plugin that declares too old a peer range is kept with a `peerDependencyRules.allowedVersions`
+  entry in `pnpm-workspace.yaml` and the reason beside it** — not by pinning the linter back.
 
 The `no-unsafe-*` family is left off: those fire on values coming out of third-party types the
 project does not control — a chart library's payloads, a body before its schema parses it — rather
@@ -358,6 +371,7 @@ how a missing cleanup shows up in development instead of in production.
 - [ ] `tsc -b` covers the application, the tests and the tooling config, and only the tests and the
       tooling get Node's types.
 - [ ] The Node version agrees in `.nvmrc`, `engines` and the Dockerfile.
+- [ ] `packageManager` pins pnpm, and every `allowBuilds` entry carries its reason.
 - [ ] The router's plugin runs before the React plugin, the React Compiler is off under the test
       runner, and the build keeps the modules' execution order.
 - [ ] Every rule in both lint tables is on, both of the project's own rules are registered from

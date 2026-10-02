@@ -321,7 +321,7 @@ the interpolations declare themselves required: `${MONGODB_ROOT_USER:?run the in
 Compose then refuses with that message instead of creating a database with no root user.
 
 **`NODE_ENV` does not belong in the file either.** The process states which environment it is — the
-npm script, the container, the CI job — so a file cannot contradict the environment it was loaded
+package script, the container, the CI job — so a file cannot contradict the environment it was loaded
 for. That is not cosmetic: `NODE_ENV` chooses which adapters are bound, so a production deployment
 reading a file that says `development` gets the simulators.
 
