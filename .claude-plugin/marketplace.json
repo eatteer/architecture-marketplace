@@ -17,7 +17,7 @@
       "name": "frontend-architecture",
       "source": "./plugins/frontend-architecture",
       "category": "development",
-      "description": "Core architecture, patterns and code conventions for the React + TypeScript single-page application stack, packaged as auto-invoking skills, with a read-only convention reviewer and a skill that adopts the reference template. Covers universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling, forms, routing, pagination, the component catalog and the theme, accessibility, i18n, formatting, authentication and authorization, configuration, security, observability, testing and deployment. Requires engineering-workflow."
+      "description": "Core architecture, patterns and code conventions for the React + TypeScript single-page application stack, packaged as auto-invoking skills, with a read-only convention reviewer and a skill that adopts the reference template. Covers universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling, forms, routing, pagination, shadcn's own skill for the component catalog and the theme, accessibility, i18n, formatting, authentication and authorization, configuration, security, observability, testing and deployment. Requires engineering-workflow."
     },
     {
       "name": "engineering-workflow",

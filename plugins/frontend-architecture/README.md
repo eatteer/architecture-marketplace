@@ -11,13 +11,13 @@ everything it documents must produce correct code with nothing else installed.
 
 | Component | How it runs | What it is |
 | --- | --- | --- |
-| 21 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
+| 22 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
 | `adopt-template` | You run it once: `/frontend-architecture:adopt-template [project-name] "[description]"` | Turns a fresh clone of [`frontend-template`](https://github.com/eatteer/frontend-template) into your project: summarizes what the clone contains, asks for the name and description, rewrites every generic name — package, page title, the application's name in every language, documentation — and verifies the result. It never runs on its own |
 | `convention-reviewer` agent | Ask for a review against the conventions, or `@agent-frontend-architecture:convention-reviewer` | A read-only reviewer that loads every skill governing a diff and checks it rule by rule, reporting each violation with file, line, rule and owning skill |
 
 ## How it works
 
-The 21 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
+The 22 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
 wire up. Each one owns a set of rules, and any rule that comes up elsewhere is a pointer rather than
 a second copy, so there is never a question of which statement is current.
 
@@ -33,7 +33,8 @@ a second copy, so there is never a question of which statement is current.
 | `forms` | The form as the boundary of controlled values, the schema file, edit forms that mount filled, the backend's field errors on fields, the submit latch, confirmation |
 | `routing` | File routes, the router's defaults, `beforeLoad` and loaders in a route's lifecycle, search params validated and reset, route parameter names, code splitting and a chunk that fails to load |
 | `pagination` | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, pagination controls, select and debounced text filters |
-| `ui-components` | shadcn's catalog on Base UI and how a component is added or updated, Base UI's composition, semantic tokens, variants, `cn`, the theme |
+| `shadcn` | shadcn's own skill, shipped as shadcn publishes it: the CLI, Base UI's props against Radix's, composing the catalog, semantic colors, variants, `cn`, icons, adding a token |
+| `ui-components` | What this architecture decides on top of shadcn's catalog: Base UI only, the whole catalog in `common/ui/` as lint-clean library code, the checks after an update and the local changes it carries forward, where it differs from shadcn's examples, the theme, the Content-Security-Policy |
 | `accessibility` | Accessible names, native elements, landmarks, `aria-busy` and `aria-sort`, live regions, focus, the accessibility lint |
 | `i18n` | Bundled namespaces, snake_case keys typed from the reference locale, the parity test, plurals per locale, the starting language, the account's language, `x-lang`, `<html lang>` |
 | `formatting` | Dates, numbers and money through `Intl`, bound to the language on screen; amounts in minor units without a float |
@@ -146,4 +147,4 @@ reviewer finds planted violations. How to run them is in the marketplace's contr
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE). The `shadcn` skill is shadcn's, under its own MIT license, which ships beside it.

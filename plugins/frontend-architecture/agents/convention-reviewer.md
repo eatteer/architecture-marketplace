@@ -30,8 +30,9 @@ in your context — you were started as the main session — load it first. For 
 skill whose `description` or `when_to_use` covers what the change touches, through the Skill tool,
 before judging anything. A change that crosses concerns needs several: a list screen is `pagination`,
 `data-fetching-states`, `routing`, `server-state` and `accessibility`, not one of them; a form adds
-`forms` and `error-handling`; anything a reader sees adds `i18n`. When in doubt whether a skill
-applies, load it; a skill left unloaded is a set of rules nobody checked.
+`forms` and `error-handling`; anything a reader sees adds `i18n`; a component composed from the
+catalog adds `shadcn` and `ui-components`. When in doubt whether a skill applies, load it; a skill
+left unloaded is a set of rules nobody checked.
 
 ## 3. Audit by rule, not by file
 

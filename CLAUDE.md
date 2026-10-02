@@ -178,7 +178,8 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Form libraries and schemas, the form as the boundary of controlled values, the backend's field errors placed on fields, the submit latch, confirmation before an irreversible write, wiring a field's label, description and error | `forms` |
 | File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load, page transitions and the type every view transition declares | `routing` |
 | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, text filters debounced into the URL | `pagination` |
-| The shadcn catalog on Base UI and how a component is added or updated, semantic tokens, variants, class merging, overlays, the theme, the scrollbar's gutter | `ui-components` |
+| Using shadcn's catalog: the CLI, Base UI's props against Radix's, composition, semantic colors, variants, class merging, icons, adding a token | `shadcn` |
+| Base UI as the only headless library, the whole catalog as lint-clean library code, the checks after an update and the local changes it carries forward, where the architecture differs from shadcn's examples, an overlay closing, the theme, the scrollbar's gutter | `ui-components` |
 | Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |
 | Translation namespaces and files, typed keys, key casing, locale parity, plurals per locale, the language the backend is asked for, the document's `lang` | `i18n` |
 | Dates, numbers and money on screen | `formatting` |
@@ -190,6 +191,21 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Test boundaries, the shape of a test, the console guard, the network mock, builders, the coverage floor | `testing` |
 | The static image, the SPA fallback, cache headers, where the security headers are sent from, checking the served image before a release | `deployment` |
 | Turning a fresh clone of the reference project into a project: the rename it needs | `adopt-template` |
+
+## A skill shipped as its publisher wrote it
+
+`frontend-architecture`'s `shadcn` skill is shadcn's, copied from `shadcn-ui/ui` by
+`npm run sync:shadcn` and never edited here. Every edit would be undone by the next sync, so the rest
+of this file binds it only through the skills around it:
+
+- **It owns what its body covers**, and a skill of ours points at it rather than restating it.
+  What this architecture decides differently lives in `ui-components`, which says it wins.
+- **Its trigger is shadcn's.** Ours stay disjoint from it, so the trigger that moves is ours.
+- **The snippet check leaves it out.** Its snippets follow shadcn's conventions; the project's lint
+  and the reviewer hold the code a model writes from them.
+- **A sync is a change like any other**: review the diff against what `ui-components` overrides,
+  bump the version, run the `shadcn` and `ui-components` eval cases, and name the upstream commit the
+  script printed in the message.
 
 ## A skill's `description` and `when_to_use` are its trigger
 

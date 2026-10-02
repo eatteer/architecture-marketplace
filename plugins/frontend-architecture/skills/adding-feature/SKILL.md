@@ -39,7 +39,7 @@ against a shape that has not been decided.
 | 4 | The query options factory | `server-state`, `pagination` |
 | 5 | The mutation hooks, and what each invalidates | `server-state` |
 | 6 | The search-params schema of each list | `routing`, `pagination` |
-| 7 | The components, each with its skeleton, and the table of a list | `data-fetching-states`, `ui-components`, `pagination`, `accessibility` |
+| 7 | The components, each with its skeleton, and the table of a list | `data-fetching-states`, `shadcn`, `ui-components`, `pagination`, `accessibility` |
 | 8 | The forms and their schema files | `forms` |
 | 9 | The pages, resolving each read's states | `data-fetching-states`, `error-handling` |
 | 10 | The route files: guards, loaders, search validation | `routing`, `authorization` |

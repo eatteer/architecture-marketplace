@@ -2,8 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "frontend-architecture",
   "displayName": "Frontend Architecture",
-  "description": "Architecture, patterns and code conventions for the React/TypeScript single-page application stack (Vite, TanStack Router and Query, openapi-fetch with types generated from the backend's OpenAPI, React Hook Form with Zod, shadcn on Base UI, Tailwind). Auto-invoking skills that guide universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling with toasts and error screens, forms as the boundary of controlled values, routing and search params, paginated lists, the component catalog and the theme, accessibility, i18n, formatting, the cookie session and its refresh across tabs, permissions, configuration, browser security and the Content-Security-Policy, observability, testing and deployment, with a read-only convention reviewer and a skill that adopts the reference template. This is the core frontend plugin. It requires the engineering-workflow plugin, which owns the git workflow and architecture decision records, and ships no runtime library.",
-  "version": "2.2.0",
+  "description": "Architecture, patterns and code conventions for the React/TypeScript single-page application stack (Vite, TanStack Router and Query, openapi-fetch with types generated from the backend's OpenAPI, React Hook Form with Zod, shadcn on Base UI, Tailwind). Auto-invoking skills that guide universal code conventions, project bootstrap and the lint config, the steps to add a feature, the API client and Problem Details errors, server state with query options, the states a read renders, error handling with toasts and error screens, forms as the boundary of controlled values, routing and search params, paginated lists, shadcn's own skill for using the component catalog and the decisions this architecture makes on top of it, the theme, accessibility, i18n, formatting, the cookie session and its refresh across tabs, permissions, configuration, browser security and the Content-Security-Policy, observability, testing and deployment, with a read-only convention reviewer and a skill that adopts the reference template. This is the core frontend plugin. It requires the engineering-workflow plugin, which owns the git workflow and architecture decision records, and ships no runtime library.",
+  "version": "2.3.0",
   "dependencies": [
     "engineering-workflow"
   ],
@@ -21,6 +21,7 @@
     "vite",
     "tanstack-router",
     "tanstack-query",
+    "shadcn",
     "architecture",
     "conventions"
   ]

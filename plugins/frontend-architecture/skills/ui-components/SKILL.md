@@ -1,23 +1,29 @@
 ---
 name: ui-components
-description: "The component catalog and the theme — shadcn's components in their Base UI variant, copied whole into `common/ui/` and kept lint-clean, how a component is added or updated, the repository as the inventory, Base UI's composition (`render` instead of `asChild`, `onOpenChange` with its reason, `nativeButton`), a link styled as a button, semantic color tokens under `@theme`, variants with CVA, merging classes with `cn`, icons, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style element turned off."
-when_to_use: "Trigger on — `npx shadcn add`, editing a file in `common/ui/`, `components.json`, building a dialog, select, popover, menu, tabs or tooltip by hand, `asChild`, `render=`, `nativeButton`, `onInteractOutside` or `onPointerDownOutside`, `onOpenChange`, a Radix import, a hard-coded color like `bg-white` or `text-gray-500`, `dark:` color classes, a new color or radius token, `@theme`, `cva` or `VariantProps`, `buttonVariants`, `cn`, `clsx` or `tailwind-merge`, a class the linter says the theme does not define, a lucide icon, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, a toast's close button in English, a link announced as a button, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, or content that shifts sideways when a page gets a scrollbar."
+description: "What this architecture decides on top of shadcn's catalog — Base UI as the one headless library, the whole catalog copied into `common/ui/` as lint-clean library code, the repository as the inventory, the checks after a component is added or updated and the local changes an update carries forward, an overlay closing and why, a link styled as a button kept a link, where the palette rule binds, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style elements turned off for the Content-Security-Policy. Always loaded together with the `shadcn` skill, which owns how the catalog is used."
+when_to_use: "Trigger on — a lint or type error in a file under `common/ui/` after adding or updating a component, a local change to a catalog file lost on an update, a `\"use client\"` directive in a catalog file, a Radix import or a second headless UI library, a registry item that brings another primitive library, `onOpenChange` and its reason, `onInteractOutside` or `onPointerDownOutside`, a link styled as a button, `buttonVariants` on a `Link`, a link announced as a button, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, the theme's reveal animation, a toast's close button in English, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, content that shifts sideways when a page gets a scrollbar, or a chart that loses its colors in production."
 ---
 
 # UI components
 
 The application's primitives are **shadcn's catalog in its Base UI variant**, copied into
-`src/common/ui/` — every component the registry offers, not only the ones in use. Screens compose
-them; nothing a primitive already does is built again.
+`src/common/ui/`. How the catalog is used — the CLI, Base UI's props against Radix's, composing a
+component, semantic colors, variants, `cn`, icons, adding a token — is the `shadcn` skill's, which
+is shadcn's own and is followed as written.
+
+**Load the `shadcn` skill too, before writing or advising on any component**: none of its rules are
+repeated here, so an answer from this skill alone is missing them. This skill holds what this
+architecture decides on top of it; where the two disagree, this one wins.
 
 ## The catalog
 
-- **The repository is the inventory.** Before building a dialog, a select, a date picker or a menu,
-  look in `common/ui/`: it is there. This skill never lists what exists, because the folder already
+- **The repository is the inventory.** Every component the registry offers is in `common/ui/`, not
+  only the ones in use, so a screen never adds one: before building a dialog, a select, a date
+  picker or a menu, look there. This skill never lists what exists, because the folder already
   does and never falls behind.
 - **One headless library.** Base UI is the only one: two libraries give two APIs, two focus models
   and two sets of bugs for the same components, and the lint config refuses an import of the other
-  (see `project-bootstrap`).
+  (see `project-bootstrap`). A registry item built on another primitive library is not added.
 - **Unused components cost nothing in the bundle.** Only what a screen imports is shipped, so the
   whole catalog stays, and the next screen finds what it needs already styled and lint-clean.
 - **The catalog is library code that obeys the project's rules.** Nothing in `common/ui/` is excluded
@@ -33,85 +39,44 @@ them; nothing a primitive already does is built again.
   component keeps the registry's spelling of an abbreviation (`InputOTP`), which the rest of the
   code imports as it is.
 
-### Adding or updating a component
+### After a component is added or updated
 
-1. `npx shadcn@latest add <component>` — `components.json` selects the Base UI style, the stylesheet
-   and the aliases, so the file lands in `common/ui/` importing through `@/`. Updating an existing one
-   overwrites it: diff against what was there and put back any change that carried a reason.
-2. `npm run lint`. Its `--fix` settles the format; what is left is fixed by hand — an explicit return
-   type on every function, a `"use client"` directive removed (there is no server rendering), a named
+The CLI does the adding and the updating, with a dry run and a diff per file before anything is
+overwritten (see `shadcn`). A file that carries a local change is merged by hand, keeping the
+change and its reason. Then the file is brought to the project's rules:
+
+1. `lint`. Its `--fix` settles the format; what is left is fixed by hand — an explicit return type
+   on every function, a `"use client"` directive removed (there is no server rendering), a named
    export for a new variant or hook added to the hot-reload rule's allowed names, an accessibility
    rule suspended on its line with the reason when the component leaves the wiring to its caller.
-3. `npm run typecheck`, and the tests, which import the new module.
-4. Check an edit of yours uses tokens (below). The registry's own classes are left as shipped —
-   an overlay's `bg-black/10`, the `dark:` refinements on its inputs — since the next update brings
-   them back; the rule against palette colors and `dark:` binds the code outside `common/ui/`.
+2. `typecheck`, and the tests, which import the new module.
+3. The registry's own classes are left as shipped — an overlay's `bg-black/10`, the `dark:`
+   refinements on its inputs — since the next update brings them back. The rule against palette
+   colors and `dark:` color classes binds the code outside `common/ui/`, and a class the theme does
+   not define is a lint error there (see `project-bootstrap`).
 
-## Base UI's vocabulary
+## Where this architecture differs from shadcn's examples
 
-The catalog's components expose Base UI's API, not Radix's, and screens use it as it is:
+Each of these replaces what the `shadcn` skill shows for the same need.
 
-| Need | Base UI |
-| --- | --- |
-| Render a trigger as another element | `render={<Button variant="ghost" size="icon" />}` — there is no `asChild` |
-| A trigger rendered as something that is not a `<button>` | `nativeButton={false}`, so the library adds the button semantics itself |
-| React to an overlay closing, and know why | `onOpenChange={(open, details) => …}`, with `details.reason` — not `onInteractOutside` |
-| A select's value and its items | `items` with `{ value, label }`, and `null` for nothing selected (see `forms`) |
+**A link styled as a button stays a link**: `<Link to="/" className={buttonVariants()}>`. shadcn
+shows the button rendered as an anchor with `nativeButton={false}`; the library then announces the
+link as a button, the wrong role for something that navigates (see `accessibility`). The variants
+function is exported beside the component for exactly this.
 
-**A link styled as a button stays a link**: `<Link to="/" className={buttonVariants()}>`. Rendering
-the button component as a link sets `nativeButton={false}`, and the library then announces the link as
-a button — the wrong role for something that navigates (see `accessibility`).
+**An overlay closing is handled in `onOpenChange`**, which Base UI calls with the reason:
+`onOpenChange={(open, details) => …}`, and `details.reason` says whether it was an outside press,
+the escape key or the trigger. There is no `onInteractOutside` or `onPointerDownOutside`.
 
-## Styling
-
-### Semantic tokens
-
-Every color is a token that says what it is for — `bg-background`, `text-muted-foreground`,
-`border-input`, `bg-destructive` — never a palette color (`bg-white`, `text-gray-500`). A token is
-defined twice in `styles.css`, once under `:root` and once under `.dark`, and mapped into Tailwind
-under `@theme inline`:
-
-```css
-@theme inline {
-  --color-muted-foreground: var(--muted-foreground);
-}
-
-:root {
-  --muted-foreground: oklch(0.556 0 0);
-}
-
-.dark {
-  --muted-foreground: oklch(0.708 0 0);
-}
-```
-
-- **So there is no `dark:` variant for a color.** The token already changes with the theme; a `dark:`
-  class beside it is a second definition that drifts from the first.
-- **A new token is added to all three places at once**, or the class compiles to nothing in one
-  theme. The Tailwind lint rule reports a class the theme does not define (see `project-bootstrap`).
-- Radii and fonts are tokens the same way.
-
-### Variants and class merging
-
-- **Variants are declared with `cva`**, and the props type derives from them with `VariantProps`, so
-  a variant that does not exist is a compile error. The variants function is exported beside the
-  component (`buttonVariants`) for the element that needs the look without the component — the link
-  above.
-- **Classes are merged with `cn`**, and the caller's `className` goes last so it wins a conflict. `cn`
-  is shadcn's own package, which resolves Tailwind conflicts; there is no separate `clsx` or
-  `tailwind-merge`.
-- **A class list that grows long is the linter's to wrap**; how it is laid out is not a decision.
-
-### Icons
-
-Icons are lucide's. An icon beside text is decoration and takes `aria-hidden="true"`; an icon that is
-the whole content of a button needs a name on the button (see `accessibility`).
+**A select's nothing-selected value is `null`**, held by the form like every other value (see
+`forms`).
 
 ## The theme
 
 The theme is a class on `<html>` — `light` or `dark` — and the stylesheet's dark variant keys on it
 (`@custom-variant dark (&:is(.dark *))`). The class, not the media query, because the reader can pick
-a theme that differs from the system's.
+a theme that differs from the system's. The provider is the project's own; there is no theme
+library.
 
 - **The choice is `light`, `dark` or `system`**, stored in `localStorage`; `system` follows the
   operating system's preference, read with `useSyncExternalStore` over the media query so a change
@@ -193,14 +158,11 @@ the change an update of the chart has to carry forward.
 
 - [ ] Every primitive a screen uses comes from `common/ui/`; nothing the catalog has is rebuilt, and
       nothing imports a second headless library.
-- [ ] Every file in `common/ui/` passes lint and typecheck, and every change to one carries its reason.
-- [ ] Triggers use `render`, overlays use `onOpenChange`, and a link that looks like a button is a
-      `Link` with `buttonVariants()`.
-- [ ] Every color outside `common/ui/` is a semantic token defined for both themes and mapped under
-      `@theme`; no palette color and no `dark:` color class.
-- [ ] Every component with variants declares them with `cva` and merges classes with `cn`, the
-      caller's last.
-- [ ] Every decorative icon has `aria-hidden="true"`.
+- [ ] Every file in `common/ui/` passes lint and typecheck, and every local change to one carries its
+      reason and survived the last update.
+- [ ] A link that looks like a button is a `Link` with `buttonVariants()`, and an overlay reacts to
+      closing in `onOpenChange`.
+- [ ] Outside `common/ui/`, no palette color and no `dark:` color class.
 - [ ] The theme is a class on `<html>`, applied before the first render, following the system through
       `useSyncExternalStore`, and the reveal respects reduced motion.
 - [ ] `<html>` has `scrollbar-gutter: stable`.
