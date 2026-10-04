@@ -11,13 +11,13 @@ everything it documents must produce correct code with nothing else installed.
 
 | Component | How it runs | What it is |
 | --- | --- | --- |
-| 22 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
+| 23 skills | Load themselves when the work matches their triggers | The rules, one owner per concept — the table below |
 | `adopt-template` | You run it once: `/frontend-architecture:adopt-template [project-name] "[description]"` | Turns a fresh clone of [`frontend-template`](https://github.com/eatteer/frontend-template) into your project: summarizes what the clone contains, asks for the name and description, rewrites every generic name — package, page title, the application's name in every language, documentation — and verifies the result. It never runs on its own |
 | `convention-reviewer` agent | Ask for a review against the conventions, or `@agent-frontend-architecture:convention-reviewer` | A read-only reviewer that loads every skill governing a diff and checks it rule by rule, reporting each violation with file, line, rule and owning skill |
 
 ## How it works
 
-The 22 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
+The 23 skills auto-invoke off their `description` and `when_to_use` frontmatter — nothing to copy or
 wire up. Each one owns a set of rules, and any rule that comes up elsewhere is a pointer rather than
 a second copy, so there is never a question of which statement is current.
 
@@ -38,6 +38,7 @@ a second copy, so there is never a question of which statement is current.
 | `accessibility` | Accessible names, native elements, landmarks, `aria-busy` and `aria-sort`, live regions, focus, the accessibility lint |
 | `i18n` | Bundled namespaces, snake_case keys typed from the reference locale, the parity test, plurals per locale, the starting language, the account's language, `x-lang`, `<html lang>` |
 | `formatting` | Dates, numbers and money through `Intl`, bound to the language on screen; amounts in minor units without a float |
+| `ux-writing` | What the words on screen say: buttons as a verb and its object, sentence case, periods, labels and placeholders, confirmation dialogs, toasts, errors, empty states, progress, one word per concept, the rules each language adds, and what a project decides for itself |
 | `authentication` | The cookie session read from the API, the refresh once across tabs, session events, the one place a session ends, sign-in and sign-out, redirect-back |
 | `authorization` | The permission catalog, the route, the component and the API as the three places a permission is checked, the forbidden screen |
 | `configuration` | Build-time variables, validated once and never secret, the tests' own values, same-site origins |

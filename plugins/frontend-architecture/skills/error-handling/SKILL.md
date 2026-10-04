@@ -105,7 +105,8 @@ export function showErrorToast(error: unknown): void {
 ```
 
 - **The words are the server's when it gave them** — already translated into the reader's language —
-  and a generic sentence otherwise (`describeError`). A bug's message is never shown.
+  and a generic sentence otherwise (`describeError`). A bug's message is never shown. How the
+  generic sentence is worded is `ux-writing`'s.
 - **It closes on its own** after `ERROR_TOAST_TIMEOUT_MS` — long enough to read a sentence and reach
   for the button, short enough not to pile up. Hovering holds it open.
 - **No id, trace id or error code on screen.** They mean nothing to the reader, and the report

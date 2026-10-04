@@ -306,7 +306,8 @@ const [pendingValues, setPendingValues] = useState<DeleteOrderValues>();
 ```
 
 The dialog's confirm button runs the same latched submit as above and is disabled while the mutation
-is pending; its cancel button closes the dialog and is never disabled.
+is pending; its cancel button closes the dialog and is never disabled. The dialog's title and button
+labels are worded as `ux-writing` says.
 
 ## Checklist
 

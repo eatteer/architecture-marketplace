@@ -8,7 +8,7 @@ when_to_use: "Trigger on — adding text to a screen, a file under `locales/`, `
 
 Every word on screen comes from a translation file, in every language the application speaks. The
 backend speaks the same languages, and every request tells it which one to answer in, so the
-server's messages arrive already translated.
+server's messages arrive already translated. What those words say is `ux-writing`'s.
 
 ## Resources
 

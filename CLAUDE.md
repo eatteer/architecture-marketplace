@@ -183,6 +183,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |
 | Translation namespaces and files, typed keys, key casing, locale parity, plurals per locale, the language the backend is asked for, the document's `lang` | `i18n` |
 | Dates, numbers and money on screen | `formatting` |
+| The wording of what is on screen: button labels, casing, punctuation, labels and placeholders, the words of dialogs, toasts, errors, empty states and progress, one word per concept, per-language writing rules | `ux-writing` |
 | The cookie session, reading it from the API, refresh once across tabs, session events between tabs, sign-in and sign-out, clearing the cache, redirect-back and which targets it follows | `authentication` |
 | Permissions from the session, gating a route, a query and a component, forbidden against not found | `authorization` |
 | Build-time variables, their validation, nothing secret in the bundle | `configuration` |
