@@ -292,6 +292,14 @@ as the validation class. A variable added to one
 and not the other means the next person's environment fails to boot with no indication of what to
 add.
 
+**The file follows the class, in its order.** `.env.example` lists the variables in the order the
+validation class declares them, in the same groups, and every env file a developer or a deployment
+keeps follows that order too. Within a group, a selector comes before the settings it makes
+required, and an optional variable closes it. The variables a tool reads come after the
+application's, in sections of their own. A reader then finds a variable in the same place in every
+file, and two environments compare line by line. A unit test reads both lists and fails when they
+disagree, because an order nobody checks drifts with the first variable appended at the end.
+
 The pressure on that list comes from elsewhere: the local development stack needs values too, and
 they are never quite the same values. A compose file provisioning a database needs the root user and
 password **in pieces**, because a server is created from parts; the application needs a **connection
@@ -411,6 +419,8 @@ has actually tested.
 - [ ] `NODE_ENV` is set by the process, never by an env file.
 - [ ] `.env.example` lists every variable the file is the source for — which excludes `NODE_ENV`,
       set by the process — is updated with the validation class, and holds no real secret.
+- [ ] `.env.example` declares the application's variables in the validation class's order, a test
+      fails when the two disagree, and every kept env file follows the same order.
 - [ ] Every variable in `.env.example` has a reader: one that is documented, validated and consumed
       by nobody is a promise the application does not keep.
 - [ ] No variable the application reads is exported by the developer's shell, where it would
