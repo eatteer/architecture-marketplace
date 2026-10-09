@@ -179,7 +179,7 @@ it needs a new row — not that the rule may go wherever you happen to be editin
 | File routes, `beforeLoad` and loaders in the route lifecycle, validated search params, resetting the page on a filter change, route parameter names, not-found, code splitting and a chunk that fails to load, page transitions and the type every view transition declares | `routing` |
 | The backend's list query from the browser, `Paginated<T>`, the sort whitelist, the data table, text filters debounced into the URL | `pagination` |
 | Using shadcn's catalog: the CLI, Base UI's props against Radix's, composition, semantic colors, variants, class merging, icons, adding a token | `shadcn` |
-| Base UI as the only headless library, the whole catalog as lint-clean library code, the checks after an update and the local changes it carries forward, where the architecture differs from shadcn's examples, an overlay closing, the theme, the scrollbar's gutter | `ui-components` |
+| Base UI as the only headless library, the whole catalog as lint-clean library code, the checks after an update and the local changes it carries forward, where the architecture differs from shadcn's examples, an overlay closing, the dialog's scrolling frame, the theme, the scrollbar's gutter | `ui-components` |
 | Accessible names, focus, live regions, keyboard support, `aria-busy`, the accessibility lint | `accessibility` |
 | Translation namespaces and files, typed keys, key casing, locale parity, plurals per locale, the language the backend is asked for, the document's `lang` | `i18n` |
 | Dates, numbers and money on screen | `formatting` |

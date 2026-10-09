@@ -1,7 +1,7 @@
 ---
 name: ui-components
-description: "What this architecture decides on top of shadcn's catalog — Base UI as the one headless library, the whole catalog copied into `common/ui/` as lint-clean library code, the repository as the inventory, the checks after a component is added or updated and the local changes an update carries forward, an overlay closing and why, a link styled as a button kept a link, a button with no loading indicator, where the palette rule binds, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style elements turned off for the Content-Security-Policy. Always loaded together with the `shadcn` skill, which owns how the catalog is used."
-when_to_use: "Trigger on — a lint or type error in a file under `common/ui/` after adding or updating a component, a local change to a catalog file lost on an update, a `\"use client\"` directive in a catalog file, a Radix import or a second headless UI library, a registry item that brings another primitive library, `onOpenChange` and its reason, `onInteractOutside` or `onPointerDownOutside`, a link styled as a button, `buttonVariants` on a `Link`, a `Spinner` inside a `Button`, a loading or pending state on a button, a link announced as a button, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, the theme's reveal animation, a toast's close button in English, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, content that shifts sideways when a page gets a scrollbar, or a chart that loses its colors in production."
+description: "What this architecture decides on top of shadcn's catalog — Base UI as the one headless library, the whole catalog in `common/ui/` as lint-clean library code, the checks after an update and the local changes it carries forward, an overlay closing and why, the dialog's scrolling frame, a link styled as a button kept a link, a button with no loading indicator, where the palette rule binds, the theme class and its reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's style elements off for the Content-Security-Policy. Always loaded together with the `shadcn` skill, which owns how the catalog is used."
+when_to_use: "Trigger on — a lint or type error in a file under `common/ui/` after adding or updating a component, a local change to a catalog file lost on an update, a `\"use client\"` directive in a catalog file, a Radix import or a second headless UI library, `onOpenChange` and its reason, `onInteractOutside` or `onPointerDownOutside`, a dialog whose title or buttons scroll away, a dialog's header that shifts a pixel or changes its spacing on scroll, a link styled as a button, `buttonVariants` on a `Link`, a `Spinner` inside a `Button`, a loading or pending state on a button, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, the theme's reveal animation, a toast's close button in English, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, content that shifts sideways when a page gets a scrollbar, or a chart that loses its colors in production."
 ---
 
 # UI components
@@ -31,9 +31,10 @@ architecture decides on top of it; where the two disagree, this one wins.
   names below; the tests load every module so an update that breaks one fails
   even where no screen uses it, and coverage leaves the folder out (see `testing`).
 - **A change to a catalog file is rare and says why beside it**, because the next update overwrites
-  it. The project makes two kinds: what the library cannot be told from outside — the toaster's
-  close button, which takes a translated `closeLabel` — and what the Content-Security-Policy refuses
-  (the chart, below).
+  it. The project makes three kinds: what the library cannot be told from outside — the toaster's
+  and the dialog's close buttons, which take a translated `closeLabel` — what the registry's file
+  does not do at all (the dialog's frame, below), and what the Content-Security-Policy refuses (the
+  chart, below).
 - **The catalog keeps the registry's names**, so an update lands on the same files without a rename:
   its hook `useIsMobile` stays in `use-mobile.ts`, which the sidebar imports by that path, and a
   component keeps the registry's spelling of an abbreviation (`InputOTP`), which the rest of the
@@ -76,6 +77,60 @@ status line, never inside a button.
 
 **A select's nothing-selected value is `null`**, held by the form like every other value (see
 `forms`).
+
+## The dialog's frame
+
+The registry's dialog scrolls as a whole, so a dialog taller than the screen takes its title, its
+close button and its buttons out of view with the content. The catalog's `dialog.tsx` changes that,
+and `alert-dialog.tsx` has the same frame for a long confirmation; an update of either carries it
+forward:
+
+- **The popup is a fixed frame around a scroller.** It is capped at the viewport's height minus a
+  margin, does not scroll, and holds one `dialog-scroller` element that does; the close button sits
+  in the frame, outside the scroller, so it never moves.
+- **The header and the footer are sticky inside the scroller**, the header at its top and the footer
+  at its bottom, painted with the popup's background so content passes under them. Only what lies
+  between them moves; a form that wraps the fields and the footer scrolls the same way.
+- **Each draws its hairline only while content runs beneath it.** The scroller names a scroll
+  timeline and the two read it: the header's rule appears once the reader scrolls past the top, the
+  footer's shows while there is more below. A dialog that fits shows neither, and a browser without
+  scroll-driven animations shows none and still scrolls. The rules are three utilities in
+  `styles.css`:
+
+  ```css
+  @utility overlay-scroller {
+    scroll-timeline: --overlay-scroll y;
+  }
+
+  @utility overlay-rule-top {
+    border-bottom: 1px solid transparent;
+
+    @supports (animation-timeline: scroll()) {
+      animation: overlay-rule-show linear both;
+      animation-timeline: --overlay-scroll;
+      animation-range: 0 1rem;
+    }
+  }
+  ```
+
+  `overlay-rule-bottom` is the mirror (`border-top`, `animation-range: calc(100% - 1rem) 100%`, a
+  keyframe from `var(--border)` to transparent).
+- **The space at an edge is the same whether content rests there or passes under it.** The header's
+  bottom padding equals the scroller's gap and a negative margin of the same size takes it back, and
+  the footer's top padding does the same. With a padding smaller than the gap, the space under the
+  title shrinks the moment the reader scrolls.
+- **The popup is centred by its margins, not by a translate**: `fixed inset-0 m-auto h-fit` with its
+  maximum height and width, where the registry has `top-1/2 left-1/2 -translate-1/2`. A translate of
+  half its size lands the frame on a fraction of a pixel — any odd size, any display scaled to 125%
+  — and once the header sticks the browser rounds it apart from the frame, so the header seems to
+  shift by a pixel and its edge flickers the moment the content scrolls. A dialog placed elsewhere,
+  such as a command palette near the top, sets its own `top` with `bottom-auto`.
+- **`--dialog-gutter` is the frame's padding**, set on the popup and read by the scroller, the header
+  and the footer, which bleed to the frame's edges with it. A call site may change the variable — a
+  command palette sets it to `0` to sit flush — and nothing else about the frame. Content that runs
+  to the edges, such as a cover image, takes the same negative margin.
+- **The footer has no close button.** The registry's footer offers one labelled "Close" in English;
+  closing is the corner's button, and the footer holds the dialog's own actions.
 
 ## The theme
 
@@ -166,6 +221,8 @@ the change an update of the chart has to carry forward.
       nothing imports a second headless library.
 - [ ] Every file in `common/ui/` passes lint and typecheck, and every local change to one carries its
       reason and survived the last update.
+- [ ] A dialog taller than the screen keeps its title, close button and footer in view, and the space
+      under the title does not change when the content scrolls.
 - [ ] A link that looks like a button is a `Link` with `buttonVariants()`, an overlay reacts to
       closing in `onOpenChange`, and no button holds a `Spinner`.
 - [ ] Outside `common/ui/`, no palette color and no `dark:` color class.
