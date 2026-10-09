@@ -1,7 +1,7 @@
 ---
 name: ui-components
-description: "What this architecture decides on top of shadcn's catalog — Base UI as the one headless library, the whole catalog copied into `common/ui/` as lint-clean library code, the repository as the inventory, the checks after a component is added or updated and the local changes an update carries forward, an overlay closing and why, a link styled as a button kept a link, where the palette rule binds, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style elements turned off for the Content-Security-Policy. Always loaded together with the `shadcn` skill, which owns how the catalog is used."
-when_to_use: "Trigger on — a lint or type error in a file under `common/ui/` after adding or updating a component, a local change to a catalog file lost on an update, a `\"use client\"` directive in a catalog file, a Radix import or a second headless UI library, a registry item that brings another primitive library, `onOpenChange` and its reason, `onInteractOutside` or `onPointerDownOutside`, a link styled as a button, `buttonVariants` on a `Link`, a link announced as a button, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, the theme's reveal animation, a toast's close button in English, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, content that shifts sideways when a page gets a scrollbar, or a chart that loses its colors in production."
+description: "What this architecture decides on top of shadcn's catalog — Base UI as the one headless library, the whole catalog copied into `common/ui/` as lint-clean library code, the repository as the inventory, the checks after a component is added or updated and the local changes an update carries forward, an overlay closing and why, a link styled as a button kept a link, a button with no loading indicator, where the palette rule binds, the theme class with the system theme and the view-transition reveal, the toaster's translated close label, the scrollbar's gutter kept stable, and Base UI's inline style elements turned off for the Content-Security-Policy. Always loaded together with the `shadcn` skill, which owns how the catalog is used."
+when_to_use: "Trigger on — a lint or type error in a file under `common/ui/` after adding or updating a component, a local change to a catalog file lost on an update, a `\"use client\"` directive in a catalog file, a Radix import or a second headless UI library, a registry item that brings another primitive library, `onOpenChange` and its reason, `onInteractOutside` or `onPointerDownOutside`, a link styled as a button, `buttonVariants` on a `Link`, a `Spinner` inside a `Button`, a loading or pending state on a button, a link announced as a button, `ThemeProvider`, `useTheme`, the theme menu, `prefers-color-scheme`, the theme's reveal animation, a toast's close button in English, `CSPProvider`, `.base-ui-disable-scrollbar`, `scrollbar-gutter`, content that shifts sideways when a page gets a scrollbar, or a chart that loses its colors in production."
 ---
 
 # UI components
@@ -67,6 +67,12 @@ function is exported beside the component for exactly this.
 **An overlay closing is handled in `onOpenChange`**, which Base UI calls with the reason:
 `onOpenChange={(open, details) => …}`, and `details.reason` says whether it was an outside press,
 the escape key or the trigger. There is no `onInteractOutside` or `onPointerDownOutside`.
+
+**A button carries no loading indicator.** shadcn composes `Spinner` + `data-icon` + `disabled` for a
+pending action; here a write's progress is the fullscreen loader's, which covers the button that
+sent it (see `error-handling`). The button is disabled while the write is pending, keeps its own
+icon, and a write that does not raise the loader changes the label instead. A spinner belongs to a
+status line, never inside a button.
 
 **A select's nothing-selected value is `null`**, held by the form like every other value (see
 `forms`).
@@ -160,8 +166,8 @@ the change an update of the chart has to carry forward.
       nothing imports a second headless library.
 - [ ] Every file in `common/ui/` passes lint and typecheck, and every local change to one carries its
       reason and survived the last update.
-- [ ] A link that looks like a button is a `Link` with `buttonVariants()`, and an overlay reacts to
-      closing in `onOpenChange`.
+- [ ] A link that looks like a button is a `Link` with `buttonVariants()`, an overlay reacts to
+      closing in `onOpenChange`, and no button holds a `Spinner`.
 - [ ] Outside `common/ui/`, no palette color and no `dark:` color class.
 - [ ] The theme is a class on `<html>`, applied before the first render, following the system through
       `useSyncExternalStore`, and the reveal respects reduced motion.

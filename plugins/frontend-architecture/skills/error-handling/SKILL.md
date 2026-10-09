@@ -1,7 +1,7 @@
 ---
 name: error-handling
 description: "What the reader sees when something fails — an expected failure (the server's answer, no answer, a refused route) against a bug, where each one surfaces (an error screen in place, a route's error component, a toast, an alert inside a form, nothing), the error toast (priority, auto-close, no ids on screen, copying the full report), the copyable error report, `ErrorState`, the route error component and a retry that really retries, the fullscreen loader for writes, errors a boundary caught, and what a `catch` may end in."
-when_to_use: "Trigger on — a failed request with no feedback, a toast that never closes or shows an id, a trace id or an error code on screen, a copy button that copies only part of the error, `showErrorToast`, `ErrorState`, a route's `errorComponent`, a retry button that shows the same error again, a 401 or 403 that toasts, a failed first load that toasts instead of showing an error screen, two toasts for one failure, `meta.errorToast` or `meta.fullscreenLoader`, `useIsMutating`, a loader that covers a skeleton, a reader who navigates away in the middle of a save, `onCaughtError`, an error React logs to the console from a boundary, writing a `catch` block, an empty `catch`, or a `catch` that only logs."
+when_to_use: "Trigger on — a failed request with no feedback, a toast that never closes or shows an id, a trace id or an error code on screen, a copy button that copies only part of the error, `showErrorToast`, `ErrorState`, a route's `errorComponent`, a retry button that shows the same error again, a 401 or 403 that toasts, a failed first load that toasts instead of showing an error screen, two toasts for one failure, `meta.errorToast` or `meta.fullscreenLoader`, `useIsMutating`, a loader that covers a skeleton, a loader that shows behind a dialog, sheet or drawer, a reader who navigates away in the middle of a save, `onCaughtError`, an error React logs to the console from a boundary, writing a `catch` block, an empty `catch`, or a `catch` that only logs."
 ---
 
 # Error handling
@@ -210,7 +210,7 @@ export function FullscreenLoader(): JSX.Element | null {
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-background/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-60 grid place-items-center bg-background/60">
       <Spinner className="size-8" aria-label={t("loader.saving")} />
     </div>
   );
@@ -221,6 +221,18 @@ It is mounted once, beside the router, and counts every pending mutation except 
 with `meta.fullscreenLoader: false` — a write the reader should not wait on, like a language switch
 whose result is already on screen. Because a mutation's invalidation is returned (see
 `server-state`), the loader stays up until the lists behind it know they are out of date.
+
+- **It sits one layer above every overlay.** Dialogs, sheets, drawers, popovers and the toaster are
+  `z-50`, and their portals land after the loader in the document, so a loader at their layer loses
+  the tie and a write sent from inside a dialog leaves the dialog on top, its button pressable again.
+- **It is the only sign that a write is under way.** The button that sent it carries no spinner of
+  its own (see `ui-components`); the loader already covers it.
+- **A write that opts out shows its progress where it was asked for**: the button's label turning
+  into the action under way ("Checking…"), or a status line beside it. Opting out removes the only
+  indicator, so it never leaves the screen silent.
+- **A wait that is not a mutation but must block the same way** — a card tokenized with a payment
+  gateway, kept out of the query client's cache — renders the same veil itself, portaled to the
+  body, so a transformed popup around it does not become what `fixed` is relative to.
 
 ## Errors a boundary caught
 
@@ -270,6 +282,7 @@ nobody sees is a failure nobody fixes.
 - [ ] Every screen that shows a failed read uses `ErrorState`.
 - [ ] The route's error component shows `Forbidden` for a refusal and `NotFound` for a `404`, and its
       retry resets the query errors and invalidates the router.
-- [ ] Only writes show the fullscreen loader, and a write the reader should not wait on opts out.
+- [ ] Only writes show the fullscreen loader, above every overlay, and a write the reader should not
+      wait on opts out and shows its progress beside its button.
 - [ ] `onCaughtError` reports through the error port, in the application and in the tests.
 - [ ] Every `catch` rethrows, returns an answer the caller expects, or sets state the reader sees.

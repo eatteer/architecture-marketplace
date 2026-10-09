@@ -274,7 +274,8 @@ function submit(values: CreateUserValues): void {
   an endpoint that creates something irreversible needs an idempotency key of its own.
 - **The submit button is disabled while the mutation is pending** — and, on an edit form, while
   nothing changed — with `focusableWhenDisabled`, so the reader who pressed it keeps their place
-  (see `accessibility`).
+  (see `accessibility`). It shows no spinner: the fullscreen loader is the progress (see
+  `ui-components`).
 - **Every form has a way back, and it is a link to where the reader came from, never a disabled
   button.** While the write is in flight the fullscreen loader covers the screen, the link
   included: leaving a half-finished write is exactly what the loader prevents (see
