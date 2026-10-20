@@ -301,6 +301,7 @@ function blocksOf(markdown) {
       code: body.join("\n"),
       skipped: previous >= 0 && lines[previous].trim() === SKIP_MARKER,
     });
+
     index += 1;
   }
 
@@ -345,9 +346,11 @@ function checkBlock(block, config) {
 const targets = process.argv.length > 2
   ? process.argv.slice(2).map((path) => resolve(path))
   : [PLUGINS_ROOT];
+
 const files = targets
   .flatMap(filesUnder)
   .filter((file) => !VENDORED_SKILLS.some((skill) => file.startsWith(skill + sep)));
+
 const problems = [];
 
 for (const asset of SHARED_RULE_ASSETS) {
@@ -416,4 +419,5 @@ console.log(
   `${checkedBlocks} snippets and ${checkedExamples} example files checked, ` +
     `${skippedBlocks} snippets skipped by marker: ${problems.length} problems.`,
 );
+
 process.exitCode = problems.length > 0 ? 1 : 0;

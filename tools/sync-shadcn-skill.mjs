@@ -40,10 +40,12 @@ try {
   const source = join(checkout, ...UPSTREAM_SKILL.split("/"));
 
   rmSync(DESTINATION, { recursive: true, force: true });
+
   cpSync(source, DESTINATION, {
     recursive: true,
     filter: (path) => !LEFT_OUT.some((folder) => path.startsWith(join(source, folder) + sep) || path === join(source, folder)),
   });
+
   cpSync(join(checkout, UPSTREAM_LICENSE), join(DESTINATION, "LICENSE.md"));
 
   console.log(`Copied ${UPSTREAM_SKILL} from shadcn-ui/ui@${commit}.`);

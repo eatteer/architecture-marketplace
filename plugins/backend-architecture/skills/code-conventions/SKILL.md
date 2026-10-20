@@ -68,6 +68,7 @@ trusts it into a red build.
 
   // and where a type is derived FROM the value, an annotation is actively wrong
   export const ORDER_STATUS_VALUES = ["pending", "settled"] as const;
+  
   export type OrderStatusValue = (typeof ORDER_STATUS_VALUES)[number];
   ```
 
